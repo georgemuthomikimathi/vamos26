@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 320" fill="none">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE566"/>
+      <stop offset="40%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <linearGradient id="goldDark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#8B6914"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <ellipse cx="100" cy="300" rx="55" ry="12" fill="#1a1a2e" opacity="0.6"/>
+  <path d="M55 300 L65 240 L135 240 L145 300 Z" fill="url(#goldDark)"/>
+  <rect x="70" y="230" width="60" height="14" rx="3" fill="url(#gold)"/>
+  <path d="M100 20 C60 20 35 55 35 95 C35 130 55 155 75 170 L75 230 L125 230 L125 170 C145 155 165 130 165 95 C165 55 140 20 100 20Z" fill="url(#gold)" filter="url(#glow)"/>
+  <path d="M100 35 C72 35 52 62 52 92 C52 118 65 138 78 150 L78 218 L122 218 L122 150 C135 138 148 118 148 92 C148 62 128 35 100 35Z" fill="url(#goldDark)" opacity="0.3"/>
+  <ellipse cx="100" cy="95" rx="38" ry="42" fill="url(#gold)" opacity="0.15"/>
+  <path d="M35 95 C20 95 10 110 10 125 C10 140 20 150 35 150 L45 130 C35 125 30 115 30 105 C30 98 32 95 35 95Z" fill="url(#gold)"/>
+  <path d="M165 95 C180 95 190 110 190 125 C190 140 180 150 165 150 L155 130 C165 125 170 115 170 105 C170 98 168 95 165 95Z" fill="url(#gold)"/>
+  <circle cx="100" cy="88" r="22" fill="#0a0e1a" opacity="0.2"/>
+  <text x="100" y="95" text-anchor="middle" font-size="14" font-weight="bold" fill="#8B6914" font-family="serif">FIFA</text>
+</svg>

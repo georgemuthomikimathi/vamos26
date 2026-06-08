@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+:root {
+  --pitch: #00ff87;
+  --pitch-dim: #00c968;
+  --gold: #ffd700;
+  --navy: #0a0e1a;
+  --navy-light: #141b2d;
+  --usa-blue: #3c5bff;
+  --mexico-green: #00a651;
+  --canada-red: #ff2d2d;
+  --card: #111827;
+  --muted: #94a3b8;
+}
+
+@theme inline {
+  --color-pitch: var(--pitch);
+  --color-pitch-dim: var(--pitch-dim);
+  --color-gold: var(--gold);
+  --color-navy: var(--navy);
+  --color-navy-light: var(--navy-light);
+  --color-usa-blue: var(--usa-blue);
+  --color-mexico-green: var(--mexico-green);
+  --color-canada-red: var(--canada-red);
+  --color-card: var(--card);
+  --color-muted: var(--muted);
+  --font-display: var(--font-bebas);
+  --font-body: var(--font-outfit);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--navy);
+  color: #f8fafc;
+  font-family: var(--font-outfit), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.font-display {
+  font-family: var(--font-bebas), system-ui, sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 9999;
+}
+
+.pitch-lines {
+  background-image:
+    linear-gradient(90deg, rgba(0, 255, 135, 0.03) 1px, transparent 1px),
+    linear-gradient(rgba(0, 255, 135, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.glow-pitch {
+  box-shadow: 0 0 40px rgba(0, 255, 135, 0.25), 0 0 80px rgba(0, 255, 135, 0.1);
+}
+
+.glow-gold {
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.3), 0 0 80px rgba(255, 215, 0, 0.1);
+}
+
+.tournament-cutout {
+  background: transparent !important;
+  display: block;
+  mix-blend-mode: lighten;
+}
+
+.tournament-cutout-gold {
+  filter: drop-shadow(0 18px 36px rgba(255, 215, 0, 0.35))
+    drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45));
+}
+
+.tournament-cutout-pitch {
+  filter: drop-shadow(0 18px 36px rgba(0, 255, 135, 0.28))
+    drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45));
+}
+
+.tournament-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #ffd700 0%, #fff5c0 50%, #ffb800 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-pitch {
+  background: linear-gradient(135deg, #00ff87 0%, #7dffc4 50%, #00c968 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.host-stripe {
+  background: linear-gradient(
+    90deg,
+    var(--canada-red) 0%,
+    var(--canada-red) 33%,
+    white 33%,
+    white 66%,
+    var(--mexico-green) 66%,
+    var(--mexico-green) 100%
+  );
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(2deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.tab-active {
+  background: linear-gradient(135deg, rgba(0, 255, 135, 0.2), rgba(60, 91, 255, 0.2));
+  border-color: var(--pitch);
+  color: var(--pitch);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--navy);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pitch-dim);
+  border-radius: 4px;
+}
