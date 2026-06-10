@@ -6,7 +6,7 @@ import TeamFlagWithFallback from "@/components/TeamFlag";
 
 export default function GroupsSection() {
   return (
-    <section id="groups" className="relative py-24 bg-navy-light">
+    <section id="groups" className="section-anchor relative py-24 bg-navy-light">
       <div className="absolute inset-0 pitch-lines opacity-50" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div

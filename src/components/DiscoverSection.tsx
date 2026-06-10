@@ -9,14 +9,17 @@ import {
   PartyPopper,
   ExternalLink,
   Filter,
+  UtensilsCrossed,
+  Search,
 } from "lucide-react";
 import { NYC_VENUES, type Venue } from "@/lib/data";
 
-const FILTERS = ["All", "Bar", "Fan Zone", "Viewing Party"] as const;
+const FILTERS = ["All", "Bar", "Restaurant", "Fan Zone", "Viewing Party"] as const;
 type FilterType = (typeof FILTERS)[number];
 
 const TYPE_ICONS = {
   Bar: Beer,
+  Restaurant: UtensilsCrossed,
   "Fan Zone": Tv,
   "Viewing Party": PartyPopper,
 };
@@ -27,6 +30,7 @@ const BOROUGH_COLORS: Record<string, string> = {
   Queens: "from-gold/30 to-gold/10 border-gold/30",
   Bronx: "from-canada-red/30 to-canada-red/10 border-canada-red/30",
   "Staten Island": "from-pitch/30 to-pitch/10 border-pitch/30",
+  "NY/NJ": "from-usa-blue/30 to-canada-red/10 border-usa-blue/30",
 };
 
 function VenueCard({ venue, index }: { venue: Venue; index: number }) {
@@ -80,7 +84,7 @@ function VenueCard({ venue, index }: { venue: Venue; index: number }) {
         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.mapsQuery)}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 text-sm text-pitch hover:text-white transition-colors font-medium"
+        className="inline-flex items-center gap-2 text-sm text-pitch hover:text-white transition-colors font-medium min-h-[44px] tap-scale focus-ring rounded-lg px-1"
       >
         View on Maps
         <ExternalLink size={14} />
@@ -91,14 +95,24 @@ function VenueCard({ venue, index }: { venue: Venue; index: number }) {
 
 export default function DiscoverSection() {
   const [filter, setFilter] = useState<FilterType>("All");
+  const [query, setQuery] = useState("");
 
-  const filtered =
-    filter === "All"
-      ? NYC_VENUES
-      : NYC_VENUES.filter((v) => v.type === filter);
+  const filtered = NYC_VENUES.filter((v) => {
+    const matchesType = filter === "All" || v.type === filter;
+    if (!matchesType) return false;
+    if (!query.trim()) return true;
+    const q = query.toLowerCase();
+    return (
+      v.name.toLowerCase().includes(q) ||
+      v.neighborhood.toLowerCase().includes(q) ||
+      v.borough.toLowerCase().includes(q) ||
+      v.vibe.toLowerCase().includes(q) ||
+      v.description.toLowerCase().includes(q)
+    );
+  });
 
   return (
-    <section id="discover" className="relative py-24 overflow-hidden">
+    <section id="discover" className="section-anchor relative py-24 overflow-hidden">
       <div
         className="absolute inset-0 opacity-20"
         style={{
@@ -120,19 +134,36 @@ export default function DiscoverSection() {
             DISCOVER <span className="text-gradient-pitch">NYC</span>
           </h2>
           <p className="text-muted max-w-2xl mx-auto">
-            Where to watch, where to celebrate, and where the city comes alive
-            for World Cup 2026. Bars, fan zones, and viewing parties across all
-            five boroughs.
+            Where to watch, where to eat, and where the city comes alive for
+            World Cup 2026. Bars, restaurants, fan zones, and viewing parties
+            across all five boroughs.
           </p>
         </motion.div>
 
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
-          <Filter size={16} className="text-muted mr-1" />
+        <div className="relative max-w-xl mx-auto mb-8">
+          <Search
+            size={18}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
+          />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search bars, neighborhoods, boroughs…"
+            aria-label="Search NYC venues"
+            className="w-full bg-card border border-white/10 rounded-2xl pl-11 pr-4 py-3.5 min-h-[48px] text-sm text-white placeholder:text-muted focus:border-pitch/50 focus:outline-none focus:ring-2 focus:ring-pitch/20"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+          <Filter size={16} className="text-muted mr-1" aria-hidden />
           {FILTERS.map((f) => (
             <button
               key={f}
+              type="button"
               onClick={() => setFilter(f)}
-              className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all border ${
+              aria-pressed={filter === f}
+              className={`px-5 py-2.5 min-h-[44px] rounded-full text-sm font-medium transition-all border tap-scale focus-ring ${
                 filter === f
                   ? "tab-active"
                   : "border-white/10 text-muted hover:text-white hover:border-white/20"
@@ -148,11 +179,26 @@ export default function DiscoverSection() {
           ))}
         </div>
 
+        <p className="text-center text-xs text-muted mb-8">
+          {filtered.length} venue{filtered.length === 1 ? "" : "s"} found
+        </p>
+
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <AnimatePresence mode="popLayout">
-            {filtered.map((venue, i) => (
-              <VenueCard key={venue.name} venue={venue} index={i} />
-            ))}
+            {filtered.length > 0 ? (
+              filtered.map((venue, i) => (
+                <VenueCard key={venue.name} venue={venue} index={i} />
+              ))
+            ) : (
+              <motion.p
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="col-span-full text-center text-muted py-12"
+              >
+                No venues match your search. Try a borough or neighborhood name.
+              </motion.p>
+            )}
           </AnimatePresence>
         </div>
 

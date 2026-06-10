@@ -25,7 +25,7 @@ export default function FriendlyScores() {
   if (matches.length === 0) return null;
 
   return (
-    <section id="friendlies" className="relative py-16 bg-navy-light">
+    <section id="friendlies" className="section-anchor relative py-16 bg-navy-light">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 16 }}

@@ -1,6 +1,7 @@
 "use client";
 
-import { Clock, MapPin } from "lucide-react";
+import { useState } from "react";
+import { Clock, MapPin, ChevronDown } from "lucide-react";
 import type { Match } from "@/lib/scores/types";
 import { formatScore, isPreMatch } from "@/lib/scores/types";
 import TeamFlagWithFallback from "@/components/TeamFlag";
@@ -39,83 +40,128 @@ type MatchCardProps = {
 };
 
 export default function MatchCard({ match, compact = true, showCompetition }: MatchCardProps) {
+  const [expanded, setExpanded] = useState(false);
   const isLive = match.status === "live" || match.status === "halftime";
   const scoreDisplay = formatScore(match.score);
+  const hasDetails =
+    Boolean(match.venue) ||
+    Boolean(match.time) ||
+    (match.events && match.events.length > 0);
 
   return (
-    <div
-      className={`bg-card border rounded-xl transition-colors ${
+    <article
+      className={`bg-card border rounded-xl transition-all ${
         compact ? "p-3 md:p-4" : "p-5 md:p-6 rounded-2xl"
       } ${
         isLive
           ? "border-red-500/30 shadow-md shadow-red-500/5"
-          : "border-white/10 hover:border-pitch/20"
+          : expanded
+            ? "border-pitch/30 shadow-md shadow-pitch/5"
+            : "border-white/10 hover:border-pitch/20"
       }`}
     >
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <StatusBadge match={match} />
-          {showCompetition && match.competition === "friendly" && (
-            <span className="text-[10px] text-gold/80 uppercase tracking-wider truncate">
-              Friendly
-            </span>
-          )}
-        </div>
-        <span className="text-[10px] text-muted uppercase tracking-wider truncate max-w-[50%] text-right">
-          {match.stage}
-        </span>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <div className="flex-1 flex items-center gap-2 min-w-0 justify-end">
-          <span className={`font-medium truncate ${compact ? "text-sm" : "text-base"}`}>
-            {match.home.name}
-          </span>
-          <TeamFlagWithFallback code={match.home.code} name={match.home.name} size={compact ? 28 : 40} />
-        </div>
-
-        <div className="shrink-0 text-center px-2 min-w-[4.5rem]">
-          <div
-            className={`font-display tracking-wider text-white ${
-              isPreMatch(match.score)
-                ? "text-xl text-muted/60"
-                : compact
-                  ? "text-2xl"
-                  : "text-4xl"
-            }`}
-          >
-            {scoreDisplay}
+      <button
+        type="button"
+        onClick={() => hasDetails && setExpanded((v) => !v)}
+        aria-expanded={hasDetails ? expanded : undefined}
+        className={`w-full text-left focus-ring rounded-lg ${hasDetails ? "cursor-pointer" : "cursor-default"}`}
+      >
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <StatusBadge match={match} />
+            {showCompetition && match.competition === "friendly" && (
+              <span className="text-[10px] text-gold/80 uppercase tracking-wider truncate">
+                Friendly
+              </span>
+            )}
           </div>
-          <div className="flex items-center justify-center gap-1 text-[10px] text-muted mt-0.5">
-            <Clock size={10} />
-            <span>{match.date}</span>
+          <div className="flex items-center gap-1 min-w-0">
+            <span className="text-[10px] text-muted uppercase tracking-wider truncate max-w-[8rem] sm:max-w-none text-right">
+              {match.stage}
+            </span>
+            {hasDetails && (
+              <ChevronDown
+                size={14}
+                className={`text-muted shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
+              />
+            )}
           </div>
         </div>
 
-        <div className="flex-1 flex items-center gap-2 min-w-0">
-          <TeamFlagWithFallback code={match.away.code} name={match.away.name} size={compact ? 28 : 40} />
-          <span className={`font-medium truncate ${compact ? "text-sm" : "text-base"}`}>
-            {match.away.name}
-          </span>
+        <div className="flex items-center gap-2">
+          <div className="flex-1 flex items-center gap-2 min-w-0 justify-end">
+            <span className={`font-medium truncate ${compact ? "text-sm" : "text-base"}`}>
+              {match.home.name}
+            </span>
+            <TeamFlagWithFallback code={match.home.code} name={match.home.name} size={compact ? 28 : 40} />
+          </div>
+
+          <div className="shrink-0 text-center px-2 min-w-[4.5rem]">
+            <div
+              className={`font-display tracking-wider text-white ${
+                isPreMatch(match.score)
+                  ? "text-xl text-muted/60"
+                  : compact
+                    ? "text-2xl"
+                    : "text-4xl"
+              }`}
+            >
+              {scoreDisplay}
+            </div>
+            <div className="flex items-center justify-center gap-1 text-[10px] text-muted mt-0.5">
+              <Clock size={10} />
+              <span>{match.date}</span>
+            </div>
+          </div>
+
+          <div className="flex-1 flex items-center gap-2 min-w-0">
+            <TeamFlagWithFallback code={match.away.code} name={match.away.name} size={compact ? 28 : 40} />
+            <span className={`font-medium truncate ${compact ? "text-sm" : "text-base"}`}>
+              {match.away.name}
+            </span>
+          </div>
+        </div>
+
+        {!expanded && hasDetails && (
+          <p className="text-[10px] text-muted/60 text-center mt-2">Tap for kickoff, venue & goals</p>
+        )}
+      </button>
+
+      <div
+        className={`grid transition-all duration-300 ease-out ${
+          expanded ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="pt-3 border-t border-white/10 space-y-3">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
+              <span className="flex items-center gap-1">
+                <Clock size={12} className="text-pitch" />
+                {match.time}
+              </span>
+              <span className="flex items-center gap-1 min-w-0">
+                <MapPin size={12} className="text-pitch shrink-0" />
+                <span className="truncate">
+                  {match.venue} · {match.city}
+                </span>
+              </span>
+            </div>
+
+            {match.events && match.events.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {match.events.map((e, j) => (
+                  <span
+                    key={j}
+                    className="text-xs bg-white/5 rounded-full px-3 py-1.5 text-muted"
+                  >
+                    {e.minute}&apos; ⚽ {e.player}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      {!compact && (
-        <div className="flex items-center gap-2 mt-3 text-xs text-muted justify-center">
-          <MapPin size={12} className="text-pitch" />
-          {match.venue} · {match.city}
-        </div>
-      )}
-
-      {match.events && match.events.length > 0 && !compact && (
-        <div className="mt-3 pt-3 border-t border-white/5 flex flex-wrap gap-2 justify-center">
-          {match.events.map((e, j) => (
-            <span key={j} className="text-xs bg-white/5 rounded-full px-3 py-1 text-muted">
-              {e.minute}&apos; ⚽ {e.player}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
+    </article>
   );
 }

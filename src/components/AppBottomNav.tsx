@@ -1,11 +1,12 @@
 "use client";
 
-import { Radio, BarChart3, Eye, MapPin } from "lucide-react";
+import { Radio, BarChart3, HeartHandshake, MapPin } from "lucide-react";
+import { scrollToSection } from "@/lib/scroll";
 
 const BOTTOM_NAV = [
   { id: "live", label: "Live", icon: Radio },
   { id: "stats", label: "Stats", icon: BarChart3 },
-  { id: "watchlist", label: "Watch", icon: Eye },
+  { id: "donate", label: "Donate", icon: HeartHandshake },
   { id: "discover", label: "NYC", icon: MapPin },
 ] as const;
 
@@ -17,7 +18,7 @@ type AppBottomNavProps = {
 export default function AppBottomNav({ activeTab, onTabChange }: AppBottomNavProps) {
   const handleNav = (id: string) => {
     onTabChange(id);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    scrollToSection(id);
   };
 
   return (
@@ -32,8 +33,11 @@ export default function AppBottomNav({ activeTab, onTabChange }: AppBottomNavPro
           return (
             <button
               key={id}
+              type="button"
               onClick={() => handleNav(id)}
-              className={`flex flex-col items-center gap-0.5 py-2.5 px-1 transition-colors ${
+              aria-current={active ? "true" : undefined}
+              aria-label={label}
+              className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 min-h-[56px] transition-colors tap-scale focus-ring rounded-lg ${
                 active ? "text-pitch" : "text-muted hover:text-white"
               }`}
             >

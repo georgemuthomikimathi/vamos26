@@ -1,10 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Target, Handshake, Shield, type LucideIcon } from "lucide-react";
 import { TOP_SCORERS, TOP_ASSISTS, CLEAN_SHEETS } from "@/lib/stats";
 import type { StatLeader } from "@/lib/stats";
 import TeamFlagWithFallback from "@/components/TeamFlag";
+
+const STAT_TABS = [
+  { id: "scorers", label: "Goals", icon: Target, leaders: TOP_SCORERS, unit: "goals", accent: "bg-gradient-to-br from-gold to-orange-600", title: "Top Scorers" },
+  { id: "assists", label: "Assists", icon: Handshake, leaders: TOP_ASSISTS, unit: "assists", accent: "bg-gradient-to-br from-pitch to-emerald-700", title: "Top Assists" },
+  { id: "clean", label: "Clean Sheets", icon: Shield, leaders: CLEAN_SHEETS, unit: "CS", accent: "bg-gradient-to-br from-usa-blue to-blue-900", title: "Clean Sheets" },
+] as const;
+
+type TabId = (typeof STAT_TABS)[number]["id"];
 
 function LeaderColumn({
   title,
@@ -31,7 +40,7 @@ function LeaderColumn({
         {leaders.map((p) => (
           <div
             key={p.rank}
-            className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/8 transition-colors"
+            className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
           >
             <span
               className={`font-display text-2xl w-8 text-center ${
@@ -59,14 +68,17 @@ function LeaderColumn({
 }
 
 export default function StatsLeaders() {
+  const [activeTab, setActiveTab] = useState<TabId>("scorers");
+  const current = STAT_TABS.find((t) => t.id === activeTab)!;
+
   return (
-    <section id="stats" className="relative py-24 bg-navy">
+    <section id="stats" className="section-anchor relative py-24 bg-navy">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-10"
         >
           <p className="text-gold uppercase tracking-[0.4em] text-xs font-semibold mb-3">
             Tournament Leaders
@@ -79,28 +91,48 @@ export default function StatsLeaders() {
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="flex lg:hidden gap-2 overflow-x-auto scrollbar-hide mb-6 snap-x snap-mandatory">
+          {STAT_TABS.map((tab) => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                aria-current={active ? "true" : undefined}
+                className={`shrink-0 snap-start inline-flex items-center gap-2 px-4 py-3 min-h-[48px] rounded-full text-sm font-semibold border transition-all tap-scale focus-ring ${
+                  active ? "tab-active" : "border-white/10 text-muted"
+                }`}
+              >
+                <Icon size={16} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="lg:hidden">
           <LeaderColumn
-            title="Top Scorers"
-            icon={Target}
-            leaders={TOP_SCORERS}
-            unit="goals"
-            accent="bg-gradient-to-br from-gold to-orange-600"
+            title={current.title}
+            icon={current.icon}
+            leaders={current.leaders}
+            unit={current.unit}
+            accent={current.accent}
           />
-          <LeaderColumn
-            title="Top Assists"
-            icon={Handshake}
-            leaders={TOP_ASSISTS}
-            unit="assists"
-            accent="bg-gradient-to-br from-pitch to-emerald-700"
-          />
-          <LeaderColumn
-            title="Clean Sheets"
-            icon={Shield}
-            leaders={CLEAN_SHEETS}
-            unit="CS"
-            accent="bg-gradient-to-br from-usa-blue to-blue-900"
-          />
+        </div>
+
+        <div className="hidden lg:grid lg:grid-cols-3 gap-6">
+          {STAT_TABS.map((tab) => (
+            <LeaderColumn
+              key={tab.id}
+              title={tab.title}
+              icon={tab.icon}
+              leaders={tab.leaders}
+              unit={tab.unit}
+              accent={tab.accent}
+            />
+          ))}
         </div>
       </div>
     </section>

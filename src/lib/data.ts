@@ -35,7 +35,7 @@ export type Venue = {
   name: string;
   neighborhood: string;
   borough: string;
-  type: "Bar" | "Fan Zone" | "Viewing Party";
+  type: "Bar" | "Restaurant" | "Fan Zone" | "Viewing Party";
   vibe: string;
   description: string;
   highlight?: string;
@@ -338,6 +338,151 @@ export const NYC_VENUES: Venue[] = [
     mapsQuery: "Banter NYC Chelsea",
   },
   {
+    name: "Foley's Pub & Restaurant",
+    neighborhood: "Midtown",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "Irish pub, every league on tap",
+    description:
+      "Murray Hill staple with dozens of screens, hearty pub food, and a crowd that never misses a USMNT or Mexico match.",
+    highlight: "Best for: USA & Mexico fans",
+    mapsQuery: "Foley's Pub 18 West 33rd Street NYC",
+  },
+  {
+    name: "Kettle of Fish",
+    neighborhood: "Greenwich Village",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "Wisconsin meets West Village soccer",
+    description:
+      "Beloved Village bar known for Packers Sundays and packed international football nights — standing room only for knockouts.",
+    mapsQuery: "Kettle of Fish 59 Christopher Street NYC",
+  },
+  {
+    name: "Jack Demsey's",
+    neighborhood: "Flatiron",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "Classic sports bar, all the big matches",
+    description:
+      "Old-school NYC sports bar on West 36th with reliable screens, burgers, and a loyal match-day crowd since 1934.",
+    mapsQuery: "Jack Demsey's 36 West 33rd Street NYC",
+  },
+  {
+    name: "Slattery's Midtown Pub",
+    neighborhood: "Midtown East",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "Irish pub, Premier League HQ",
+    description:
+      "Two-floor Irish pub steps from Grand Central. Packed for early kickoffs, European nights, and World Cup wall-to-wall.",
+    highlight: "Best for: Early ET kickoffs",
+    mapsQuery: "Slattery's Midtown Pub 8 East 36th Street NYC",
+  },
+  {
+    name: "O'Hanlon's Bar",
+    neighborhood: "Astoria",
+    borough: "Queens",
+    type: "Bar",
+    vibe: "Queens soccer heartland",
+    description:
+      "Astoria's go-to for global football — South American, European, and CONCACAF crowds pack in for every major fixture.",
+    highlight: "Best for: Latin America & Europe",
+    mapsQuery: "O'Hanlon's Bar Astoria Queens",
+  },
+  {
+    name: "Woodwork Bar",
+    neighborhood: "Greenpoint",
+    borough: "Brooklyn",
+    type: "Bar",
+    vibe: "Brooklyn craft beer & football",
+    description:
+      "Intimate Greenpoint bar with strong craft beer list and a devoted football following — great for group-stage afternoons.",
+    mapsQuery: "Woodwork Bar Greenpoint Brooklyn",
+  },
+  {
+    name: "Beloved Bar",
+    neighborhood: "Bedford-Stuyvesant",
+    borough: "Brooklyn",
+    type: "Bar",
+    vibe: "Community vibes, global game",
+    description:
+      "Bed-Stuy neighborhood bar with screens, cocktails, and a welcoming crowd for World Cup watch-alongs across all groups.",
+    mapsQuery: "Beloved Bar Bedford Avenue Brooklyn",
+  },
+  {
+    name: "Bronx Alehouse",
+    neighborhood: "Norwood",
+    borough: "Bronx",
+    type: "Bar",
+    vibe: "Craft beer, big screens, Bronx pride",
+    description:
+      "Award-winning Bronx beer hall with multiple TVs and a food menu built for long match days — easy parking for borough fans.",
+    highlight: "Best for: Bronx locals",
+    mapsQuery: "Bronx Alehouse 3639 East Tremont Avenue",
+  },
+  {
+    name: "Harlem Public",
+    neighborhood: "Hamilton Heights",
+    borough: "Manhattan",
+    type: "Restaurant",
+    vibe: "Neighborhood gastropub, screens upstairs",
+    description:
+      "Beloved Harlem spot with elevated pub fare, craft drafts, and upstairs seating perfect for afternoon group-stage matches.",
+    mapsQuery: "Harlem Public 3615 Broadway NYC",
+  },
+  {
+    name: "The Globe",
+    neighborhood: "Midtown",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "British pub, World Cup tradition",
+    description:
+      "Midtown English pub atmosphere with pints, pies, and dedicated screens for UK and international tournament fixtures.",
+    mapsQuery: "The Globe Bar 230 West 44th Street NYC",
+  },
+  {
+    name: "Ryan's Daughter",
+    neighborhood: "Upper East Side",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "Irish pub, neighborhood regulars",
+    description:
+      "UES Irish pub that fills fast for Ireland, England, and marquee World Cup clashes — arrive early for knockout rounds.",
+    mapsQuery: "Ryan's Daughter 350 East 85th Street NYC",
+  },
+  {
+    name: "Offside Tavern",
+    neighborhood: "Kips Bay",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "Soccer-first bar culture",
+    description:
+      "Football-focused tavern energy near NYU — built for supporters who want commentary, pints, and zero channel surfing.",
+    highlight: "Best for: Pure football fans",
+    mapsQuery: "Offside Tavern NYC",
+  },
+  {
+    name: "Lucky Strike Chelsea Piers",
+    neighborhood: "Chelsea",
+    borough: "Manhattan",
+    type: "Restaurant",
+    vibe: "Bowling, bites, and big screens",
+    description:
+      "Chelsea Piers entertainment complex with sports viewing areas, shareable plates, and room for large watch-party groups.",
+    mapsQuery: "Lucky Strike Chelsea Piers NYC",
+  },
+  {
+    name: "Treadwell Park",
+    neighborhood: "Upper East Side",
+    borough: "Manhattan",
+    type: "Restaurant",
+    vibe: "Craft beer hall, match-day food",
+    description:
+      "Spacious beer hall with rotisserie chicken, long tables, and screens tuned to the day's fixtures — great for families.",
+    mapsQuery: "Treadwell Park Upper East Side NYC",
+  },
+  {
     name: "Brooklyn Fan Zone",
     neighborhood: "Brooklyn Bridge Park",
     borough: "Brooklyn",
@@ -402,6 +547,111 @@ export const NYC_VENUES: Venue[] = [
       "Evening match viewings and daily programming at SIUH Community Park with a brand-new LED scoreboard.",
     highlight: "June 29 – July 2",
     mapsQuery: "Staten Island University Hospital Community Park",
+  },
+  {
+    name: "Domino Park World Cup Screenings",
+    neighborhood: "Williamsburg",
+    borough: "Brooklyn",
+    type: "Viewing Party",
+    vibe: "Waterfront, outdoor, free",
+    description:
+      "Community screenings along the East River with Manhattan skyline views — grab food from Smorgasburg vendors nearby.",
+    highlight: "Weekend matches",
+    mapsQuery: "Domino Park Brooklyn",
+  },
+  {
+    name: "Industry City Watch Party",
+    neighborhood: "Sunset Park",
+    borough: "Brooklyn",
+    type: "Viewing Party",
+    vibe: "Warehouse district, big crowd energy",
+    description:
+      "Large-format outdoor and indoor viewing at Industry City with food halls, local breweries, and family-friendly space.",
+    mapsQuery: "Industry City Brooklyn",
+  },
+  {
+    name: "Lincoln Center Plaza Screenings",
+    neighborhood: "Lincoln Square",
+    borough: "Manhattan",
+    type: "Viewing Party",
+    vibe: "Cultural landmark, open air",
+    description:
+      "Free public screenings on the plaza during select tournament dates — iconic NYC backdrop for marquee matches.",
+    highlight: "Select knockout dates",
+    mapsQuery: "Lincoln Center Plaza NYC",
+  },
+  {
+    name: "Hudson Yards Watch Terrace",
+    neighborhood: "Hudson Yards",
+    borough: "Manhattan",
+    type: "Viewing Party",
+    vibe: "Modern NYC, sunset kickoffs",
+    description:
+      "Elevated viewing experiences and fan activations near the Vessel — ideal for evening matches with west-side transit access.",
+    mapsQuery: "Hudson Yards NYC",
+  },
+  {
+    name: "MetLife Stadium Fan Plaza",
+    neighborhood: "Meadowlands",
+    borough: "NY/NJ",
+    type: "Viewing Party",
+    vibe: "On-site final atmosphere",
+    description:
+      "Pre-match fan plaza activations for all eight matches at MetLife, including the World Cup Final on July 19.",
+    highlight: "8 matches · incl. Final",
+    mapsQuery: "MetLife Stadium East Rutherford NJ",
+  },
+  {
+    name: "Queens Night Market Watch Zone",
+    neighborhood: "Corona",
+    borough: "Queens",
+    type: "Viewing Party",
+    vibe: "Global food, global game",
+    description:
+      "World Cup screenings paired with Queens' legendary night market flavors — the most diverse watch party in the city.",
+    highlight: "Saturday evenings",
+    mapsQuery: "Queens Night Market Corona",
+  },
+  {
+    name: "Pier 17 Summer Screen",
+    neighborhood: "Seaport",
+    borough: "Manhattan",
+    type: "Viewing Party",
+    vibe: "Waterfront mega-screen",
+    description:
+      "South Street Seaport's Pier 17 hosts large-format outdoor viewing with harbor breezes and plenty of nearby restaurants.",
+    mapsQuery: "Pier 17 South Street Seaport NYC",
+  },
+  {
+    name: "Randall's Island World Cup Village",
+    neighborhood: "Randall's Island",
+    borough: "Manhattan",
+    type: "Fan Zone",
+    vibe: "Fields, festivals, big screens",
+    description:
+      "Festival-style fan village with food trucks, live music, and match broadcasts — shuttle access from Manhattan.",
+    highlight: "June weekends",
+    mapsQuery: "Randall's Island Park NYC",
+  },
+  {
+    name: "Porto Rico Importing Co.",
+    neighborhood: "East Village",
+    borough: "Manhattan",
+    type: "Restaurant",
+    vibe: "Latin grocery & café, community hub",
+    description:
+      "Legendary East Village Latin market and café — a cultural gathering spot where football conversations flow as freely as coffee.",
+    mapsQuery: "Porto Rico Importing Co East Village NYC",
+  },
+  {
+    name: "Carmine's Times Square",
+    neighborhood: "Times Square",
+    borough: "Manhattan",
+    type: "Restaurant",
+    vibe: "Family-style Italian, tourist-friendly screens",
+    description:
+      "Massive family portions and multiple dining rooms with TVs — book ahead for USA and Mexico matches in the heart of Midtown.",
+    mapsQuery: "Carmine's 200 West 44th Street NYC",
   },
 ];
 

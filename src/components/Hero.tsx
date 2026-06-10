@@ -1,17 +1,32 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { Calendar, MapPin, Users, Radio, HeartHandshake } from "lucide-react";
 import { HOST_NATIONS, TOURNAMENT_STATS, KEY_DATES } from "@/lib/data";
 import CountdownTimer from "@/components/CountdownTimer";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import TournamentImage from "@/components/TournamentImage";
+import { scrollToSection } from "@/lib/scroll";
 
-export default function Hero() {
+type HeroProps = {
+  onNavigate?: (id: string) => void;
+};
+
+const HERO_ACTIONS = [
+  { id: "live", label: "Live Scores", icon: Radio },
+  { id: "discover", label: "NYC Guide", icon: MapPin },
+  { id: "donate", label: "Support Us", icon: HeartHandshake },
+] as const;
+
+export default function Hero({ onNavigate }: HeroProps) {
+  const go = (id: string) => {
+    onNavigate?.(id);
+    scrollToSection(id);
+  };
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden pitch-lines"
+      className="section-anchor relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden pitch-lines"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-navy via-navy/95 to-navy-light" />
       <div className="absolute top-20 right-0 w-[600px] h-[600px] bg-pitch/10 rounded-full blur-[120px]" />
@@ -54,6 +69,20 @@ export default function Hero() {
                 <Users size={16} className="text-usa-blue" />
                 <span className="text-sm">48 Teams</span>
               </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3 mb-8">
+              {HERO_ACTIONS.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => go(id)}
+                  className="inline-flex items-center gap-2 bg-pitch/10 hover:bg-pitch/20 border border-pitch/30 text-pitch font-semibold px-5 py-3 rounded-full tap-scale focus-ring min-h-[48px] transition-colors"
+                >
+                  <Icon size={18} />
+                  {label}
+                </button>
+              ))}
             </div>
 
             <div className="mb-8 max-w-md">

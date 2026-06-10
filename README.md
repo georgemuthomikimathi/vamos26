@@ -7,7 +7,7 @@ App-first live scores and fan guide for [vamos26.com](https://vamos26.com).
 - **Live Scores** — World Cup fixtures with nil-nil pre-match state; auto-refresh via `/api/live`
 - **Friendly Scores** — recent international friendlies (clearly labeled, not WC results)
 - **Stats Board** — top scorers, assists, clean sheets
-- **Watchlist** — defenders and playmakers with portrait images
+- **Donate** — support VAMOS26 hosting and live data
 - **App shell** — PWA manifest, mobile bottom nav, installable on home screen
 - **Groups** — All 12 groups (A–L) with flags and draw highlights
 - **Stars** — 12 notable players to watch with country flags
@@ -28,7 +28,11 @@ See [docs/LIVE_SCORES.md](docs/LIVE_SCORES.md) for competition registry, API des
 
 ## Deploy to Vercel
 
+See **[docs/LAUNCH.md](docs/LAUNCH.md)** for the full push, PayPal, Printify/Printful, and smoke-test checklist.
+
 ```bash
+git push origin main   # auto-deploy if Vercel is linked
+# or
 npx vercel --prod
 ```
 

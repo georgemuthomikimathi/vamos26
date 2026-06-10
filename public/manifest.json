@@ -1,7 +1,7 @@
 {
   "name": "VAMOS26 — World Cup 2026 Live Scores",
   "short_name": "VAMOS26",
-  "description": "Live scores, stats, and watchlists for FIFA World Cup 2026",
+  "description": "Live scores, stats, and fan guides for FIFA World Cup 2026",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0e1a",

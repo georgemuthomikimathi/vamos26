@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { scrollToSection } from "@/lib/scroll";
 
 const NAV_ITEMS = [
   { id: "home", label: "Home" },
   { id: "live", label: "Live" },
   { id: "friendlies", label: "Friendlies" },
   { id: "stats", label: "Stats" },
-  { id: "watchlist", label: "Watch" },
+  { id: "donate", label: "Donate" },
   { id: "fixtures", label: "Fixtures" },
   { id: "groups", label: "Groups" },
   { id: "roadmap", label: "Road to Final" },
@@ -28,14 +29,21 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   const handleNav = (id: string) => {
     onTabChange(id);
     setMobileOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    scrollToSection(id);
   };
 
   return (
@@ -50,8 +58,10 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           <button
+            type="button"
             onClick={() => handleNav("home")}
-            className="flex items-center gap-2 group shrink-0"
+            className="flex items-center gap-2 group shrink-0 tap-scale focus-ring rounded-xl"
+            aria-label="VAMOS26 home"
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pitch to-usa-blue flex items-center justify-center font-display text-2xl text-navy font-bold group-hover:scale-105 transition-transform">
               V
@@ -70,8 +80,10 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => handleNav(item.id)}
-                className={`px-3 py-2 rounded-full text-xs font-medium transition-all border ${
+                aria-current={activeTab === item.id ? "true" : undefined}
+                className={`px-3 py-2 min-h-[44px] rounded-full text-xs font-medium transition-all border tap-scale focus-ring ${
                   activeTab === item.id
                     ? "tab-active"
                     : "border-transparent text-muted hover:text-white hover:bg-white/5"
@@ -83,9 +95,11 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
           </div>
 
           <button
-            className="xl:hidden p-2 text-white"
+            type="button"
+            className="xl:hidden p-3 min-w-[44px] min-h-[44px] text-white tap-scale focus-ring rounded-xl"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -97,8 +111,10 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
+              type="button"
               onClick={() => handleNav(item.id)}
-              className={`text-left px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              aria-current={activeTab === item.id ? "true" : undefined}
+              className={`text-left px-4 py-3 min-h-[48px] rounded-xl text-sm font-medium transition-all tap-scale focus-ring ${
                 activeTab === item.id
                   ? "bg-pitch/10 text-pitch"
                   : "text-muted hover:text-white hover:bg-white/5"
