@@ -266,7 +266,7 @@ export const STAR_PLAYERS: Player[] = [
     country: "Mexico",
     code: "mx",
     position: "Goalkeeper",
-    club: "Santa Ana",
+    club: "AEL Limassol",
     number: 13,
     tagline: "El Tri's legendary wall in the opening match",
     gradient: "from-green-600 via-white to-red-600",

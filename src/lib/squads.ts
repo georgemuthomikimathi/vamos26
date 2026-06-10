@@ -37,7 +37,7 @@ export const NATIONAL_SQUADS: Record<string, NationalSquad> = {
     bench: [
       { name: "Ethan Horvath", role: "GK", club: "Cardiff", number: 12 },
       { name: "Walker Zimmerman", role: "CB", club: "Dallas", number: 19 },
-      { name: "Gio Reyna", role: "AM", club: "Gladbach", number: 7 },
+      { name: "Gio Reyna", role: "AM", club: "Borussia Mönchengladbach", number: 7 },
     ],
   },
   mx: {
@@ -46,7 +46,7 @@ export const NATIONAL_SQUADS: Record<string, NationalSquad> = {
     coach: "Javier Aguirre",
     formation: "4-2-3-1",
     startingXI: [
-      { name: "Guillermo Ochoa", role: "GK", club: "Salernitana", number: 13 },
+      { name: "Guillermo Ochoa", role: "GK", club: "AEL Limassol", number: 13 },
       { name: "Jorge Sánchez", role: "RB", club: "Porto", number: 2 },
       { name: "César Montes", role: "CB", club: "Almería", number: 3 },
       { name: "Héctor Moreno", role: "CB", club: "Monterrey", number: 15 },
@@ -56,7 +56,7 @@ export const NATIONAL_SQUADS: Record<string, NationalSquad> = {
       { name: "Hirving Lozano", role: "RW", club: "PSV", number: 22 },
       { name: "Orbelín Pineda", role: "AM", club: "AEK Athens", number: 17 },
       { name: "Alexis Vega", role: "LW", club: "Toluca", number: 10 },
-      { name: "Santiago Giménez", role: "ST", club: "Feyenoord", number: 11 },
+      { name: "Santiago Giménez", role: "ST", club: "AC Milan", number: 11 },
     ],
     bench: [
       { name: "Raúl Jiménez", role: "ST", club: "Fulham", number: 9 },
@@ -116,15 +116,15 @@ export const NATIONAL_SQUADS: Record<string, NationalSquad> = {
     formation: "4-2-3-1",
     startingXI: [
       { name: "Jordan Pickford", role: "GK", club: "Everton", number: 1 },
-      { name: "Kyle Walker", role: "RB", club: "Milan", number: 2 },
+      { name: "Kyle Walker", role: "RB", club: "Burnley", number: 2 },
       { name: "John Stones", role: "CB", club: "Man City", number: 5 },
-      { name: "Marc Guéhi", role: "CB", club: "Crystal Palace", number: 6 },
+      { name: "Marc Guéhi", role: "CB", club: "Man City", number: 6 },
       { name: "Luke Shaw", role: "LB", club: "Man United", number: 3 },
       { name: "Declan Rice", role: "DM", club: "Arsenal", number: 4 },
       { name: "Jude Bellingham", role: "DM", club: "Real Madrid", number: 10 },
       { name: "Bukayo Saka", role: "RW", club: "Arsenal", number: 7 },
       { name: "Phil Foden", role: "AM", club: "Man City", number: 11 },
-      { name: "Jack Grealish", role: "LW", club: "Man City", number: 17 },
+      { name: "Jack Grealish", role: "LW", club: "Everton", number: 17 },
       { name: "Harry Kane", role: "ST", club: "Bayern Munich", number: 9 },
     ],
     bench: [
@@ -144,8 +144,8 @@ export const NATIONAL_SQUADS: Record<string, NationalSquad> = {
       { name: "Arthur Theate", role: "CB", club: "Frankfurt", number: 5 },
       { name: "Zeno Debast", role: "CB", club: "Sporting CP", number: 3 },
       { name: "Youri Tielemans", role: "CM", club: "Aston Villa", number: 8 },
-      { name: "Amadou Onana", role: "CM", club: "Everton", number: 24 },
-      { name: "Kevin De Bruyne", role: "AM", club: "Man City", number: 7 },
+      { name: "Amadou Onana", role: "CM", club: "Aston Villa", number: 24 },
+      { name: "Kevin De Bruyne", role: "AM", club: "Napoli", number: 7 },
       { name: "Jeremy Doku", role: "LW", club: "Man City", number: 11 },
       { name: "Loïs Openda", role: "ST", club: "Leipzig", number: 9 },
       { name: "Romelu Lukaku", role: "ST", club: "Napoli", number: 10 },
@@ -198,7 +198,7 @@ export const NATIONAL_SQUADS: Record<string, NationalSquad> = {
     ],
     bench: [
       { name: "Marc-André ter Stegen", role: "GK", club: "Barcelona", number: 22 },
-      { name: "İlkay Gündoğan", role: "CM", club: "Man City", number: 21 },
+      { name: "İlkay Gündoğan", role: "CM", club: "Galatasaray", number: 21 },
     ],
   },
   co: {
@@ -239,7 +239,7 @@ export const NATIONAL_SQUADS: Record<string, NationalSquad> = {
       { name: "Pedri", role: "CM", club: "Barcelona", number: 8 },
       { name: "Gavi", role: "CM", club: "Barcelona", number: 9 },
       { name: "Lamine Yamal", role: "RW", club: "Barcelona", number: 19 },
-      { name: "Álvaro Morata", role: "ST", club: "Milan", number: 7 },
+      { name: "Álvaro Morata", role: "ST", club: "Como", number: 7 },
       { name: "Nico Williams", role: "LW", club: "Athletic Club", number: 17 },
     ],
     bench: [
@@ -260,7 +260,7 @@ export const NATIONAL_SQUADS: Record<string, NationalSquad> = {
       { name: "Alphonso Davies", role: "LB", club: "Bayern Munich", number: 19 },
       { name: "Samuel Piette", role: "DM", club: "CF Montréal", number: 6 },
       { name: "Stephen Eustáquio", role: "CM", club: "Porto", number: 7 },
-      { name: "Jonathan David", role: "ST", club: "Lille", number: 10 },
+      { name: "Jonathan David", role: "ST", club: "Juventus", number: 10 },
       { name: "Tajon Buchanan", role: "RW", club: "Villarreal", number: 17 },
       { name: "Liam Millar", role: "LW", club: "Preston", number: 11 },
       { name: "Cyle Larin", role: "ST", club: "Mallorca", number: 9 },
@@ -282,7 +282,7 @@ export const NATIONAL_SQUADS: Record<string, NationalSquad> = {
       { name: "Nathan Aké", role: "CB", club: "Man City", number: 5 },
       { name: "Jeremie Frimpong", role: "LB", club: "Liverpool", number: 12 },
       { name: "Ryan Gravenberch", role: "DM", club: "Liverpool", number: 8 },
-      { name: "Tijjani Reijnders", role: "CM", club: "Milan", number: 14 },
+      { name: "Tijjani Reijnders", role: "CM", club: "Man City", number: 14 },
       { name: "Steven Bergwijn", role: "AM", club: "Al-Ittihad", number: 11 },
       { name: "Cody Gakpo", role: "LW", club: "Liverpool", number: 10 },
       { name: "Memphis Depay", role: "ST", club: "Corinthians", number: 9 },
