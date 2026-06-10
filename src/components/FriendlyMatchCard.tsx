@@ -46,50 +46,57 @@ export default function FriendlyMatchCard({ match, defaultExpanded = false }: Fr
   const scoreDisplay = formatScore(match.score);
   const hasLineups = Boolean(homeSquad && awaySquad);
 
+  const openLineup = (side: "home" | "away") => {
+    setFocusTeam((t) => (t === side ? null : side));
+    setExpanded(true);
+    setTab("lineups");
+  };
+
   return (
     <article
       className={`bg-card border rounded-2xl transition-all ${
         expanded ? "border-gold/30 shadow-lg shadow-gold/5" : "border-white/10 hover:border-gold/20"
       }`}
     >
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        aria-expanded={expanded}
-        className="w-full text-left p-4 focus-ring rounded-2xl"
-      >
-        <div className="flex items-center justify-between gap-2 mb-3">
+      <div className="p-4 space-y-3">
+        <div className="flex items-center justify-between gap-2">
           <StatusBadge match={match} />
-          <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            aria-label={expanded ? "Collapse match details" : "Expand match details"}
+            className="flex items-center gap-1 text-muted hover:text-white rounded-lg px-2 py-1 focus-ring"
+          >
             {hasLineups && (
               <span className="text-[10px] text-pitch/80 flex items-center gap-1">
                 <Users size={10} />
-                Lineups
+                Details
               </span>
             )}
             <ChevronDown
               size={16}
-              className={`text-muted transition-transform ${expanded ? "rotate-180" : ""}`}
+              className={`transition-transform ${expanded ? "rotate-180" : ""}`}
             />
-          </div>
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setFocusTeam((t) => (t === "home" ? null : "home"));
-              setExpanded(true);
-              setTab("lineups");
-            }}
-            className="flex-1 flex items-center gap-2 min-w-0 justify-end hover:opacity-80 transition-opacity"
+            onClick={() => openLineup("home")}
+            className="flex-1 flex items-center gap-2 min-w-0 justify-end rounded-xl p-1 hover:bg-white/5 transition-colors focus-ring"
           >
             <span className="font-medium text-sm truncate">{match.home.name}</span>
             <TeamFlagWithFallback code={match.home.code} name={match.home.name} size={32} />
           </button>
 
-          <div className="shrink-0 text-center px-2 min-w-[4.5rem]">
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            className="shrink-0 text-center px-2 min-w-[4.5rem] rounded-xl py-1 hover:bg-white/5 transition-colors focus-ring"
+          >
             <div
               className={`font-display tracking-wider ${
                 isPreMatch(match.score) ? "text-xl text-muted/60" : "text-3xl text-white"
@@ -101,17 +108,12 @@ export default function FriendlyMatchCard({ match, defaultExpanded = false }: Fr
               <Clock size={10} />
               {match.date}
             </div>
-          </div>
+          </button>
 
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setFocusTeam((t) => (t === "away" ? null : "away"));
-              setExpanded(true);
-              setTab("lineups");
-            }}
-            className="flex-1 flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity"
+            onClick={() => openLineup("away")}
+            className="flex-1 flex items-center gap-2 min-w-0 rounded-xl p-1 hover:bg-white/5 transition-colors focus-ring"
           >
             <TeamFlagWithFallback code={match.away.code} name={match.away.name} size={32} />
             <span className="font-medium text-sm truncate">{match.away.name}</span>
@@ -119,11 +121,11 @@ export default function FriendlyMatchCard({ match, defaultExpanded = false }: Fr
         </div>
 
         {!expanded && (
-          <p className="text-[10px] text-muted/60 text-center mt-2">
-            Tap for goals, venue & projected lineups
+          <p className="text-[10px] text-muted/60 text-center">
+            Tap score for match info · tap a team for projected lineup
           </p>
         )}
-      </button>
+      </div>
 
       <div
         className={`grid transition-all duration-300 ease-out ${
