@@ -36,7 +36,8 @@ PLAYERS: dict[str, str] = {
     "alisson-becker": "Alisson_Becker",
     "mike-maignan": "Mike_Maignan",
     "matt-turner": "Matt_Turner_(soccer)",
-    "alphonso-davies": "Alphonso_Davies",
+    # Pin to Commons file — unmistakable African-Canadian portrait
+    "alphonso-davies": "commons:File:Alphonso Davies in 2022.jpg",
     "antonio-rudiger": "Antonio_Rüdiger",
     "cristian-romero": "Cristian_Romero",
     "marquinhos": "Marquinhos",
@@ -64,6 +65,24 @@ def curl_get(url: str, retries: int = 4) -> bytes:
 
 
 def wiki_thumb(title: str) -> str | None:
+    if title.startswith("commons:"):
+        file_title = title.removeprefix("commons:")
+        params = urllib.parse.urlencode(
+            {
+                "action": "query",
+                "titles": file_title,
+                "prop": "imageinfo",
+                "iiprop": "url",
+                "iiurlwidth": 900,
+                "format": "json",
+            }
+        )
+        data = json.loads(curl_get(f"https://commons.wikimedia.org/w/api.php?{params}"))
+        for page in data.get("query", {}).get("pages", {}).values():
+            info = page.get("imageinfo", [{}])[0]
+            return info.get("thumburl") or info.get("url")
+        return None
+
     params = urllib.parse.urlencode(
         {
             "action": "query",

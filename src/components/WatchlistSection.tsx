@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { Shield, Sparkles, User, type LucideIcon } from "lucide-react";
 import { DEFENDERS_TO_WATCH, PLAYMAKERS_TO_WATCH } from "@/lib/watchlist";
@@ -20,13 +19,15 @@ function PlayerAvatar({ player }: { player: WatchPlayer }) {
   }
 
   return (
-    <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-white/10">
-      <Image
+    <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-white/5">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={player.image}
         alt={`${player.name} portrait`}
-        fill
-        className="object-cover object-top"
-        sizes="64px"
+        width={64}
+        height={64}
+        className="w-full h-full object-cover object-top"
+        loading="lazy"
         onError={() => setImgError(true)}
       />
     </div>

@@ -7,8 +7,9 @@
     "process-images": "python3 scripts/remove-image-bg.py",
     "fetch-portraits": "python3 scripts/fetch-player-portraits.py",
     "postinstall": "npm run copy-flags",
-    "dev": "next dev --webpack -H 127.0.0.1 -p 3040",
-    "start:prod": "next start -H 127.0.0.1 -p 3041",
+    "dev": "next dev --webpack -H 127.0.0.1 -p 3000",
+    "dev:alt": "next dev --webpack -H 127.0.0.1 -p 3040",
+    "start:prod": "next start -H 127.0.0.1 -p 3000",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

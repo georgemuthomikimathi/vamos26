@@ -9,6 +9,7 @@ import FriendlyScores from "@/components/FriendlyScores";
 import AppBottomNav from "@/components/AppBottomNav";
 import StadiumsSection from "@/components/StadiumsSection";
 import StatsLeaders from "@/components/StatsLeaders";
+import WatchlistSection from "@/components/WatchlistSection";
 import DonateSection from "@/components/DonateSection";
 import DropshipSection from "@/components/DropshipSection";
 import UpcomingMatches from "@/components/UpcomingMatches";
@@ -25,6 +26,7 @@ const SECTIONS = [
   "friendlies",
   "stadiums",
   "stats",
+  "watchlist",
   "donate",
   "shop",
   "fixtures",
@@ -46,6 +48,7 @@ export default function Home() {
       <FriendlyScores />
       <StadiumsSection />
       <StatsLeaders />
+      <WatchlistSection />
       <DonateSection />
       <DropshipSection />
       <UpcomingMatches />

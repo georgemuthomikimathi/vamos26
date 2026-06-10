@@ -6,6 +6,7 @@ const QUICK_LINKS = [
   { id: "live", label: "Live" },
   { id: "friendlies", label: "Friendlies" },
   { id: "stats", label: "Stats" },
+  { id: "watchlist", label: "Watch" },
   { id: "donate", label: "Donate" },
   { id: "discover", label: "NYC" },
 ] as const;
