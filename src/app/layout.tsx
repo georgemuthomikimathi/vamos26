@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bebas_Neue, Outfit } from "next/font/google";
 import "./globals.css";
 
@@ -13,22 +13,43 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#3c5bff" },
+    { media: "(prefers-color-scheme: light)", color: "#3c5bff" },
+  ],
+};
+
 export const metadata: Metadata = {
-  title: "VAMOS26 — FIFA World Cup 2026 Fan Guide",
+  title: "VAMOS26 — Live Scores & FIFA World Cup 2026",
   description:
-    "The ultimate FIFA World Cup 2026 fan site. Explore all 12 groups, star players, the Trionda ball, World Cup trophy, and NYC bars & viewing parties.",
+    "The ultimate FIFA World Cup 2026 fan site. Live scores, friendly results, groups, star players, trophy, and NYC bars & viewing parties.",
   keywords: [
     "FIFA World Cup 2026",
     "VAMOS26",
+    "live scores",
     "World Cup groups",
     "NYC soccer bars",
     "World Cup viewing parties",
     "Trionda",
   ],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "VAMOS26",
+  },
   openGraph: {
     title: "VAMOS26 — FIFA World Cup 2026",
-    description: "Groups, stars, trophy, and NYC discover guide for World Cup 2026",
+    description: "Live scores, groups, stars, trophy, and NYC discover guide",
     siteName: "VAMOS26",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
   },
 };
 
@@ -39,7 +60,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${bebas.variable} ${outfit.variable} h-full`}>
-      <body className="min-h-full grain">{children}</body>
+      <body className="min-h-full grain pb-16 md:pb-0">{children}</body>
     </html>
   );
 }

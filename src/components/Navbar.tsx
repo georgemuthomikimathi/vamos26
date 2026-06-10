@@ -5,6 +5,10 @@ import { Menu, X } from "lucide-react";
 
 const NAV_ITEMS = [
   { id: "home", label: "Home" },
+  { id: "live", label: "Live" },
+  { id: "friendlies", label: "Friendlies" },
+  { id: "stats", label: "Stats" },
+  { id: "watchlist", label: "Watch" },
   { id: "fixtures", label: "Fixtures" },
   { id: "groups", label: "Groups" },
   { id: "roadmap", label: "Road to Final" },
@@ -42,11 +46,12 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
           : "bg-transparent"
       }`}
     >
+      <div className="host-stripe h-1 w-full" aria-hidden />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           <button
             onClick={() => handleNav("home")}
-            className="flex items-center gap-2 group"
+            className="flex items-center gap-2 group shrink-0"
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pitch to-usa-blue flex items-center justify-center font-display text-2xl text-navy font-bold group-hover:scale-105 transition-transform">
               V
@@ -61,12 +66,12 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
             </div>
           </button>
 
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden xl:flex items-center gap-0.5">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.id}
                 onClick={() => handleNav(item.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+                className={`px-3 py-2 rounded-full text-xs font-medium transition-all border ${
                   activeTab === item.id
                     ? "tab-active"
                     : "border-transparent text-muted hover:text-white hover:bg-white/5"
@@ -78,7 +83,7 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
           </div>
 
           <button
-            className="lg:hidden p-2 text-white"
+            className="xl:hidden p-2 text-white"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -88,12 +93,12 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden bg-navy-light/95 backdrop-blur-xl border-t border-white/10 px-4 py-4 space-y-1">
+        <div className="xl:hidden bg-navy-light/95 backdrop-blur-xl border-t border-white/10 px-4 py-4 grid grid-cols-2 gap-1">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.id}
               onClick={() => handleNav(item.id)}
-              className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+              className={`text-left px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                 activeTab === item.id
                   ? "bg-pitch/10 text-pitch"
                   : "text-muted hover:text-white hover:bg-white/5"

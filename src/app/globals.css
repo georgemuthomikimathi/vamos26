@@ -113,10 +113,10 @@ body {
 .host-stripe {
   background: linear-gradient(
     90deg,
-    var(--canada-red) 0%,
+    var(--usa-blue) 0%,
+    var(--usa-blue) 33%,
     var(--canada-red) 33%,
-    white 33%,
-    white 66%,
+    var(--canada-red) 66%,
     var(--mexico-green) 66%,
     var(--mexico-green) 100%
   );
@@ -167,4 +167,8 @@ body {
 ::-webkit-scrollbar-thumb {
   background: var(--pitch-dim);
   border-radius: 4px;
+}
+
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

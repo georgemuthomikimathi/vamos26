@@ -3,6 +3,10 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
+import LiveMatchCenter from "@/components/LiveMatchCenter";
+import FriendlyScores from "@/components/FriendlyScores";
+import StatsLeaders from "@/components/StatsLeaders";
+import WatchlistSection from "@/components/WatchlistSection";
 import UpcomingMatches from "@/components/UpcomingMatches";
 import GroupsSection from "@/components/GroupsSection";
 import RoadToFinal from "@/components/RoadToFinal";
@@ -10,8 +14,21 @@ import TrophyBallSection from "@/components/TrophyBallSection";
 import PlayersSection from "@/components/PlayersSection";
 import DiscoverSection from "@/components/DiscoverSection";
 import Footer from "@/components/Footer";
+import AppBottomNav from "@/components/AppBottomNav";
 
-const SECTIONS = ["home", "fixtures", "groups", "roadmap", "trophy", "stars", "discover"];
+const SECTIONS = [
+  "home",
+  "live",
+  "friendlies",
+  "stats",
+  "watchlist",
+  "fixtures",
+  "groups",
+  "roadmap",
+  "trophy",
+  "stars",
+  "discover",
+];
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("home");
@@ -40,6 +57,10 @@ export default function Home() {
     <main className="min-h-screen">
       <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
       <Hero />
+      <LiveMatchCenter />
+      <FriendlyScores />
+      <StatsLeaders />
+      <WatchlistSection />
       <UpcomingMatches />
       <GroupsSection />
       <RoadToFinal />
@@ -47,6 +68,7 @@ export default function Home() {
       <PlayersSection />
       <DiscoverSection />
       <Footer />
+      <AppBottomNav activeTab={activeTab} onTabChange={setActiveTab} />
     </main>
   );
 }

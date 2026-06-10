@@ -1,10 +1,14 @@
 # VAMOS26 — FIFA World Cup 2026 Fan Site
 
-A stunning fan guide for the FIFA World Cup 2026, built for [VAMOS26.com](https://vamos26.com).
+App-first live scores and fan guide for [vamos26.com](https://vamos26.com).
 
 ## Features
 
-- **Home** — Hero with trophy, Trionda ball, host nations, and key dates
+- **Live Scores** — World Cup fixtures with nil-nil pre-match state; auto-refresh via `/api/live`
+- **Friendly Scores** — recent international friendlies (clearly labeled, not WC results)
+- **Stats Board** — top scorers, assists, clean sheets
+- **Watchlist** — defenders and playmakers with portrait images
+- **App shell** — PWA manifest, mobile bottom nav, installable on home screen
 - **Groups** — All 12 groups (A–L) with flags and draw highlights
 - **Stars** — 12 notable players to watch with country flags
 - **Trophy & Ball** — FIFA World Cup Trophy and Adidas Trionda details
@@ -14,18 +18,21 @@ A stunning fan guide for the FIFA World Cup 2026, built for [VAMOS26.com](https:
 
 ```bash
 npm install
-npm run dev
+npm run dev      # http://127.0.0.1:3030
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+## Architecture
 
-## Deploy
+See [docs/LIVE_SCORES.md](docs/LIVE_SCORES.md) for competition registry, API design, and future sports-data integration.
 
-Deploy to Vercel and point your `vamos26.com` domain:
+## Deploy to Vercel
 
 ```bash
-npx vercel
+npx vercel --prod
 ```
+
+`www.vamos26.com` redirects to apex `vamos26.com` via `next.config.ts`.
 
 ## Tech Stack
 

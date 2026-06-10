@@ -5,11 +5,14 @@ import { useState } from "react";
 type TeamFlagProps = {
   code: string;
   name: string;
-  size?: 40 | 80 | 160;
+  size?: 16 | 28 | 32 | 40 | 80 | 160;
   className?: string;
 };
 
 const SIZES = {
+  16: 16,
+  28: 28,
+  32: 32,
   40: 32,
   80: 48,
   160: 80,
