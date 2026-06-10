@@ -1,0 +1,300 @@
+export type SquadPlayer = {
+  name: string;
+  role: "GK" | "RB" | "CB" | "LB" | "DM" | "CM" | "AM" | "RW" | "LW" | "ST" | "CF";
+  club: string;
+  number: number;
+};
+
+export type NationalSquad = {
+  code: string;
+  name: string;
+  coach: string;
+  formation: string;
+  startingXI: SquadPlayer[];
+  bench: SquadPlayer[];
+};
+
+/** Projected 2026 squads — starters reflect current international form */
+export const NATIONAL_SQUADS: Record<string, NationalSquad> = {
+  us: {
+    code: "us",
+    name: "USA",
+    coach: "Mauricio Pochettino",
+    formation: "4-3-3",
+    startingXI: [
+      { name: "Matt Turner", role: "GK", club: "Crystal Palace", number: 1 },
+      { name: "Sergiño Dest", role: "RB", club: "PSV", number: 2 },
+      { name: "Chris Richards", role: "CB", club: "Crystal Palace", number: 3 },
+      { name: "Tim Ream", role: "CB", club: "Charlotte FC", number: 13 },
+      { name: "Antonee Robinson", role: "LB", club: "Fulham", number: 5 },
+      { name: "Tyler Adams", role: "DM", club: "Bournemouth", number: 4 },
+      { name: "Weston McKennie", role: "CM", club: "Juventus", number: 8 },
+      { name: "Yunus Musah", role: "CM", club: "Milan", number: 6 },
+      { name: "Christian Pulisic", role: "RW", club: "Milan", number: 10 },
+      { name: "Folarin Balogun", role: "ST", club: "Monaco", number: 9 },
+      { name: "Tim Weah", role: "LW", club: "Marseille", number: 21 },
+    ],
+    bench: [
+      { name: "Ethan Horvath", role: "GK", club: "Cardiff", number: 12 },
+      { name: "Walker Zimmerman", role: "CB", club: "Dallas", number: 19 },
+      { name: "Gio Reyna", role: "AM", club: "Gladbach", number: 7 },
+    ],
+  },
+  mx: {
+    code: "mx",
+    name: "Mexico",
+    coach: "Javier Aguirre",
+    formation: "4-2-3-1",
+    startingXI: [
+      { name: "Guillermo Ochoa", role: "GK", club: "Salernitana", number: 13 },
+      { name: "Jorge Sánchez", role: "RB", club: "Porto", number: 2 },
+      { name: "César Montes", role: "CB", club: "Almería", number: 3 },
+      { name: "Héctor Moreno", role: "CB", club: "Monterrey", number: 15 },
+      { name: "Gerardo Arteaga", role: "LB", club: "Monterrey", number: 4 },
+      { name: "Luis Chávez", role: "DM", club: "LAFC", number: 24 },
+      { name: "Edson Álvarez", role: "DM", club: "West Ham", number: 4 },
+      { name: "Hirving Lozano", role: "RW", club: "PSV", number: 22 },
+      { name: "Orbelín Pineda", role: "AM", club: "AEK Athens", number: 17 },
+      { name: "Alexis Vega", role: "LW", club: "Toluca", number: 10 },
+      { name: "Santiago Giménez", role: "ST", club: "Feyenoord", number: 11 },
+    ],
+    bench: [
+      { name: "Raúl Jiménez", role: "ST", club: "Fulham", number: 9 },
+      { name: "Carlos Rodríguez", role: "CM", club: "Cruz Azul", number: 8 },
+    ],
+  },
+  br: {
+    code: "br",
+    name: "Brazil",
+    coach: "Dorival Júnior",
+    formation: "4-2-3-1",
+    startingXI: [
+      { name: "Alisson Becker", role: "GK", club: "Liverpool", number: 1 },
+      { name: "Danilo", role: "RB", club: "Juventus", number: 2 },
+      { name: "Marquinhos", role: "CB", club: "PSG", number: 4 },
+      { name: "Gabriel", role: "CB", club: "Arsenal", number: 3 },
+      { name: "Wendell", role: "LB", club: "Porto", number: 6 },
+      { name: "André", role: "DM", club: "Wolves", number: 5 },
+      { name: "Bruno Guimarães", role: "DM", club: "Newcastle", number: 8 },
+      { name: "Rodrygo", role: "RW", club: "Real Madrid", number: 10 },
+      { name: "Paquetá", role: "AM", club: "West Ham", number: 11 },
+      { name: "Vinícius Júnior", role: "LW", club: "Real Madrid", number: 7 },
+      { name: "Endrick", role: "ST", club: "Real Madrid", number: 9 },
+    ],
+    bench: [
+      { name: "Raphinha", role: "RW", club: "Barcelona", number: 17 },
+      { name: "Casemiro", role: "DM", club: "Man United", number: 5 },
+    ],
+  },
+  ar: {
+    code: "ar",
+    name: "Argentina",
+    coach: "Lionel Scaloni",
+    formation: "4-4-2",
+    startingXI: [
+      { name: "Emiliano Martínez", role: "GK", club: "Aston Villa", number: 23 },
+      { name: "Nahuel Molina", role: "RB", club: "Atlético Madrid", number: 26 },
+      { name: "Cristian Romero", role: "CB", club: "Tottenham", number: 13 },
+      { name: "Nicolás Otamendi", role: "CB", club: "Benfica", number: 19 },
+      { name: "Nicolás Tagliafico", role: "LB", club: "Lyon", number: 3 },
+      { name: "Rodrigo De Paul", role: "CM", club: "Atlético Madrid", number: 7 },
+      { name: "Enzo Fernández", role: "CM", club: "Chelsea", number: 24 },
+      { name: "Alexis Mac Allister", role: "CM", club: "Liverpool", number: 20 },
+      { name: "Lionel Messi", role: "RW", club: "Inter Miami", number: 10 },
+      { name: "Lautaro Martínez", role: "ST", club: "Inter", number: 22 },
+      { name: "Julián Álvarez", role: "ST", club: "Atlético Madrid", number: 9 },
+    ],
+    bench: [
+      { name: "Giovani Lo Celso", role: "AM", club: "Betis", number: 16 },
+      { name: "Leandro Paredes", role: "DM", club: "Roma", number: 5 },
+    ],
+  },
+  "gb-eng": {
+    code: "gb-eng",
+    name: "England",
+    coach: "Thomas Tuchel",
+    formation: "4-2-3-1",
+    startingXI: [
+      { name: "Jordan Pickford", role: "GK", club: "Everton", number: 1 },
+      { name: "Kyle Walker", role: "RB", club: "Milan", number: 2 },
+      { name: "John Stones", role: "CB", club: "Man City", number: 5 },
+      { name: "Marc Guéhi", role: "CB", club: "Crystal Palace", number: 6 },
+      { name: "Luke Shaw", role: "LB", club: "Man United", number: 3 },
+      { name: "Declan Rice", role: "DM", club: "Arsenal", number: 4 },
+      { name: "Jude Bellingham", role: "DM", club: "Real Madrid", number: 10 },
+      { name: "Bukayo Saka", role: "RW", club: "Arsenal", number: 7 },
+      { name: "Phil Foden", role: "AM", club: "Man City", number: 11 },
+      { name: "Jack Grealish", role: "LW", club: "Man City", number: 17 },
+      { name: "Harry Kane", role: "ST", club: "Bayern Munich", number: 9 },
+    ],
+    bench: [
+      { name: "Trent Alexander-Arnold", role: "RB", club: "Real Madrid", number: 8 },
+      { name: "Cole Palmer", role: "AM", club: "Chelsea", number: 20 },
+    ],
+  },
+  be: {
+    code: "be",
+    name: "Belgium",
+    coach: "Domenico Tedesco",
+    formation: "3-4-2-1",
+    startingXI: [
+      { name: "Koen Casteels", role: "GK", club: "Wolfsburg", number: 1 },
+      { name: "Timothy Castagne", role: "RB", club: "Fulham", number: 21 },
+      { name: "Wout Faes", role: "CB", club: "Leicester", number: 4 },
+      { name: "Arthur Theate", role: "CB", club: "Frankfurt", number: 5 },
+      { name: "Zeno Debast", role: "CB", club: "Sporting CP", number: 3 },
+      { name: "Youri Tielemans", role: "CM", club: "Aston Villa", number: 8 },
+      { name: "Amadou Onana", role: "CM", club: "Everton", number: 24 },
+      { name: "Kevin De Bruyne", role: "AM", club: "Man City", number: 7 },
+      { name: "Jeremy Doku", role: "LW", club: "Man City", number: 11 },
+      { name: "Loïs Openda", role: "ST", club: "Leipzig", number: 9 },
+      { name: "Romelu Lukaku", role: "ST", club: "Napoli", number: 10 },
+    ],
+    bench: [
+      { name: "Thibaut Courtois", role: "GK", club: "Real Madrid", number: 13 },
+      { name: "Leandro Trossard", role: "LW", club: "Arsenal", number: 19 },
+    ],
+  },
+  fr: {
+    code: "fr",
+    name: "France",
+    coach: "Didier Deschamps",
+    formation: "4-3-3",
+    startingXI: [
+      { name: "Mike Maignan", role: "GK", club: "Milan", number: 16 },
+      { name: "Jules Koundé", role: "RB", club: "Barcelona", number: 5 },
+      { name: "William Saliba", role: "CB", club: "Arsenal", number: 2 },
+      { name: "Dayot Upamecano", role: "CB", club: "Bayern Munich", number: 4 },
+      { name: "Théo Hernandez", role: "LB", club: "Milan", number: 22 },
+      { name: "Aurélien Tchouaméni", role: "DM", club: "Real Madrid", number: 8 },
+      { name: "Adrien Rabiot", role: "CM", club: "Milan", number: 14 },
+      { name: "Warren Zaïre-Emery", role: "CM", club: "PSG", number: 33 },
+      { name: "Ousmane Dembélé", role: "RW", club: "PSG", number: 11 },
+      { name: "Kylian Mbappé", role: "ST", club: "Real Madrid", number: 10 },
+      { name: "Bradley Barcola", role: "LW", club: "PSG", number: 26 },
+    ],
+    bench: [
+      { name: "Antoine Griezmann", role: "AM", club: "Atlético Madrid", number: 7 },
+      { name: "Ibrahima Konaté", role: "CB", club: "Liverpool", number: 15 },
+    ],
+  },
+  de: {
+    code: "de",
+    name: "Germany",
+    coach: "Julian Nagelsmann",
+    formation: "4-2-3-1",
+    startingXI: [
+      { name: "Manuel Neuer", role: "GK", club: "Bayern Munich", number: 1 },
+      { name: "Joshua Kimmich", role: "RB", club: "Bayern Munich", number: 6 },
+      { name: "António Rüdiger", role: "CB", club: "Real Madrid", number: 2 },
+      { name: "Jonathan Tah", role: "CB", club: "Leverkusen", number: 4 },
+      { name: "David Raum", role: "LB", club: "Leipzig", number: 3 },
+      { name: "Robert Andrich", role: "DM", club: "Leverkusen", number: 23 },
+      { name: "Florian Wirtz", role: "AM", club: "Liverpool", number: 10 },
+      { name: "Jamal Musiala", role: "AM", club: "Bayern Munich", number: 14 },
+      { name: "Leroy Sané", role: "RW", club: "Galatasaray", number: 19 },
+      { name: "Kai Havertz", role: "ST", club: "Arsenal", number: 7 },
+      { name: "Niclas Füllkrug", role: "ST", club: "West Ham", number: 9 },
+    ],
+    bench: [
+      { name: "Marc-André ter Stegen", role: "GK", club: "Barcelona", number: 22 },
+      { name: "İlkay Gündoğan", role: "CM", club: "Man City", number: 21 },
+    ],
+  },
+  co: {
+    code: "co",
+    name: "Colombia",
+    coach: "Néstor Lorenzo",
+    formation: "4-3-3",
+    startingXI: [
+      { name: "Camilo Vargas", role: "GK", club: "Atlas", number: 12 },
+      { name: "Santiago Arias", role: "RB", club: "América", number: 4 },
+      { name: "Dávinson Sánchez", role: "CB", club: "Galatasaray", number: 23 },
+      { name: "Yerry Mina", role: "CB", club: "Cagliari", number: 13 },
+      { name: "Johan Mojica", role: "LB", club: "Mallorca", number: 17 },
+      { name: "Wilmar Barrios", role: "DM", club: "Zenit", number: 5 },
+      { name: "Jefferson Lerma", role: "CM", club: "Crystal Palace", number: 16 },
+      { name: "James Rodríguez", role: "AM", club: "León", number: 10 },
+      { name: "Luis Díaz", role: "LW", club: "Liverpool", number: 7 },
+      { name: "Luis Sinisterra", role: "RW", club: "Bournemouth", number: 18 },
+      { name: "Rafael Borré", role: "ST", club: "São Paulo", number: 9 },
+    ],
+    bench: [
+      { name: "Jhon Durán", role: "ST", club: "Al-Nassr", number: 19 },
+      { name: "Juan Cuadrado", role: "RB", club: "Pisa", number: 11 },
+    ],
+  },
+  es: {
+    code: "es",
+    name: "Spain",
+    coach: "Luis de la Fuente",
+    formation: "4-3-3",
+    startingXI: [
+      { name: "Unai Simón", role: "GK", club: "Athletic Club", number: 23 },
+      { name: "Dani Carvajal", role: "RB", club: "Real Madrid", number: 2 },
+      { name: "Aymeric Laporte", role: "CB", club: "Al-Nassr", number: 24 },
+      { name: "Robin Le Normand", role: "CB", club: "Atlético Madrid", number: 3 },
+      { name: "Marc Cucurella", role: "LB", club: "Chelsea", number: 22 },
+      { name: "Rodri", role: "DM", club: "Man City", number: 16 },
+      { name: "Pedri", role: "CM", club: "Barcelona", number: 8 },
+      { name: "Gavi", role: "CM", club: "Barcelona", number: 9 },
+      { name: "Lamine Yamal", role: "RW", club: "Barcelona", number: 19 },
+      { name: "Álvaro Morata", role: "ST", club: "Milan", number: 7 },
+      { name: "Nico Williams", role: "LW", club: "Athletic Club", number: 17 },
+    ],
+    bench: [
+      { name: "Ferran Torres", role: "RW", club: "Barcelona", number: 11 },
+      { name: "Mikel Merino", role: "CM", club: "Arsenal", number: 6 },
+    ],
+  },
+  ca: {
+    code: "ca",
+    name: "Canada",
+    coach: "Jesse Marsch",
+    formation: "4-3-3",
+    startingXI: [
+      { name: "Milan Borjan", role: "GK", club: "Red Star", number: 1 },
+      { name: "Richie Laryea", role: "RB", club: "Toronto FC", number: 2 },
+      { name: "Derek Cornelius", role: "CB", club: "Marseille", number: 4 },
+      { name: "Steven Vitória", role: "CB", club: "Sporting CP", number: 5 },
+      { name: "Alphonso Davies", role: "LB", club: "Bayern Munich", number: 19 },
+      { name: "Samuel Piette", role: "DM", club: "CF Montréal", number: 6 },
+      { name: "Stephen Eustáquio", role: "CM", club: "Porto", number: 7 },
+      { name: "Jonathan David", role: "ST", club: "Lille", number: 10 },
+      { name: "Tajon Buchanan", role: "RW", club: "Villarreal", number: 17 },
+      { name: "Liam Millar", role: "LW", club: "Preston", number: 11 },
+      { name: "Cyle Larin", role: "ST", club: "Mallorca", number: 9 },
+    ],
+    bench: [
+      { name: "Dayne St. Clair", role: "GK", club: "Minnesota United", number: 12 },
+      { name: "Ismaël Koné", role: "CM", club: "Watford", number: 8 },
+    ],
+  },
+  nl: {
+    code: "nl",
+    name: "Netherlands",
+    coach: "Ronald Koeman",
+    formation: "4-3-3",
+    startingXI: [
+      { name: "Bart Verbruggen", role: "GK", club: "Brighton", number: 1 },
+      { name: "Denzel Dumfries", role: "RB", club: "Inter", number: 22 },
+      { name: "Virgil van Dijk", role: "CB", club: "Liverpool", number: 4 },
+      { name: "Nathan Aké", role: "CB", club: "Man City", number: 5 },
+      { name: "Jeremie Frimpong", role: "LB", club: "Liverpool", number: 12 },
+      { name: "Ryan Gravenberch", role: "DM", club: "Liverpool", number: 8 },
+      { name: "Tijjani Reijnders", role: "CM", club: "Milan", number: 14 },
+      { name: "Steven Bergwijn", role: "AM", club: "Al-Ittihad", number: 11 },
+      { name: "Cody Gakpo", role: "LW", club: "Liverpool", number: 10 },
+      { name: "Memphis Depay", role: "ST", club: "Corinthians", number: 9 },
+      { name: "Brian Brobbey", role: "ST", club: "Ajax", number: 19 },
+    ],
+    bench: [
+      { name: "Matthijs de Ligt", role: "CB", club: "Man United", number: 3 },
+      { name: "Xavi Simons", role: "AM", club: "Leipzig", number: 7 },
+    ],
+  },
+};
+
+export function getSquad(code: string): NationalSquad | undefined {
+  return NATIONAL_SQUADS[code];
+}
