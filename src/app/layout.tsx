@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Bebas_Neue, Outfit } from "next/font/google";
+import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
+
+const ADSENSE_CLIENT = "ca-pub-3382367478214113";
 
 const bebas = Bebas_Neue({
   weight: "400",
@@ -88,7 +92,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${bebas.variable} ${outfit.variable} h-full`}>
-      <body className="min-h-full grain pb-16 md:pb-0">{children}</body>
+      <body className="min-h-full grain pb-16 md:pb-0">
+        <Script
+          async
+          id="adsense-init"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   );
 }

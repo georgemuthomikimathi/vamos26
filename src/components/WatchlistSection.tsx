@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Shield, Sparkles, User, type LucideIcon } from "lucide-react";
+import { Shield, Sparkles, User, ShoppingBag, ExternalLink, type LucideIcon } from "lucide-react";
 import { DEFENDERS_TO_WATCH, PLAYMAKERS_TO_WATCH } from "@/lib/watchlist";
 import type { WatchPlayer } from "@/lib/watchlist";
 import TeamFlagWithFallback from "@/components/TeamFlag";
+import { AFFILIATE_REL, AFFILIATE_TARGET, GEAR_AFFILIATE } from "@/lib/affiliates";
 
 function PlayerAvatar({ player }: { player: WatchPlayer }) {
   const [imgError, setImgError] = useState(false);
@@ -85,7 +86,7 @@ function PlayerGrid({
                 </div>
               </div>
             </div>
-            <p className="relative text-sm text-muted mt-3 leading-relaxed line-clamp-2">{p.tagline}</p>
+            <p className="relative text-sm text-muted mt-3 leading-relaxed line-clamp-3">{p.tagline}</p>
             <div className="relative mt-2 inline-block bg-pitch/10 text-pitch text-xs font-semibold px-3 py-1 rounded-full">
               {p.stat}
             </div>
@@ -126,6 +127,24 @@ export default function WatchlistSection() {
           icon={Sparkles}
           subtitle="The architects — creators who unlock every defense"
         />
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center pt-4"
+        >
+          <a
+            href={GEAR_AFFILIATE.href}
+            target={AFFILIATE_TARGET}
+            rel={AFFILIATE_REL}
+            className="inline-flex items-center gap-2 text-sm text-muted hover:text-pitch transition-colors font-medium min-h-[44px] tap-scale focus-ring rounded-lg px-3"
+          >
+            <ShoppingBag size={16} />
+            Shop soccer gear
+            <ExternalLink size={14} />
+          </a>
+        </motion.div>
       </div>
     </section>
   );

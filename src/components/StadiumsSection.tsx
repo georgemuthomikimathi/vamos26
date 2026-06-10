@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Users, Trophy, Building2, ChevronRight } from "lucide-react";
+import { MapPin, Users, Trophy, Building2, ChevronRight, ExternalLink, Hotel } from "lucide-react";
 import { ALL_STADIUMS, US_STADIUMS } from "@/lib/stadiums";
 import type { Stadium } from "@/lib/stadiums";
 import { formatCapacity, formatStadiumLocation, getTeeForStadium } from "@/lib/stadium-tees";
 import StadiumDetailPanel from "@/components/StadiumDetailPanel";
+import { AFFILIATE_REL, AFFILIATE_TARGET, HOST_CITY_TRAVEL_AFFILIATES } from "@/lib/affiliates";
 
 function StadiumCard({
   stadium,
@@ -169,6 +170,31 @@ export default function StadiumsSection() {
               onSelect={() => toggle(s.id)}
               compact
             />
+          ))}
+        </div>
+
+        <div className="mt-12 grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
+          {HOST_CITY_TRAVEL_AFFILIATES.map((link) => (
+            <a
+              key={link.id}
+              href={link.href}
+              target={AFFILIATE_TARGET}
+              rel={AFFILIATE_REL}
+              className="group flex items-start gap-3 bg-card border border-white/10 rounded-2xl p-4 hover:border-usa-blue/40 transition-all tap-scale focus-ring"
+            >
+              <div className="w-10 h-10 rounded-xl bg-usa-blue/10 flex items-center justify-center shrink-0">
+                <Hotel size={18} className="text-usa-blue" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-lg text-white group-hover:text-pitch transition-colors">
+                    {link.label}
+                  </span>
+                  <ExternalLink size={14} className="text-muted shrink-0" />
+                </div>
+                <p className="text-xs text-muted mt-1">{link.description}</p>
+              </div>
+            </a>
           ))}
         </div>
       </div>

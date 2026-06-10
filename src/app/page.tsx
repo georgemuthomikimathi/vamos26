@@ -4,9 +4,12 @@ import Navbar from "@/components/Navbar";
 import SectionQuickNav from "@/components/SectionQuickNav";
 import BackToTop from "@/components/BackToTop";
 import Hero from "@/components/Hero";
+import NewsletterSignup from "@/components/NewsletterSignup";
 import DonateSection from "@/components/DonateSection";
 import LiveMatchCenter from "@/components/LiveMatchCenter";
 import FriendlyScores from "@/components/FriendlyScores";
+import AdUnit, { AD_SLOT_HOMEPAGE_INLINE, AD_SLOT_HOMEPAGE_SIDEBAR } from "@/components/AdUnit";
+import HowToWatch from "@/components/HowToWatch";
 import TeamNewsSection from "@/components/TeamNewsSection";
 import AppBottomNav from "@/components/AppBottomNav";
 import StadiumsSection from "@/components/StadiumsSection";
@@ -44,17 +47,25 @@ export default function Home() {
       <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
       <SectionQuickNav activeTab={activeTab} onTabChange={setActiveTab} />
       <Hero onNavigate={setActiveTab} />
+      <NewsletterSignup />
       <DonateSection />
       <LiveMatchCenter />
       <FriendlyScores />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AdUnit slot={AD_SLOT_HOMEPAGE_INLINE} className="max-w-3xl mx-auto" />
+      </div>
       <TeamNewsSection />
       <StadiumsSection />
       <StatsLeaders />
       <WatchlistSection />
+      <HowToWatch />
       <UpcomingMatches />
       <GroupsSection />
       <RoadToFinal />
       <TrophyBallSection />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <AdUnit slot={AD_SLOT_HOMEPAGE_SIDEBAR} className="max-w-3xl mx-auto" />
+      </div>
       <DiscoverSection />
       <Footer />
       <AppBottomNav activeTab={activeTab} onTabChange={setActiveTab} />

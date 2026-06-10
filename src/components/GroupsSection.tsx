@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { GROUPS } from "@/lib/data";
 import TeamFlagWithFallback from "@/components/TeamFlag";
+import EditorialPreview from "@/components/EditorialPreview";
 
 export default function GroupsSection() {
   return (
@@ -26,6 +27,8 @@ export default function GroupsSection() {
             the Round of 32. Every flag, every rivalry, every dream.
           </p>
         </motion.div>
+
+        <EditorialPreview />
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {GROUPS.map((group, gi) => (

@@ -11,8 +11,15 @@ import {
   Filter,
   UtensilsCrossed,
   Search,
+  Hotel,
+  Train,
 } from "lucide-react";
 import { NYC_VENUES, type Venue } from "@/lib/data";
+import {
+  AFFILIATE_REL,
+  AFFILIATE_TARGET,
+  NYC_TRAVEL_AFFILIATES,
+} from "@/lib/affiliates";
 
 const FILTERS = ["All", "Bar", "Restaurant", "Fan Zone", "Viewing Party"] as const;
 type FilterType = (typeof FILTERS)[number];
@@ -182,6 +189,33 @@ export default function DiscoverSection() {
         <p className="text-center text-xs text-muted mb-8">
           {filtered.length} venue{filtered.length === 1 ? "" : "s"} found
         </p>
+
+        <div className="grid sm:grid-cols-3 gap-4 mb-10 max-w-4xl mx-auto">
+          {NYC_TRAVEL_AFFILIATES.map((link) => (
+            <a
+              key={link.id}
+              href={link.href}
+              target={AFFILIATE_TARGET}
+              rel={AFFILIATE_REL}
+              className="group flex flex-col bg-card/80 border border-white/10 rounded-2xl p-4 hover:border-pitch/40 hover:bg-pitch/5 transition-all tap-scale focus-ring"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                {link.id.includes("booking") ? (
+                  <Hotel size={18} className="text-pitch" />
+                ) : link.id.includes("amtrak") ? (
+                  <Train size={18} className="text-usa-blue" />
+                ) : (
+                  <MapPin size={18} className="text-gold" />
+                )}
+                <span className="font-display text-lg text-white group-hover:text-pitch transition-colors">
+                  {link.label}
+                </span>
+                <ExternalLink size={14} className="text-muted ml-auto shrink-0" />
+              </div>
+              <p className="text-xs text-muted leading-relaxed">{link.description}</p>
+            </a>
+          ))}
+        </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <AnimatePresence mode="popLayout">
