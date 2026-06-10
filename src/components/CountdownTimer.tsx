@@ -29,15 +29,32 @@ function calcTimeLeft(): TimeLeft {
 
 const UNITS = ["days", "hours", "minutes", "seconds"] as const;
 
+/** Stable SSR + first client paint — real values set after mount */
+const PLACEHOLDER: TimeLeft = {
+  days: 0,
+  hours: 0,
+  minutes: 0,
+  seconds: 0,
+  expired: false,
+};
+
 export default function CountdownTimer() {
-  const [time, setTime] = useState<TimeLeft>(calcTimeLeft);
+  const [time, setTime] = useState<TimeLeft>(PLACEHOLDER);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    const boot = window.setTimeout(() => {
+      setTime(calcTimeLeft());
+      setReady(true);
+    }, 0);
     const id = setInterval(() => setTime(calcTimeLeft()), 1000);
-    return () => clearInterval(id);
+    return () => {
+      window.clearTimeout(boot);
+      clearInterval(id);
+    };
   }, []);
 
-  if (time.expired) {
+  if (ready && time.expired) {
     return (
       <div className="bg-pitch/10 border border-pitch/30 rounded-3xl p-6 text-center">
         <p className="text-pitch font-display text-3xl tracking-wider">
@@ -59,15 +76,16 @@ export default function CountdownTimer() {
         Opening Match — Mexico vs South Africa · June 11, 2026
       </p>
       <div className="grid grid-cols-4 gap-3">
-        {UNITS.map((unit, i) => (
+        {UNITS.map((unit) => (
           <motion.div
             key={unit}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
+            initial={false}
             className="text-center bg-navy/60 border border-white/10 rounded-2xl py-4 px-2"
           >
-            <div className="font-display text-4xl sm:text-5xl text-gradient-pitch leading-none tabular-nums">
+            <div
+              className="font-display text-4xl sm:text-5xl text-gradient-pitch leading-none tabular-nums"
+              suppressHydrationWarning
+            >
               {String(time[unit]).padStart(2, "0")}
             </div>
             <div className="text-[10px] uppercase tracking-wider text-muted mt-2">

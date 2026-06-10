@@ -21,7 +21,12 @@ export default function LiveMatchCenter() {
       const data = await res.json();
       setMatches(data.matches);
       setLiveCount(data.liveCount);
-      setLastUpdate(new Date(data.updatedAt).toLocaleTimeString());
+      setLastUpdate(
+        new Date(data.updatedAt).toLocaleTimeString(undefined, {
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      );
     } catch {
       /* silent */
     } finally {
