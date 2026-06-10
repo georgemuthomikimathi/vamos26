@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://vamos26.com/sitemap.xml
