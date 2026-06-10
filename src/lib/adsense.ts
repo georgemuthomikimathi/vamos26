@@ -10,3 +10,9 @@ export const ADSENSE_VERIFICATION_META =
 
 /** ads.txt publisher ID (pub-…, without ca- prefix). */
 export const ADSENSE_PUBLISHER_ID = "pub-3382367478214113";
+
+/** Ad unit slot IDs from AdSense dashboard — set in Vercel env vars. */
+export const ADSENSE_SLOT_INLINE =
+  process.env.NEXT_PUBLIC_ADSENSE_SLOT_INLINE ?? "0000000000";
+export const ADSENSE_SLOT_SIDEBAR =
+  process.env.NEXT_PUBLIC_ADSENSE_SLOT_SIDEBAR ?? "0000000001";

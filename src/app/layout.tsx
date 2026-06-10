@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bebas_Neue, Outfit } from "next/font/google";
 import CookieConsent from "@/components/CookieConsent";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { ADSENSE_CLIENT, ADSENSE_VERIFICATION_META } from "@/lib/adsense";
 import "./globals.css";
 
@@ -103,6 +104,7 @@ export default function RootLayout({
       <body className="min-h-full grain pb-16 md:pb-0">
         {children}
         <CookieConsent />
+        <GoogleAnalytics />
       </body>
     </html>
   );

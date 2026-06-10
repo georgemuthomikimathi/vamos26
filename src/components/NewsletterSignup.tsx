@@ -2,35 +2,50 @@
 
 import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
-import { Mail, Bell } from "lucide-react";
-
-const STORAGE_KEY = "vamos26-newsletter-email";
+import { Mail, Bell, Loader2 } from "lucide-react";
 
 type NewsletterSignupProps = {
   variant?: "inline" | "footer";
 };
 
-/**
- * Email capture UI — wire to Mailchimp, ConvertKit, or similar by replacing
- * the form action / onSubmit handler with your provider endpoint.
- */
 export default function NewsletterSignup({ variant = "inline" }: NewsletterSignupProps) {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const trimmed = email.trim();
     if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       setStatus("error");
+      setErrorMsg("Please enter a valid email address.");
       return;
     }
+
+    setStatus("loading");
+    setErrorMsg("");
+
     try {
-      localStorage.setItem(STORAGE_KEY, trimmed);
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed }),
+      });
+
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error ?? "Subscribe failed");
+      }
+
       setStatus("success");
       setEmail("");
-    } catch {
+    } catch (err) {
       setStatus("error");
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Try again later."
+      );
     }
   };
 
@@ -70,8 +85,7 @@ export default function NewsletterSignup({ variant = "inline" }: NewsletterSignu
       ) : (
         <form
           onSubmit={handleSubmit}
-          action="#newsletter"
-          className={`flex flex-col sm:flex-row gap-2 ${isFooter ? "" : ""}`}
+          className="flex flex-col sm:flex-row gap-2"
         >
           <label htmlFor={`newsletter-email-${variant}`} className="sr-only">
             Email address
@@ -88,24 +102,33 @@ export default function NewsletterSignup({ variant = "inline" }: NewsletterSignu
             placeholder="you@example.com"
             autoComplete="email"
             required
-            className="flex-1 bg-navy border border-white/10 rounded-xl px-4 py-3 min-h-[48px] text-sm text-white placeholder:text-muted focus:border-pitch/50 focus:outline-none focus:ring-2 focus:ring-pitch/20"
+            disabled={status === "loading"}
+            className="flex-1 bg-navy border border-white/10 rounded-xl px-4 py-3 min-h-[48px] text-sm text-white placeholder:text-muted focus:border-pitch/50 focus:outline-none focus:ring-2 focus:ring-pitch/20 disabled:opacity-60"
           />
           <button
             type="submit"
-            className="bg-pitch text-navy font-semibold px-6 py-3 rounded-xl min-h-[48px] tap-scale focus-ring whitespace-nowrap"
+            disabled={status === "loading"}
+            className="bg-pitch text-navy font-semibold px-6 py-3 rounded-xl min-h-[48px] tap-scale focus-ring whitespace-nowrap disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            Subscribe
+            {status === "loading" ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Joining…
+              </>
+            ) : (
+              "Subscribe"
+            )}
           </button>
         </form>
       )}
 
-      {status === "error" && (
-        <p className="text-xs text-canada-red mt-2">Please enter a valid email address.</p>
+      {status === "error" && errorMsg && (
+        <p className="text-xs text-canada-red mt-2">{errorMsg}</p>
       )}
 
       {!isFooter && (
         <p className="text-[10px] text-muted/60 mt-3 text-center">
-          No spam. Unsubscribe anytime. Connect to Mailchimp or ConvertKit via form action.
+          No spam. Unsubscribe anytime.
         </p>
       )}
     </motion.div>

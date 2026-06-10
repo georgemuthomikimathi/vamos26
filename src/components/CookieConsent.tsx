@@ -44,7 +44,8 @@ export default function CookieConsent() {
             <Cookie size={20} className="text-pitch" />
           </div>
           <p className="text-sm text-muted leading-relaxed">
-            We use Google AdSense, which may set cookies to serve ads. See our{" "}
+            We use Google AdSense and Analytics, which may set cookies for ads and
+            traffic insights. See our{" "}
             <Link href="/privacy" className="text-pitch hover:underline">
               Privacy Policy
             </Link>
