@@ -9,7 +9,7 @@ export default function Footer() {
               <span className="text-gold text-lg ml-1">β</span>
             </span>
             <p className="text-muted text-sm mt-2">
-              Beta — Live stats, stadiums & city shop
+              Beta — Live stats, stadiums & team news
             </p>
           </div>
 

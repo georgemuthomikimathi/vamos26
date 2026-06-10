@@ -7,7 +7,6 @@ import Hero from "@/components/Hero";
 import DonateSection from "@/components/DonateSection";
 import LiveMatchCenter from "@/components/LiveMatchCenter";
 import FriendlyScores from "@/components/FriendlyScores";
-import DropshipSection from "@/components/DropshipSection";
 import TeamNewsSection from "@/components/TeamNewsSection";
 import AppBottomNav from "@/components/AppBottomNav";
 import StadiumsSection from "@/components/StadiumsSection";
@@ -26,7 +25,6 @@ const SECTIONS = [
   "donate",
   "live",
   "friendlies",
-  "shop",
   "news",
   "stadiums",
   "stats",
@@ -49,7 +47,6 @@ export default function Home() {
       <DonateSection />
       <LiveMatchCenter />
       <FriendlyScores />
-      <DropshipSection />
       <TeamNewsSection />
       <StadiumsSection />
       <StatsLeaders />

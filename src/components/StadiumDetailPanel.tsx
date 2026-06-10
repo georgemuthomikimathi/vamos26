@@ -19,7 +19,6 @@ import {
   mapsUrl,
 } from "@/lib/stadium-tees";
 import { getFanModelsForStadium } from "@/lib/stadium-fans";
-import { scrollToSection } from "@/lib/scroll";
 import TeePreview from "@/components/TeePreview";
 import TeeOnModel from "@/components/TeeOnModel";
 
@@ -31,11 +30,6 @@ type StadiumDetailPanelProps = {
 export default function StadiumDetailPanel({ stadium, onClose }: StadiumDetailPanelProps) {
   const tee = getTeeForStadium(stadium);
   const fans = getFanModelsForStadium(stadium.id);
-
-  const goToShop = () => {
-    onClose();
-    scrollToSection("shop");
-  };
 
   return (
     <motion.div
@@ -134,16 +128,8 @@ export default function StadiumDetailPanel({ stadium, onClose }: StadiumDetailPa
                   <h4 className="font-semibold text-white text-sm">{tee.name}</h4>
                   <p className="text-xs text-gold mt-1">&ldquo;{tee.phrase}&rdquo;</p>
                   <p className="text-xs text-muted mt-1">{tee.tagline}</p>
-                  <p className="font-display text-xl text-pitch mt-2">${tee.price}</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={goToShop}
-                className="mt-4 w-full sm:w-auto bg-gold/15 hover:bg-gold/25 border border-gold/40 text-gold rounded-xl px-4 py-2 text-sm font-semibold transition-colors"
-              >
-                Shop this tee
-              </button>
             </div>
           )}
         </div>

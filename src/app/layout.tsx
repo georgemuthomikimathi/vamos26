@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     template: "%s | VAMOS26",
   },
   description:
-    "VAMOS26: live World Cup 2026 scores, friendly results, lineups, subs, officials, stadium guide, stats leaders, team news, and official fan tees.",
+    "VAMOS26: live World Cup 2026 scores, friendly results, lineups, subs, officials, stadium guide, stats leaders, and team news.",
   keywords: [
     "FIFA World Cup 2026",
     "VAMOS26",
@@ -41,7 +41,6 @@ export const metadata: Metadata = {
     "World Cup stadiums",
     "World Cup lineups",
     "friendly scores",
-    "World Cup fan tees",
     "USA Mexico Canada World Cup",
   ],
   alternates: {
@@ -68,14 +67,14 @@ export const metadata: Metadata = {
     url: SITE_URL,
     title: "VAMOS26 — FIFA World Cup 2026",
     description:
-      "Live scores, lineups, team news, stats, and nation-themed fan tees for World Cup 2026.",
+      "Live scores, lineups, team news, and stats for World Cup 2026.",
     siteName: "VAMOS26",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
     title: "VAMOS26 — FIFA World Cup 2026",
-    description: "Live scores, stats, team news & official fan tees",
+    description: "Live scores, stats & team news for World Cup 2026",
   },
   other: {
     "mobile-web-app-capable": "yes",
