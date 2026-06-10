@@ -6,11 +6,10 @@ App-first live scores and fan guide for [vamos26.com](https://vamos26.com).
 
 - **Live Scores** — expandable match cards, manual refresh, nil-nil pre-match via `/api/live`
 - **Friendly Scores** — recent international friendlies (clearly labeled, not WC results)
-- **Stats Board** — tabbed leaders on mobile (goals, assists, clean sheets)
+- **Stats Board** — top scorers, assists, and clean sheets (tabbed on mobile)
 - **Donate** — PayPal support (`axonsovereignllc@gmail.com`)
 - **App shell** — PWA manifest, quick-nav, bottom nav, back-to-top
 - **Groups** — All 12 groups (A–L) with flags and draw highlights
-- **Stars** — 12 notable players with country flags
 - **Trophy & Ball** — FIFA World Cup Trophy and Adidas Trionda details
 - **Discover NYC** — 34 bars, restaurants, fan zones & viewing parties with search
 

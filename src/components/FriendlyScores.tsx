@@ -1,26 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Users } from "lucide-react";
-import type { Match } from "@/lib/scores/types";
 import MatchCard from "@/components/MatchCard";
+import { useLiveScores } from "@/context/LiveScoresContext";
 
 export default function FriendlyScores() {
-  const [matches, setMatches] = useState<Match[]>([]);
-
-  useEffect(() => {
-    const fetchFriendlies = async () => {
-      try {
-        const res = await fetch("/api/live?competition=friendly");
-        const data = await res.json();
-        setMatches(data.matches ?? []);
-      } catch {
-        /* silent */
-      }
-    };
-    fetchFriendlies();
-  }, []);
+  const { friendlies } = useLiveScores();
+  const { matches, changedMatchIds } = friendlies;
 
   if (matches.length === 0) return null;
 
@@ -45,7 +32,7 @@ export default function FriendlyScores() {
             </div>
           </div>
           <p className="text-muted text-sm mt-2 max-w-xl">
-            Recent international friendlies — not World Cup results. Warm-up form before June.
+            Recent international friendlies — not World Cup results. Updates every 30s.
           </p>
         </motion.div>
 
@@ -58,7 +45,11 @@ export default function FriendlyScores() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.04 }}
             >
-              <MatchCard match={match} showCompetition />
+              <MatchCard
+                match={match}
+                showCompetition
+                highlight={changedMatchIds.includes(match.id)}
+              />
             </motion.div>
           ))}
         </div>

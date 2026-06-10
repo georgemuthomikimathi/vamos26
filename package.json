@@ -5,6 +5,7 @@
   "scripts": {
     "copy-flags": "mkdir -p public/flags/1x1 && for code in mx za kr cz ca ba qa ch br ma ht gb-sct us py au tr de cw ci ec nl jp se tn be eg ir nz es cv sa uy fr sn iq no ar dz at jo pt cd uz co gb-eng hr gh pa; do cp node_modules/flag-icons/flags/1x1/$code.svg public/flags/1x1/$code.svg; done",
     "process-images": "python3 scripts/remove-image-bg.py",
+    "fetch-portraits": "python3 scripts/fetch-player-portraits.py",
     "postinstall": "npm run copy-flags",
     "dev": "next dev --webpack -H 127.0.0.1 -p 3030",
     "start:prod": "next start -H 127.0.0.1 -p 3031",

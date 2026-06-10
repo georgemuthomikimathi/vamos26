@@ -8,15 +8,16 @@ import LiveMatchCenter from "@/components/LiveMatchCenter";
 import FriendlyScores from "@/components/FriendlyScores";
 import StatsLeaders from "@/components/StatsLeaders";
 import DonateSection from "@/components/DonateSection";
+import ContactSection from "@/components/ContactSection";
 import UpcomingMatches from "@/components/UpcomingMatches";
 import GroupsSection from "@/components/GroupsSection";
 import RoadToFinal from "@/components/RoadToFinal";
 import TrophyBallSection from "@/components/TrophyBallSection";
-import PlayersSection from "@/components/PlayersSection";
 import DiscoverSection from "@/components/DiscoverSection";
 import Footer from "@/components/Footer";
 import AppBottomNav from "@/components/AppBottomNav";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
+import { LiveScoresProvider } from "@/context/LiveScoresContext";
 
 const SECTIONS = [
   "home",
@@ -24,15 +25,15 @@ const SECTIONS = [
   "friendlies",
   "stats",
   "donate",
+  "contact",
   "fixtures",
   "groups",
   "roadmap",
   "trophy",
-  "stars",
   "discover",
 ];
 
-export default function Home() {
+function HomeContent() {
   const [activeTab, setActiveTab] = useScrollSpy(SECTIONS, "home");
 
   return (
@@ -44,15 +45,23 @@ export default function Home() {
       <FriendlyScores />
       <StatsLeaders />
       <DonateSection />
+      <ContactSection />
       <UpcomingMatches />
       <GroupsSection />
       <RoadToFinal />
       <TrophyBallSection />
-      <PlayersSection />
       <DiscoverSection />
       <Footer />
       <AppBottomNav activeTab={activeTab} onTabChange={setActiveTab} />
       <BackToTop />
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <LiveScoresProvider>
+      <HomeContent />
+    </LiveScoresProvider>
   );
 }

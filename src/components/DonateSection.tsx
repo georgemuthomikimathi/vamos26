@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { HeartHandshake, ExternalLink, Server, Radio, MapPin } from "lucide-react";
-import { DONATE_PRIMARY_URL, DONATE_TIERS, PAYPAL_EMAIL } from "@/lib/donate";
+import { DONATE_PRIMARY_URL, DONATE_TIERS } from "@/lib/donate";
 
 const PERKS = [
   { icon: Radio, text: "Live scores & friendly results" },
@@ -89,8 +89,8 @@ export default function DonateSection() {
             Donate Any Amount
           </a>
           <p className="text-xs text-muted mt-4">
-            Secure donations via PayPal ({PAYPAL_EMAIL}). Every contribution
-            keeps VAMOS26 running for fans worldwide. ¡Gracias!
+            Secure donations via PayPal. Set your account in{" "}
+            <code className="text-pitch/80">NEXT_PUBLIC_PAYPAL_EMAIL</code>. ¡Gracias!
           </p>
         </motion.div>
       </div>

@@ -1,37 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Radio, RefreshCw } from "lucide-react";
-import type { Match } from "@/lib/scores/types";
 import MatchCard from "@/components/MatchCard";
+import { useLiveScores } from "@/context/LiveScoresContext";
 
 export default function LiveMatchCenter() {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [liveCount, setLiveCount] = useState(0);
-  const [lastUpdate, setLastUpdate] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchLive = useCallback(async (manual = false) => {
-    if (manual) setRefreshing(true);
-    try {
-      const res = await fetch("/api/live?competition=world-cup");
-      const data = await res.json();
-      setMatches(data.matches);
-      setLiveCount(data.liveCount);
-      setLastUpdate(new Date(data.updatedAt).toLocaleTimeString());
-    } catch {
-      /* silent */
-    } finally {
-      if (manual) setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchLive();
-    const interval = setInterval(() => fetchLive(), 30000);
-    return () => clearInterval(interval);
-  }, [fetchLive]);
+  const { worldCup, refreshing, refresh } = useLiveScores();
+  const { matches, liveCount, updatedAt, changedMatchIds } = worldCup;
+  const lastUpdate = updatedAt ? new Date(updatedAt).toLocaleTimeString() : "";
 
   return (
     <section id="live" className="section-anchor relative py-20 md:py-24 bg-navy overflow-hidden">
@@ -54,7 +31,8 @@ export default function LiveMatchCenter() {
               LIVE <span className="text-gradient-pitch">SCORES</span>
             </h2>
             <p className="text-muted mt-2 max-w-xl text-sm">
-              Tap any match for kickoff time and venue. Auto-refreshes every 30s.
+              Tap any match for details. Scores refresh every 30s — cards pulse when
+              updated.
               {lastUpdate && (
                 <span className="text-pitch/70 block text-xs mt-1">
                   Last updated {lastUpdate}
@@ -65,7 +43,7 @@ export default function LiveMatchCenter() {
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => fetchLive(true)}
+              onClick={() => refresh()}
               disabled={refreshing}
               aria-label="Refresh live scores"
               className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-3 min-h-[48px] text-sm font-medium text-muted hover:text-white transition-colors tap-scale focus-ring disabled:opacity-50"
@@ -95,7 +73,10 @@ export default function LiveMatchCenter() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
               >
-                <MatchCard match={match} />
+                <MatchCard
+                  match={match}
+                  highlight={changedMatchIds.includes(match.id)}
+                />
               </motion.div>
             ))}
           </AnimatePresence>
