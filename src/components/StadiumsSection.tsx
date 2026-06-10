@@ -1,12 +1,115 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { MapPin, Users, Trophy, Building2 } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapPin, Users, Trophy, Building2, ChevronRight } from "lucide-react";
 import { ALL_STADIUMS, US_STADIUMS } from "@/lib/stadiums";
+import type { Stadium } from "@/lib/stadiums";
+import { formatCapacity, formatStadiumLocation, getTeeForStadium } from "@/lib/stadium-tees";
+import StadiumDetailPanel from "@/components/StadiumDetailPanel";
+
+function StadiumCard({
+  stadium,
+  selected,
+  onSelect,
+  compact = false,
+}: {
+  stadium: Stadium;
+  selected: boolean;
+  onSelect: () => void;
+  compact?: boolean;
+}) {
+  const tee = getTeeForStadium(stadium);
+  const isFinal = stadium.id === "metlife";
+
+  return (
+    <motion.button
+      type="button"
+      onClick={onSelect}
+      initial={{ opacity: 0, y: compact ? 12 : 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className={`group w-full text-left bg-card border rounded-2xl transition-all focus-ring ${
+        selected
+          ? "border-pitch/50 ring-1 ring-pitch/30 shadow-lg shadow-pitch/10"
+          : isFinal
+            ? "border-gold/30 bg-gold/5 hover:border-gold/50"
+            : "border-white/10 hover:border-pitch/30"
+      } ${compact ? "p-5" : "p-6"}`}
+      aria-expanded={selected}
+    >
+      {isFinal && (
+        <span className="inline-flex items-center gap-1 text-gold text-[10px] uppercase tracking-wider font-bold mb-3">
+          <Trophy size={12} /> Final Venue
+        </span>
+      )}
+      <div className="flex items-start justify-between gap-2">
+        <h3
+          className={`font-display text-white group-hover:text-pitch transition-colors ${
+            compact ? "text-xl" : "text-2xl"
+          }`}
+        >
+          {stadium.name}
+        </h3>
+        <ChevronRight
+          size={18}
+          className={`shrink-0 text-muted transition-transform ${
+            selected ? "rotate-90 text-pitch" : "group-hover:translate-x-0.5"
+          }`}
+        />
+      </div>
+      <p className="text-pitch text-sm font-semibold mt-1">{stadium.nickname}</p>
+      <div className="flex items-center gap-1.5 text-muted text-sm mt-2">
+        <MapPin size={14} className="text-usa-blue shrink-0" />
+        <span className="truncate">{formatStadiumLocation(stadium)}</span>
+      </div>
+
+      {!compact && (
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="bg-white/5 rounded-xl p-3 text-center">
+            <Users size={16} className="text-pitch mx-auto mb-1" />
+            <div className="font-display text-xl text-white">
+              {formatCapacity(stadium.capacity)}
+            </div>
+            <div className="text-[10px] text-muted uppercase">Capacity</div>
+          </div>
+          <div className="bg-white/5 rounded-xl p-3 text-center">
+            <Building2 size={16} className="text-usa-blue mx-auto mb-1" />
+            <div className="font-display text-xl text-white">{stadium.matches}</div>
+            <div className="text-[10px] text-muted uppercase">Matches</div>
+          </div>
+        </div>
+      )}
+
+      {compact && (
+        <p className="text-xs text-muted mt-2">
+          {formatCapacity(stadium.capacity)} capacity · {stadium.matches} matches
+        </p>
+      )}
+
+      {tee && (
+        <p className="text-[10px] text-gold/90 mt-3 truncate">
+          Fan tee: {tee.phrase}
+        </p>
+      )}
+
+      <p className="text-[10px] text-muted/70 mt-2">
+        Tap for capacity, location & fan gallery
+      </p>
+    </motion.button>
+  );
+}
 
 export default function StadiumsSection() {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = ALL_STADIUMS.find((s) => s.id === selectedId);
+
+  const toggle = (id: string) => {
+    setSelectedId((prev) => (prev === id ? null : id));
+  };
+
   return (
-    <section id="stadiums" className="relative py-24 bg-navy-light overflow-hidden">
+    <section id="stadiums" className="relative py-24 bg-navy-light overflow-hidden section-anchor">
       <div className="absolute inset-0 bg-gradient-to-br from-usa-blue/5 via-transparent to-pitch/5" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,55 +126,34 @@ export default function StadiumsSection() {
             STADIUM <span className="text-gradient-pitch">GUIDE</span>
           </h2>
           <p className="text-muted max-w-2xl mx-auto">
-            Every pitch where history will be made — from the Empire State Final at
-            MetLife to the Magic City in Miami.
+            Tap any venue for full capacity, location, city fan tee, and a diverse fan
+            gallery wearing the official design.
           </p>
         </motion.div>
+
+        <AnimatePresence mode="wait">
+          {selected && (
+            <div className="mb-8">
+              <StadiumDetailPanel
+                key={selected.id}
+                stadium={selected}
+                onClose={() => setSelectedId(null)}
+              />
+            </div>
+          )}
+        </AnimatePresence>
 
         <p className="text-pitch uppercase tracking-[0.3em] text-xs font-semibold mb-6">
           United States — {US_STADIUMS.length} venues
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-12">
-          {US_STADIUMS.map((s, i) => (
-            <motion.div
+          {US_STADIUMS.map((s) => (
+            <StadiumCard
               key={s.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.04 }}
-              className={`group bg-card border rounded-2xl p-6 hover:border-pitch/30 transition-all ${
-                s.id === "metlife" ? "border-gold/30 bg-gold/5" : "border-white/10"
-              }`}
-            >
-              {s.id === "metlife" && (
-                <span className="inline-flex items-center gap-1 text-gold text-[10px] uppercase tracking-wider font-bold mb-3">
-                  <Trophy size={12} /> Final Venue
-                </span>
-              )}
-              <h3 className="font-display text-2xl text-white group-hover:text-pitch transition-colors">
-                {s.name}
-              </h3>
-              <p className="text-pitch text-sm font-semibold mt-1">{s.nickname}</p>
-              <div className="flex items-center gap-1.5 text-muted text-sm mt-2">
-                <MapPin size={14} className="text-usa-blue shrink-0" />
-                {s.city}, {s.state}
-              </div>
-              <div className="grid grid-cols-2 gap-3 mt-4">
-                <div className="bg-white/5 rounded-xl p-3 text-center">
-                  <Users size={16} className="text-pitch mx-auto mb-1" />
-                  <div className="font-display text-xl text-white">
-                    {(s.capacity / 1000).toFixed(0)}K
-                  </div>
-                  <div className="text-[10px] text-muted uppercase">Capacity</div>
-                </div>
-                <div className="bg-white/5 rounded-xl p-3 text-center">
-                  <Building2 size={16} className="text-usa-blue mx-auto mb-1" />
-                  <div className="font-display text-xl text-white">{s.matches}</div>
-                  <div className="text-[10px] text-muted uppercase">Matches</div>
-                </div>
-              </div>
-              <p className="text-xs text-muted mt-4 leading-relaxed">{s.highlight}</p>
-            </motion.div>
+              stadium={s}
+              selected={selectedId === s.id}
+              onSelect={() => toggle(s.id)}
+            />
           ))}
         </div>
 
@@ -79,21 +161,14 @@ export default function StadiumsSection() {
           Canada & Mexico
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {ALL_STADIUMS.filter((s) => s.hostNation !== "USA").map((s, i) => (
-            <motion.div
+          {ALL_STADIUMS.filter((s) => s.hostNation !== "USA").map((s) => (
+            <StadiumCard
               key={s.id}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-card/60 border border-white/10 rounded-2xl p-5 hover:border-pitch/20 transition-colors"
-            >
-              <h4 className="font-display text-xl text-white">{s.name}</h4>
-              <p className="text-xs text-pitch mt-1">{s.nickname}</p>
-              <p className="text-xs text-muted mt-2">
-                {s.city} · {(s.capacity / 1000).toFixed(0)}K cap
-              </p>
-            </motion.div>
+              stadium={s}
+              selected={selectedId === s.id}
+              onSelect={() => toggle(s.id)}
+              compact
+            />
           ))}
         </div>
       </div>
