@@ -47,6 +47,17 @@ export default function TeeOnModel({ model, tee }: TeeOnModelProps) {
               className="w-full h-auto mix-blend-multiply drop-shadow-lg opacity-95"
               aria-hidden
             />
+            <div
+              className="absolute inset-0 mix-blend-multiply opacity-[0.18] pointer-events-none"
+              style={{
+                backgroundImage: `
+                  linear-gradient(45deg, ${tee.accent} 12%, transparent 12%, transparent 50%, ${tee.accent} 50%, ${tee.accent} 62%, transparent 62%, transparent 100%),
+                  linear-gradient(-45deg, ${tee.accent} 12%, transparent 12%, transparent 50%, ${tee.accent} 50%, ${tee.accent} 62%, transparent 62%, transparent 100%)
+                `,
+                backgroundSize: "14px 14px",
+              }}
+              aria-hidden
+            />
           </div>
         ) : (
           <div className="absolute inset-x-4 bottom-16 flex justify-center opacity-90">

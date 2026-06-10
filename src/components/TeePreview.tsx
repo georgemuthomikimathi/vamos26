@@ -32,15 +32,94 @@ const TEXT_COLOR: Record<TeeColor, string> = {
   green: "#0a0e1a",
 };
 
+const BODY_PATH =
+  "M70 72 L40 100 L58 112 L70 96 L70 280 L210 280 L210 96 L222 112 L240 100 L210 72 Q140 58 70 72Z";
+const LEFT_SLEEVE_PATH = "M70 96 L40 100 L32 132 L62 126 Z";
+const RIGHT_SLEEVE_PATH = "M210 96 L240 100 L248 130 L220 125 Z";
+
+function isDarkTee(color: TeeColor): boolean {
+  return color === "navy" || color === "red" || color === "green";
+}
+
+/** Subtle club-kit diamond lattice clipped to the shirt */
+function ClubPatternDefs({
+  patternId,
+  accent,
+  color,
+}: {
+  patternId: string;
+  accent: string;
+  color: TeeColor;
+}) {
+  const dark = isDarkTee(color);
+  const line = dark ? "rgba(255,255,255,0.22)" : accent;
+  const dot = dark ? "rgba(255,255,255,0.14)" : accent;
+  const wash = dark ? "rgba(255,255,255,0.04)" : `${accent}14`;
+
+  return (
+    <defs>
+      <pattern
+        id={patternId}
+        width="22"
+        height="22"
+        patternUnits="userSpaceOnUse"
+        patternTransform="rotate(45)"
+      >
+        <rect width="22" height="22" fill={wash} />
+        <path
+          d="M0 11 L11 0 L22 11 L11 22 Z"
+          fill="none"
+          stroke={line}
+          strokeWidth="0.65"
+          opacity="0.55"
+        />
+        <path
+          d="M11 0 L11 22 M0 11 L22 11"
+          stroke={line}
+          strokeWidth="0.35"
+          opacity="0.35"
+        />
+        <circle cx="11" cy="11" r="1.2" fill={dot} opacity="0.5" />
+        <circle cx="0" cy="0" r="0.8" fill={dot} opacity="0.35" />
+        <circle cx="22" cy="22" r="0.8" fill={dot} opacity="0.35" />
+      </pattern>
+      <clipPath id={`${patternId}-body`}>
+        <path d={BODY_PATH} />
+      </clipPath>
+      <clipPath id={`${patternId}-left`}>
+        <path d={LEFT_SLEEVE_PATH} />
+      </clipPath>
+      <clipPath id={`${patternId}-right`}>
+        <path d={RIGHT_SLEEVE_PATH} />
+      </clipPath>
+      <clipPath id={`${patternId}-all`}>
+        <path d={BODY_PATH} />
+        <path d={LEFT_SLEEVE_PATH} />
+        <path d={RIGHT_SLEEVE_PATH} />
+      </clipPath>
+    </defs>
+  );
+}
+
+function ClubPatternOverlay({ patternId }: { patternId: string }) {
+  return (
+    <g clipPath={`url(#${patternId}-all)`} pointerEvents="none">
+      <rect x="0" y="0" width="280" height="320" fill={`url(#${patternId})`} />
+    </g>
+  );
+}
+
 function TeeShape({
   fill,
   color,
   accent,
+  patternId,
   children,
 }: {
   fill: string;
   color: TeeColor;
   accent: string;
+  patternId: string;
   children: ReactNode;
 }) {
   const stroke =
@@ -50,23 +129,24 @@ function TeeShape({
 
   return (
     <>
+      <ClubPatternDefs patternId={patternId} accent={accent} color={color} />
       {/* Body */}
       <path
-        d="M70 72 L40 100 L58 112 L70 96 L70 280 L210 280 L210 96 L222 112 L240 100 L210 72 Q140 58 70 72Z"
+        d={BODY_PATH}
         fill={fill}
         stroke={stroke}
         strokeWidth="1.5"
       />
       {/* Left sleeve */}
       <path
-        d="M70 96 L40 100 L32 132 L62 126 Z"
+        d={LEFT_SLEEVE_PATH}
         fill={fill}
         stroke={stroke}
         strokeWidth="1"
       />
       {/* Right sleeve */}
       <path
-        d="M210 96 L240 100 L248 130 L220 125 Z"
+        d={RIGHT_SLEEVE_PATH}
         fill={fill}
         stroke={
           color === "white" || color === "skyblue"
@@ -75,6 +155,7 @@ function TeeShape({
         }
         strokeWidth="1"
       />
+      <ClubPatternOverlay patternId={patternId} />
       {/* Country-color shoulder trim */}
       <path
         d="M72 74 Q140 62 208 74"
@@ -181,6 +262,7 @@ export default function TeePreview({
 }: TeePreviewProps) {
   const fill = TEE_BG[color];
   const text = TEXT_COLOR[color];
+  const patternId = `club-pattern-${flagCode}-${color}-${side}`;
 
   if (side === "back") {
     return (
@@ -191,7 +273,7 @@ export default function TeePreview({
             <stop offset="100%" stopColor={accent} stopOpacity="0" />
           </linearGradient>
         </defs>
-        <TeeShape fill={fill} color={color} accent={accent}>
+        <TeeShape fill={fill} color={color} accent={accent} patternId={patternId}>
           <rect x="90" y="118" width="100" height="120" fill={`url(#tee-back-glow-${flagCode})`} rx="8" />
           <Vamos26Sleeve accent={accent} />
           <text
@@ -240,7 +322,7 @@ export default function TeePreview({
 
   return (
     <svg viewBox="0 0 280 320" className={className} aria-hidden>
-      <TeeShape fill={fill} color={color} accent={accent}>
+      <TeeShape fill={fill} color={color} accent={accent} patternId={patternId}>
         <Vamos26Sleeve accent={accent} />
         <Trophy accent={accent} />
         <FlagBadge flagCode={flagCode} x={126} y={118} size={28} />
