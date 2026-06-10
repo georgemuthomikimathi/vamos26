@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { hasAdConsent } from "@/components/CookieConsent";
+import { ADSENSE_CLIENT } from "@/lib/adsense";
 
-const AD_CLIENT = "ca-pub-3382367478214113";
+const AD_CLIENT = ADSENSE_CLIENT;
 
 /** Replace with your ad unit slot IDs from the AdSense dashboard */
 export const AD_SLOT_HOMEPAGE_INLINE = "0000000000";
