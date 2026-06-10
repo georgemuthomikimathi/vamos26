@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { Bebas_Neue, Outfit } from "next/font/google";
 import CookieConsent from "@/components/CookieConsent";
 import { ADSENSE_CLIENT, ADSENSE_VERIFICATION_META } from "@/lib/adsense";
@@ -94,11 +93,10 @@ export default function RootLayout({
     <html lang="en" className={`${bebas.variable} ${outfit.variable} h-full`}>
       <head>
         <meta name="google-adsense-account" content={ADSENSE_VERIFICATION_META} />
-        <Script
+        {/* Raw script tag so AdSense/Google crawlers see the snippet in initial HTML */}
+        <script
           async
-          id="adsense-init"
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-          strategy="beforeInteractive"
           crossOrigin="anonymous"
         />
       </head>
