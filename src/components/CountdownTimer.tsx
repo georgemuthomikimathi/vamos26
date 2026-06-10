@@ -30,15 +30,12 @@ function calcTimeLeft(): TimeLeft {
 const UNITS = ["days", "hours", "minutes", "seconds"] as const;
 
 export default function CountdownTimer() {
-  const [time, setTime] = useState<TimeLeft | null>(null);
+  const [time, setTime] = useState<TimeLeft>(calcTimeLeft);
 
   useEffect(() => {
-    setTime(calcTimeLeft());
     const id = setInterval(() => setTime(calcTimeLeft()), 1000);
     return () => clearInterval(id);
   }, []);
-
-  if (!time) return null;
 
   if (time.expired) {
     return (

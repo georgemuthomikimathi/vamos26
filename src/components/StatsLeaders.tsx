@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Target, Handshake, Shield, type LucideIcon } from "lucide-react";
 import { TOP_SCORERS, TOP_ASSISTS, CLEAN_SHEETS } from "@/lib/stats";
 import type { StatLeader } from "@/lib/stats";
 import TeamFlagWithFallback from "@/components/TeamFlag";
-import PlayerPortrait from "@/components/PlayerPortrait";
 
 const STAT_TABS = [
   { id: "scorers", label: "Goals", icon: Target, leaders: TOP_SCORERS, unit: "goals", accent: "bg-gradient-to-br from-gold to-orange-600", title: "Top Scorers" },
@@ -15,35 +14,6 @@ const STAT_TABS = [
 ] as const;
 
 type TabId = (typeof STAT_TABS)[number]["id"];
-
-function LeaderRow({ p, unit }: { p: StatLeader; unit: string }) {
-  return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-      <span
-        className={`font-display text-2xl w-8 text-center shrink-0 ${
-          p.rank === 1 ? "text-gold" : "text-muted"
-        }`}
-      >
-        {p.rank}
-      </span>
-      <PlayerPortrait imageSlug={p.imageSlug} name={p.name} size={48} />
-      <TeamFlagWithFallback code={p.code} name={p.country} size={32} />
-      <div className="flex-1 min-w-0">
-        <div className="font-semibold text-sm truncate">{p.name}</div>
-        <div className="text-[10px] text-muted truncate">
-          {p.country} · {p.club}
-          {p.detail ? ` · ${p.detail}` : ""}
-        </div>
-      </div>
-      <div className="text-right shrink-0">
-        <div className="font-display text-2xl text-pitch">
-          {p.value === 0 ? "—" : p.value}
-        </div>
-        <div className="text-[10px] text-muted uppercase">{unit}</div>
-      </div>
-    </div>
-  );
-}
 
 function LeaderColumn({
   title,
@@ -68,7 +38,29 @@ function LeaderColumn({
       </div>
       <div className="space-y-3">
         {leaders.map((p) => (
-          <LeaderRow key={`${title}-${p.rank}`} p={p} unit={unit} />
+          <div
+            key={p.rank}
+            className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+          >
+            <span
+              className={`font-display text-2xl w-8 text-center ${
+                p.rank === 1 ? "text-gold" : "text-muted"
+              }`}
+            >
+              {p.rank}
+            </span>
+            <TeamFlagWithFallback code={p.code} name={p.country} size={40} />
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-sm truncate">{p.name}</div>
+              <div className="text-[10px] text-muted truncate">{p.club}</div>
+            </div>
+            <div className="text-right">
+              <div className="font-display text-2xl text-pitch">
+                {p.value === 0 ? "—" : p.value}
+              </div>
+              <div className="text-[10px] text-muted uppercase">{unit}</div>
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -77,38 +69,7 @@ function LeaderColumn({
 
 export default function StatsLeaders() {
   const [activeTab, setActiveTab] = useState<TabId>("scorers");
-  const [leaders, setLeaders] = useState({
-    scorers: TOP_SCORERS,
-    assists: TOP_ASSISTS,
-    cleanSheets: CLEAN_SHEETS,
-  });
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch("/api/stats");
-        const data = await res.json();
-        if (data.scorers) setLeaders(data);
-      } catch {
-        /* seed data fallback */
-      }
-    };
-    load();
-    const id = setInterval(load, 60_000);
-    return () => clearInterval(id);
-  }, []);
-
-  const tabs = STAT_TABS.map((t) => ({
-    ...t,
-    leaders:
-      t.id === "scorers"
-        ? leaders.scorers
-        : t.id === "assists"
-          ? leaders.assists
-          : leaders.cleanSheets,
-  }));
-
-  const current = tabs.find((t) => t.id === activeTab)!;
+  const current = STAT_TABS.find((t) => t.id === activeTab)!;
 
   return (
     <section id="stats" className="section-anchor relative py-24 bg-navy">
@@ -126,13 +87,12 @@ export default function StatsLeaders() {
             STATS <span className="text-gradient-gold">BOARD</span>
           </h2>
           <p className="text-muted max-w-2xl mx-auto">
-            Golden Boot, assists, and clean sheets — auto-refreshes every 60s during
-            the tournament.
+            Golden Boot race, assist kings, and clean sheets — updates when the tournament begins.
           </p>
         </motion.div>
 
         <div className="flex lg:hidden gap-2 overflow-x-auto scrollbar-hide mb-6 snap-x snap-mandatory">
-          {tabs.map((tab) => {
+          {STAT_TABS.map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
             return (
@@ -163,7 +123,7 @@ export default function StatsLeaders() {
         </div>
 
         <div className="hidden lg:grid lg:grid-cols-3 gap-6">
-          {tabs.map((tab) => (
+          {STAT_TABS.map((tab) => (
             <LeaderColumn
               key={tab.id}
               title={tab.title}

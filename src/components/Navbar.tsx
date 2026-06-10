@@ -10,7 +10,6 @@ const NAV_ITEMS = [
   { id: "friendlies", label: "Friendlies" },
   { id: "stats", label: "Stats" },
   { id: "donate", label: "Donate" },
-  { id: "contact", label: "Contact" },
   { id: "fixtures", label: "Fixtures" },
   { id: "groups", label: "Groups" },
   { id: "roadmap", label: "Road to Final" },

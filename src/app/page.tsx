@@ -6,26 +6,27 @@ import BackToTop from "@/components/BackToTop";
 import Hero from "@/components/Hero";
 import LiveMatchCenter from "@/components/LiveMatchCenter";
 import FriendlyScores from "@/components/FriendlyScores";
+import AppBottomNav from "@/components/AppBottomNav";
+import StadiumsSection from "@/components/StadiumsSection";
 import StatsLeaders from "@/components/StatsLeaders";
 import DonateSection from "@/components/DonateSection";
-import ContactSection from "@/components/ContactSection";
+import DropshipSection from "@/components/DropshipSection";
 import UpcomingMatches from "@/components/UpcomingMatches";
 import GroupsSection from "@/components/GroupsSection";
 import RoadToFinal from "@/components/RoadToFinal";
 import TrophyBallSection from "@/components/TrophyBallSection";
 import DiscoverSection from "@/components/DiscoverSection";
 import Footer from "@/components/Footer";
-import AppBottomNav from "@/components/AppBottomNav";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
-import { LiveScoresProvider } from "@/context/LiveScoresContext";
 
 const SECTIONS = [
   "home",
   "live",
   "friendlies",
+  "stadiums",
   "stats",
   "donate",
-  "contact",
+  "shop",
   "fixtures",
   "groups",
   "roadmap",
@@ -33,7 +34,7 @@ const SECTIONS = [
   "discover",
 ];
 
-function HomeContent() {
+export default function Home() {
   const [activeTab, setActiveTab] = useScrollSpy(SECTIONS, "home");
 
   return (
@@ -43,9 +44,10 @@ function HomeContent() {
       <Hero onNavigate={setActiveTab} />
       <LiveMatchCenter />
       <FriendlyScores />
+      <StadiumsSection />
       <StatsLeaders />
       <DonateSection />
-      <ContactSection />
+      <DropshipSection />
       <UpcomingMatches />
       <GroupsSection />
       <RoadToFinal />
@@ -55,13 +57,5 @@ function HomeContent() {
       <AppBottomNav activeTab={activeTab} onTabChange={setActiveTab} />
       <BackToTop />
     </main>
-  );
-}
-
-export default function Home() {
-  return (
-    <LiveScoresProvider>
-      <HomeContent />
-    </LiveScoresProvider>
   );
 }

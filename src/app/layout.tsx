@@ -25,17 +25,16 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "VAMOS26 — Live Scores & FIFA World Cup 2026",
+  title: "VAMOS26 — Live Scores, Stats & World Cup 2026",
   description:
-    "The ultimate FIFA World Cup 2026 fan site. Live scores, friendly results, groups, star players, trophy, and NYC bars & viewing parties.",
+    "VAMOS26: live World Cup scores, friendly results, stadium guide, stats leaders, players to watch, and host city shop.",
   keywords: [
     "FIFA World Cup 2026",
     "VAMOS26",
     "live scores",
-    "World Cup groups",
-    "NYC soccer bars",
-    "World Cup viewing parties",
-    "Trionda",
+    "World Cup stadiums",
+    "top scorers",
+    "friendly scores",
   ],
   manifest: "/manifest.json",
   appleWebApp: {
@@ -45,7 +44,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "VAMOS26 — FIFA World Cup 2026",
-    description: "Live scores, groups, stars, trophy, and NYC discover guide",
+    description: "Live scores, stats, watchlists, and city-themed shop",
     siteName: "VAMOS26",
   },
   other: {

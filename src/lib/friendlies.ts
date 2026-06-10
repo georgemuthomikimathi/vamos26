@@ -1,11 +1,11 @@
 import type { Match } from "@/lib/scores/types";
 
-/** Recent international friendlies — clearly labeled, not World Cup results */
+/** International friendlies — pre-tournament, all nil-nil */
 export const FRIENDLY_MATCHES: Match[] = [
   {
     id: "f1",
     competition: "friendly",
-    status: "finished",
+    status: "scheduled",
     date: "Mar 22",
     time: "8:00 PM ET",
     home: { name: "USA", code: "us" },
@@ -13,17 +13,12 @@ export const FRIENDLY_MATCHES: Match[] = [
     venue: "AT&T Stadium",
     city: "Arlington, TX",
     stage: "International Friendly",
-    score: { home: 2, away: 1 },
-    events: [
-      { minute: 34, type: "goal", player: "Pulisic", team: "home" },
-      { minute: 58, type: "goal", player: "Lozano", team: "away" },
-      { minute: 81, type: "goal", player: "Balogun", team: "home" },
-    ],
+    score: { home: 0, away: 0 },
   },
   {
     id: "f2",
     competition: "friendly",
-    status: "finished",
+    status: "scheduled",
     date: "Mar 25",
     time: "3:00 PM ET",
     home: { name: "Brazil", code: "br" },
@@ -31,17 +26,12 @@ export const FRIENDLY_MATCHES: Match[] = [
     venue: "MetLife Stadium",
     city: "East Rutherford, NJ",
     stage: "International Friendly",
-    score: { home: 3, away: 0 },
-    events: [
-      { minute: 12, type: "goal", player: "Rodrygo", team: "home" },
-      { minute: 44, type: "goal", player: "Vinícius", team: "home" },
-      { minute: 77, type: "goal", player: "Endrick", team: "home" },
-    ],
+    score: { home: 0, away: 0 },
   },
   {
     id: "f3",
     competition: "friendly",
-    status: "finished",
+    status: "scheduled",
     date: "Mar 26",
     time: "2:45 PM ET",
     home: { name: "England", code: "gb-eng" },
@@ -49,18 +39,12 @@ export const FRIENDLY_MATCHES: Match[] = [
     venue: "Wembley Stadium",
     city: "London",
     stage: "International Friendly",
-    score: { home: 2, away: 2 },
-    events: [
-      { minute: 19, type: "goal", player: "Kane", team: "home" },
-      { minute: 33, type: "goal", player: "Trossard", team: "away" },
-      { minute: 61, type: "goal", player: "Bellingham", team: "home" },
-      { minute: 88, type: "goal", player: "Doku", team: "away" },
-    ],
+    score: { home: 0, away: 0 },
   },
   {
     id: "f4",
     competition: "friendly",
-    status: "finished",
+    status: "scheduled",
     date: "Mar 28",
     time: "7:00 PM ET",
     home: { name: "France", code: "fr" },
@@ -68,13 +52,12 @@ export const FRIENDLY_MATCHES: Match[] = [
     venue: "Stade de France",
     city: "Paris",
     stage: "International Friendly",
-    score: { home: 1, away: 0 },
-    events: [{ minute: 72, type: "goal", player: "Mbappé", team: "home" }],
+    score: { home: 0, away: 0 },
   },
   {
     id: "f5",
     competition: "friendly",
-    status: "finished",
+    status: "scheduled",
     date: "Mar 29",
     time: "4:00 PM ET",
     home: { name: "Colombia", code: "co" },
@@ -82,16 +65,12 @@ export const FRIENDLY_MATCHES: Match[] = [
     venue: "Hard Rock Stadium",
     city: "Miami Gardens, FL",
     stage: "International Friendly",
-    score: { home: 1, away: 1 },
-    events: [
-      { minute: 27, type: "goal", player: "Díaz", team: "home" },
-      { minute: 65, type: "goal", player: "Morata", team: "away" },
-    ],
+    score: { home: 0, away: 0 },
   },
   {
     id: "f6",
     competition: "friendly",
-    status: "finished",
+    status: "scheduled",
     date: "Apr 2",
     time: "9:00 PM ET",
     home: { name: "Canada", code: "ca" },
@@ -99,10 +78,6 @@ export const FRIENDLY_MATCHES: Match[] = [
     venue: "BC Place",
     city: "Vancouver",
     stage: "International Friendly",
-    score: { home: 0, away: 2 },
-    events: [
-      { minute: 41, type: "goal", player: "Gakpo", team: "away" },
-      { minute: 83, type: "goal", player: "Depay", team: "away" },
-    ],
+    score: { home: 0, away: 0 },
   },
 ];

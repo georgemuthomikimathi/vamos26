@@ -6,10 +6,9 @@ export type DonateTier = {
   url: string;
 };
 
-/** Set NEXT_PUBLIC_PAYPAL_EMAIL in Vercel / .env.local */
-export const PAYPAL_EMAIL =
-  process.env.NEXT_PUBLIC_PAYPAL_EMAIL ?? "axonsovereignllc@gmail.com";
+export const PAYPAL_EMAIL = "axonsovereignllc@gmail.com";
 
+/** PayPal hosted donation link — set NEXT_PUBLIC_DONATE_URL to override */
 export function paypalDonateUrl(amount?: number): string {
   const params = new URLSearchParams({
     business: PAYPAL_EMAIL,

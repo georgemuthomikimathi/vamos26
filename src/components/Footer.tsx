@@ -6,15 +6,16 @@ export default function Footer() {
           <div className="text-center md:text-left">
             <span className="font-display text-3xl tracking-wider text-white">
               VAMOS<span className="text-pitch">26</span>
+              <span className="text-gold text-lg ml-1">β</span>
             </span>
             <p className="text-muted text-sm mt-2">
-              Your FIFA World Cup 2026 fan destination
+              Beta — Live stats, stadiums & city shop
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-8 h-5 rounded-sm bg-canada-red" title="Canada" />
             <div className="w-8 h-5 rounded-sm bg-usa-blue" title="USA" />
+            <div className="w-8 h-5 rounded-sm bg-canada-red" title="Canada" />
             <div className="w-8 h-5 rounded-sm bg-mexico-green" title="Mexico" />
           </div>
 

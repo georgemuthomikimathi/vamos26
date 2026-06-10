@@ -1,168 +1,105 @@
 # VAMOS26 Launch Checklist — vamos26.com
 
-Production repo: `/Users/georgekimathi/Projects/vamos26`  
-GitHub: `georgemuthomikimathi/vamos26`
+Final launch guide for production (`/Users/georgekimathi/Projects/vamos26`).
 
-## Current release branch
-
-| Item | Value |
-|------|--------|
-| Feature branch | `cursor/interactive-ux-donate-paypal-nyc` |
-| Base branch | `main` |
-| Includes | Interactive UX, PayPal donate, 34 NYC venues, expandable match cards |
-
----
-
-## Step 1 — Verify locally
+## Pre-push verification
 
 ```bash
 cd /Users/georgekimathi/Projects/vamos26
 npm run build
-npm run dev
+npm run dev   # http://127.0.0.1:3030 — spot-check sections
 ```
 
-Open **http://127.0.0.1:3030** and spot-check:
-
-| Check | What to verify |
+| Check | URL / action |
 |-------|----------------|
-| Live scores | WC fixtures show **–** (not 0–0); **Refresh** button works |
-| Friendlies | Real results (e.g. USA 2–1 Mexico) |
-| Match cards | Tap a card → kickoff, venue, goals expand |
-| Stats | Mobile tabs: Goals / Assists / Clean Sheets |
-| Donate | Buttons open PayPal for `axonsovereignllc@gmail.com` |
-| Discover NYC | Search + filters; **34 venues** |
-| Navigation | Quick-nav pills (mobile), bottom bar, back-to-top |
-| PWA | DevTools → Application → manifest loads |
+| Live scores (nil-nil) | `/api/live?competition=world-cup` → `liveCount: 0`, null scores |
+| Friendlies | `/api/live?competition=friendly` → finished results |
+| Donate → PayPal | Click tier buttons → PayPal opens for `axonsovereignllc@gmail.com` |
+| NYC guide | Discover section — 30+ venues, filter by Bar / Restaurant / Fan Zone / Viewing Party |
+| Mobile nav | Bottom bar: Live, Stats, Donate, NYC |
+| PWA | DevTools → Application → Manifest loads |
+| www redirect | `next.config.ts` redirects www → apex |
 
----
-
-## Step 2 — Confirm git state
+## Git push (production)
 
 ```bash
 cd /Users/georgekimathi/Projects/vamos26
-git branch --show-current
-git status
-git log --oneline -3
-```
 
-You should be on `cursor/interactive-ux-donate-paypal-nyc` with a **clean** working tree (or commit any doc fixes first).
+git add -A
+git status   # review before commit
 
----
+git commit -m "$(cat <<'EOF'
+feat: launch-ready — PayPal donate, expanded NYC guide, live scores app shell
 
-## Step 3 — Push the feature branch
+Wire PayPal donations, replace watchlist with donate section, add restaurants
+and watch parties to NYC discover guide, and ship PWA manifest with score APIs.
+EOF
+)"
 
-```bash
-git push -u origin cursor/interactive-ux-donate-paypal-nyc
-```
-
-This uploads your branch to GitHub. It does **not** deploy production yet (Vercel uses `main`).
-
----
-
-## Step 4 — Merge to `main` (production)
-
-Choose **one** path:
-
-### Option A — Pull request (recommended)
-
-1. Open: https://github.com/georgemuthomikimathi/vamos26/compare/main...cursor/interactive-ux-donate-paypal-nyc
-2. Create PR → review → **Merge**
-3. On your machine (optional, to sync local `main`):
-
-```bash
-git checkout main
-git pull origin main
-```
-
-### Option B — Merge locally
-
-```bash
-git checkout main
-git pull origin main
-git merge cursor/interactive-ux-donate-paypal-nyc
 git push origin main
 ```
 
----
+## Vercel deploy
 
-## Step 5 — Vercel deploy
+**Auto:** Push to `main` triggers deploy if the Vercel project is linked to `georgemuthomikimathi/vamos26`.
 
-If the Vercel project is linked to `georgemuthomikimathi/vamos26` and **Production Branch** = `main`, pushing `main` triggers a deploy automatically.
-
-**Manual deploy (if needed):**
-
+**Manual:**
 ```bash
 cd /Users/georgekimathi/Projects/vamos26
-git checkout main
 npx vercel --prod
 ```
 
 ### Vercel dashboard
 
 1. **Settings → Domains:** `vamos26.com` (primary), `www.vamos26.com` (alias)
-2. **Settings → Git:** Production branch = `main`
-3. **Settings → Environment Variables** (optional):
-   - `NEXT_PUBLIC_DONATE_URL` — override PayPal link if you use a hosted button
-4. Wait for build → open production URL
+2. **Settings → Environment Variables** (optional):
+   - `NEXT_PUBLIC_DONATE_URL` — override PayPal link if you create a hosted button
+3. Confirm **Production Branch** = `main`
+4. Wait for build → **Visit** production URL
 
----
+## PayPal setup
 
-## Step 6 — PayPal (before promoting donate)
-
-Account: **axonsovereignllc@gmail.com**
+Donations use: **axonsovereignllc@gmail.com**
 
 1. Log in at [paypal.com](https://www.paypal.com)
-2. Confirm the account can **receive** payments
-3. Optional: create a hosted Donate button → set `NEXT_PUBLIC_DONATE_URL` in Vercel
-4. After deploy, test a small donation from the live site
+2. **Settings → Business tools → PayPal buttons** → create a Donate button (optional — site uses direct donate URLs)
+3. Confirm your account can receive payments
+4. Test a $1 donation from the live site after deploy
 
-Config: `src/lib/donate.ts` → `paypalDonateUrl()` ($5 / $15 / $50 tiers).
+Code: `src/lib/donate.ts` — `paypalDonateUrl()` builds tier links ($5 / $15 / $50).
 
----
+## Printify & Printful (beta shop — optional)
 
-## Step 7 — Post-deploy smoke test
+The tee shop lives in **vamos26-beta** (`DropshipSection`). To go live with merch:
+
+### Printify
+1. Create account at [printify.com](https://printify.com)
+2. Connect store (Shopify, Etsy, or API)
+3. Copy API token → store in Vercel env as `PRINTIFY_API_TOKEN` (when API integration is wired)
+4. Link product IDs in `src/lib/dropship.ts`
+
+### Printful
+1. Create account at [printful.com](https://printful.com)
+2. Dashboard → **Stores** → connect or use API
+3. API key → `PRINTFUL_API_KEY` in Vercel (when integrated)
+4. Map sync products to tee SKUs in dropship config
+
+### To add shop to production later
+Port `DropshipSection`, `TeePreview`, `dropship.ts`, and `public/images/tees/` from beta, add Shop to navbar, and connect checkout (Shopify Buy Button, Stripe, or Printify embedded store).
+
+## Post-deploy smoke test
 
 ```bash
-curl -s "https://vamos26.com/api/live?competition=world-cup" | head -c 400
-curl -s "https://vamos26.com/api/live?competition=friendly" | head -c 400
+curl -s "https://vamos26.com/api/live?competition=world-cup" | python3 -m json.tool | head -20
+curl -s "https://vamos26.com/api/live?competition=friendly" | python3 -m json.tool | head -20
 ```
 
 Browser:
-
 - [https://vamos26.com](https://vamos26.com)
-- [https://www.vamos26.com](https://www.vamos26.com) → redirects to apex
-- Donate → PayPal
-- Discover NYC → search + filters
-
----
-
-## Printify & Printful (beta only — optional)
-
-Merch shop is in **vamos26-beta** (`DropshipSection`), not production yet.
-
-| Service | Setup |
-|---------|--------|
-| [Printify](https://printify.com) | API token → `PRINTIFY_API_KEY` in Vercel when integrated |
-| [Printful](https://printful.com) | API key → `PRINTFUL_API_KEY` in Vercel when integrated |
-
-To add shop to vamos26.com later: port `DropshipSection`, `TeePreview`, `dropship.ts`, and `public/images/tees/` from beta.
-
----
+- [https://www.vamos26.com](https://www.vamos26.com) → should redirect to apex
+- Donate section → PayPal
+- Discover NYC → 30+ venues with filters
 
 ## Rollback
 
 Vercel → **Deployments** → previous successful deployment → **Promote to Production**.
-
----
-
-## Quick reference (copy-paste)
-
-```bash
-# Full push flow
-cd /Users/georgekimathi/Projects/vamos26
-npm run build
-git push -u origin cursor/interactive-ux-donate-paypal-nyc
-git checkout main && git pull origin main
-git merge cursor/interactive-ux-donate-paypal-nyc
-git push origin main
-```

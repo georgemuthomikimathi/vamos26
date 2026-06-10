@@ -37,10 +37,9 @@ type MatchCardProps = {
   match: Match;
   compact?: boolean;
   showCompetition?: boolean;
-  highlight?: boolean;
 };
 
-export default function MatchCard({ match, compact = true, showCompetition, highlight }: MatchCardProps) {
+export default function MatchCard({ match, compact = true, showCompetition }: MatchCardProps) {
   const [expanded, setExpanded] = useState(false);
   const isLive = match.status === "live" || match.status === "halftime";
   const scoreDisplay = formatScore(match.score);
@@ -51,16 +50,14 @@ export default function MatchCard({ match, compact = true, showCompetition, high
 
   return (
     <article
-      className={`bg-card border rounded-xl transition-all duration-500 ${
+      className={`bg-card border rounded-xl transition-all ${
         compact ? "p-3 md:p-4" : "p-5 md:p-6 rounded-2xl"
       } ${
-        highlight
-          ? "border-pitch/60 shadow-lg shadow-pitch/20 ring-1 ring-pitch/30"
-          : isLive
-            ? "border-red-500/30 shadow-md shadow-red-500/5"
-            : expanded
-              ? "border-pitch/30 shadow-md shadow-pitch/5"
-              : "border-white/10 hover:border-pitch/20"
+        isLive
+          ? "border-red-500/30 shadow-md shadow-red-500/5"
+          : expanded
+            ? "border-pitch/30 shadow-md shadow-pitch/5"
+            : "border-white/10 hover:border-pitch/20"
       }`}
     >
       <button

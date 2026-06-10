@@ -79,7 +79,7 @@ export const DEFENDERS_TO_WATCH: WatchPlayer[] = [
     position: "LB",
     club: "Bayern Munich",
     number: 19,
-    tagline: "The fastest fullback on the planet",
+    tagline: "African-Canadian pace merchant — flies down the left",
     gradient: "from-red-600 to-white",
     stat: "36.5 km/h top speed",
     image: "/images/players/alphonso-davies.jpg",

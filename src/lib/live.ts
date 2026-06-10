@@ -4,7 +4,7 @@ import { getLiveCount as countLive } from "@/lib/scores/types";
 export type { Match, MatchStatus, Score } from "@/lib/scores/types";
 export type LiveMatch = Match;
 
-/** World Cup 2026 fixtures — null scores until tournament kicks off */
+/** World Cup 2026 fixtures — 0-0 until tournament kicks off */
 export const LIVE_MATCHES: Match[] = [
   {
     id: "m1",
@@ -17,7 +17,7 @@ export const LIVE_MATCHES: Match[] = [
     venue: "Estadio Azteca",
     city: "Mexico City",
     stage: "Group A · Opening Match",
-    score: { home: null, away: null },
+    score: { home: 0, away: 0 },
   },
   {
     id: "m2",
@@ -30,7 +30,7 @@ export const LIVE_MATCHES: Match[] = [
     venue: "BMO Field",
     city: "Toronto",
     stage: "Group B",
-    score: { home: null, away: null },
+    score: { home: 0, away: 0 },
   },
   {
     id: "m3",
@@ -43,7 +43,7 @@ export const LIVE_MATCHES: Match[] = [
     venue: "SoFi Stadium",
     city: "Los Angeles",
     stage: "Group D",
-    score: { home: null, away: null },
+    score: { home: 0, away: 0 },
   },
   {
     id: "m4",
@@ -56,7 +56,7 @@ export const LIVE_MATCHES: Match[] = [
     venue: "Mercedes-Benz Stadium",
     city: "Atlanta",
     stage: "Group C",
-    score: { home: null, away: null },
+    score: { home: 0, away: 0 },
   },
   {
     id: "m5",
@@ -69,7 +69,7 @@ export const LIVE_MATCHES: Match[] = [
     venue: "MetLife Stadium",
     city: "East Rutherford, NJ",
     stage: "Group L",
-    score: { home: null, away: null },
+    score: { home: 0, away: 0 },
   },
 ];
 

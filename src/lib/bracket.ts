@@ -1,4 +1,4 @@
-import { GROUPS, type Group } from "./data";
+import type { Group } from "./data";
 
 export type KnockoutRound = {
   id: string;

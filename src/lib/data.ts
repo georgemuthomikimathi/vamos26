@@ -288,7 +288,7 @@ export const STAR_PLAYERS: Player[] = [
     position: "Left Back",
     club: "Bayern Munich",
     number: 19,
-    tagline: "Lightning pace anchoring the host nation's rise",
+    tagline: "African-Canadian flyer — pace that changes every match",
     gradient: "from-red-600 via-white to-red-700",
   },
 ];
