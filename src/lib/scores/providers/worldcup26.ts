@@ -244,6 +244,36 @@ export async function probeWorldCup26(): Promise<WorldCup26Debug> {
   return debug;
 }
 
+/** All group-stage fixtures (no date window) — used for standings tables. */
+export async function fetchWorldCup26AllGroupMatches(
+  competition: CompetitionId
+): Promise<{ matches: Match[] | null; error?: string }> {
+  if (competition !== "world-cup") {
+    return { matches: null, error: "not_world_cup" };
+  }
+
+  const [gamesResult, stadiums] = await Promise.all([
+    fetchJson<GamesResponse>("/get/games"),
+    loadStadiums(),
+  ]);
+
+  if (gamesResult.error || !gamesResult.data?.games?.length) {
+    return {
+      matches: null,
+      error: gamesResult.error ?? "no_games",
+    };
+  }
+
+  const groupGames = gamesResult.data.games.filter((g) => g.type === "group");
+  if (groupGames.length === 0) {
+    return { matches: null, error: "no_group_games" };
+  }
+
+  return {
+    matches: groupGames.map((g) => normalizeGame(g, competition, stadiums)),
+  };
+}
+
 export async function fetchWorldCup26Fixtures(
   competition: CompetitionId
 ): Promise<{ matches: Match[] | null; error?: string }> {

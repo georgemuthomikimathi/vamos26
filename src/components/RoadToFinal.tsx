@@ -1,55 +1,137 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight, MapPin, Trophy } from "lucide-react";
+import { ChevronRight, MapPin, RefreshCw, Trophy } from "lucide-react";
 import { GROUPS } from "@/lib/data";
 import { KNOCKOUT_ROUNDS, buildBracketMatches } from "@/lib/bracket";
+import type { GroupStandings } from "@/lib/standings/compile-group-standings";
 import TeamFlagWithFallback from "@/components/TeamFlag";
+import { formatUpdatedET } from "@/lib/timezone";
 
-function GroupNode({ group, index }: { group: (typeof GROUPS)[0]; index: number }) {
+const POLL_LIVE_MS = 15_000;
+const POLL_IDLE_MS = 30_000;
+
+function buildEmptyStandings(): GroupStandings[] {
+  return GROUPS.map((group) => ({
+    letter: group.letter,
+    rows: group.teams.map((team, index) => ({
+      position: index + 1,
+      team,
+      played: 0,
+      won: 0,
+      drawn: 0,
+      lost: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      goalDifference: 0,
+      points: 0,
+      qualifies: index < 2,
+    })),
+  }));
+}
+
+function GroupStandingsTable({
+  standings,
+  index,
+}: {
+  standings: GroupStandings;
+  index: number;
+}) {
+  const groupMeta = GROUPS.find((g) => g.letter === standings.letter);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.04 }}
-      className="bg-card border border-white/10 rounded-2xl p-3 hover:border-pitch/30 transition-colors min-w-[148px]"
+      className="bg-card border border-white/10 rounded-2xl overflow-hidden hover:border-pitch/30 transition-colors min-w-[220px]"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-display text-2xl text-pitch">GRP {group.letter}</span>
+      <div className="flex items-center justify-between px-3 py-2 border-b border-white/10 bg-navy/40">
+        <span className="font-display text-2xl text-pitch">GRP {standings.letter}</span>
         <div className="flex -space-x-1">
-          {group.teams.map((t) => (
-            <TeamFlagWithFallback key={t.code} code={t.code} name={t.name} size={40} />
+          {standings.rows.map((row) => (
+            <TeamFlagWithFallback
+              key={row.team.code}
+              code={row.team.code}
+              name={row.team.name}
+              size={32}
+            />
           ))}
         </div>
       </div>
-      <ul className="space-y-1.5">
-        {group.teams.map((team, pos) => (
-          <li
-            key={team.code}
-            className={`flex items-center gap-2 text-xs rounded-lg px-2 py-1 ${
-              pos < 2
-                ? "bg-pitch/10 border border-pitch/20"
-                : pos === 2
-                  ? "bg-gold/5 border border-gold/15"
-                  : "opacity-60"
-            }`}
-          >
-            <span className="font-display text-muted w-3">{pos + 1}</span>
-            <TeamFlagWithFallback code={team.code} name={team.name} size={40} />
-            <span className="truncate font-medium">{team.name}</span>
-            {pos === 0 && (
-              <span className="ml-auto text-[8px] text-pitch uppercase">→ R32</span>
-            )}
-            {pos === 1 && (
-              <span className="ml-auto text-[8px] text-pitch/70 uppercase">→ R32</span>
-            )}
-            {pos === 2 && (
-              <span className="ml-auto text-[8px] text-gold/80 uppercase">3rd?</span>
-            )}
-          </li>
-        ))}
-      </ul>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-[10px] sm:text-[11px]">
+          <thead>
+            <tr className="text-muted border-b border-white/5">
+              <th className="py-1.5 pl-2 pr-0.5 text-left font-medium w-5">#</th>
+              <th className="py-1.5 px-1 text-left font-medium min-w-[72px]">Team</th>
+              <th className="py-1.5 px-0.5 text-center font-medium w-5">P</th>
+              <th className="py-1.5 px-0.5 text-center font-medium w-5">W</th>
+              <th className="py-1.5 px-0.5 text-center font-medium w-5">D</th>
+              <th className="py-1.5 px-0.5 text-center font-medium w-5">L</th>
+              <th className="py-1.5 px-0.5 text-center font-medium w-6">GF</th>
+              <th className="py-1.5 px-0.5 text-center font-medium w-6">GA</th>
+              <th className="py-1.5 px-0.5 text-center font-medium w-6">GD</th>
+              <th className="py-1.5 pr-2 pl-0.5 text-center font-semibold text-pitch w-7">Pts</th>
+            </tr>
+          </thead>
+          <tbody>
+            {standings.rows.map((row) => (
+              <tr
+                key={row.team.code}
+                className={`border-b border-white/5 last:border-0 ${
+                  row.qualifies
+                    ? "bg-pitch/10"
+                    : row.position === 3
+                      ? "bg-gold/5"
+                      : ""
+                }`}
+              >
+                <td className="py-1.5 pl-2 pr-0.5 font-display text-muted">{row.position}</td>
+                <td className="py-1.5 px-1">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <TeamFlagWithFallback
+                      code={row.team.code}
+                      name={row.team.name}
+                      size={32}
+                    />
+                    <span className="truncate font-medium text-white">{row.team.name}</span>
+                  </div>
+                </td>
+                <td className="py-1.5 px-0.5 text-center text-muted">{row.played}</td>
+                <td className="py-1.5 px-0.5 text-center text-muted">{row.won}</td>
+                <td className="py-1.5 px-0.5 text-center text-muted">{row.drawn}</td>
+                <td className="py-1.5 px-0.5 text-center text-muted">{row.lost}</td>
+                <td className="py-1.5 px-0.5 text-center text-muted">{row.goalsFor}</td>
+                <td className="py-1.5 px-0.5 text-center text-muted">{row.goalsAgainst}</td>
+                <td
+                  className={`py-1.5 px-0.5 text-center ${
+                    row.goalDifference > 0
+                      ? "text-pitch"
+                      : row.goalDifference < 0
+                        ? "text-red-400/80"
+                        : "text-muted"
+                  }`}
+                >
+                  {row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}
+                </td>
+                <td className="py-1.5 pr-2 pl-0.5 text-center font-display text-pitch">
+                  {row.points}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {groupMeta?.highlight && (
+        <p className="text-[9px] text-gold/70 px-3 py-2 border-t border-white/5 truncate">
+          {groupMeta.highlight}
+        </p>
+      )}
     </motion.div>
   );
 }
@@ -148,6 +230,37 @@ function ConnectorArrow() {
 }
 
 export default function RoadToFinal() {
+  const [standings, setStandings] = useState<GroupStandings[]>(buildEmptyStandings);
+  const [matchesPlayed, setMatchesPlayed] = useState(0);
+  const [lastUpdate, setLastUpdate] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchStandings = useCallback(async (manual = false) => {
+    if (manual) setRefreshing(true);
+    try {
+      const res = await fetch("/api/standings?competition=world-cup", { cache: "no-store" });
+      const data = await res.json();
+      if (data.groups?.length) {
+        setStandings(data.groups);
+        setMatchesPlayed(data.matchesPlayed ?? 0);
+        setLastUpdate(formatUpdatedET(data.updatedAt));
+      }
+    } catch {
+      /* silent */
+    } finally {
+      if (manual) setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchStandings();
+    const interval = setInterval(
+      () => void fetchStandings(),
+      matchesPlayed > 0 ? POLL_LIVE_MS : POLL_IDLE_MS
+    );
+    return () => clearInterval(interval);
+  }, [fetchStandings, matchesPlayed]);
+
   return (
     <section id="roadmap" className="relative py-24 bg-navy-light overflow-hidden">
       <div className="absolute inset-0 pitch-lines opacity-30" />
@@ -167,27 +280,44 @@ export default function RoadToFinal() {
             ROAD TO THE <span className="text-gradient-gold">FINAL</span>
           </h2>
           <p className="text-muted max-w-2xl mx-auto">
-            48 teams enter 12 groups. The top two from each group plus eight
-            best third-place teams advance to the Round of 32 — then it&apos;s
-            win or go home all the way to MetLife Stadium.
+            48 teams enter 12 groups. Live standings update as matches finish — top
+            two from each group plus eight best third-place teams advance to the
+            Round of 32.
           </p>
         </motion.div>
 
-        {/* Stage 1 — Group Stage */}
+        {/* Stage 1 — Group Stage Standings */}
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-pitch/40 to-transparent" />
             <span className="font-display text-xl text-pitch tracking-wider">
-              GROUP STAGE
+              GROUP STANDINGS
             </span>
             <span className="text-xs text-muted">Jun 11 – 27</span>
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-pitch/40 to-transparent" />
           </div>
 
+          <div className="flex items-center justify-between mb-4 text-xs text-muted">
+            <span>
+              {matchesPlayed > 0
+                ? `${matchesPlayed} group match${matchesPlayed === 1 ? "" : "es"} played`
+                : "Standings update when matches finish"}
+            </span>
+            <button
+              type="button"
+              onClick={() => void fetchStandings(true)}
+              className="inline-flex items-center gap-1.5 text-pitch hover:text-white transition-colors"
+              aria-label="Refresh standings"
+            >
+              <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
+              {lastUpdate ? `Updated ${lastUpdate}` : "Refresh"}
+            </button>
+          </div>
+
           <div className="overflow-x-auto pb-4 -mx-4 px-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 min-w-[900px] lg:min-w-0">
-              {GROUPS.map((group, i) => (
-                <GroupNode key={group.letter} group={group} index={i} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 min-w-0">
+              {standings.map((group, i) => (
+                <GroupStandingsTable key={group.letter} standings={group} index={i} />
               ))}
             </div>
           </div>
