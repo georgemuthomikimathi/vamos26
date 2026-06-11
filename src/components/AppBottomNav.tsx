@@ -1,13 +1,13 @@
 "use client";
 
-import { Radio, BarChart3, HeartHandshake, MapPin } from "lucide-react";
+import { Radio, BarChart3, HeartHandshake, Bell } from "lucide-react";
 import { scrollToSection } from "@/lib/scroll";
 
 const BOTTOM_NAV = [
   { id: "live", label: "Live", icon: Radio },
   { id: "stats", label: "Stats", icon: BarChart3 },
   { id: "donate", label: "Donate", icon: HeartHandshake },
-  { id: "discover", label: "NYC", icon: MapPin },
+  { id: "newsletter", label: "Alerts", icon: Bell },
 ] as const;
 
 type AppBottomNavProps = {

@@ -53,13 +53,13 @@ export default function NewsletterSignup({ variant = "inline" }: NewsletterSignu
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      initial={isFooter ? { opacity: 0, y: 12 } : false}
+      whileInView={isFooter ? { opacity: 1, y: 0 } : undefined}
+      viewport={isFooter ? { once: true } : undefined}
       className={
         isFooter
           ? "w-full max-w-md"
-          : "max-w-xl mx-auto bg-card/60 border border-white/10 rounded-3xl p-6 md:p-8"
+          : "max-w-xl mx-auto bg-card/80 border border-pitch/25 rounded-3xl p-6 md:p-8 shadow-lg shadow-pitch/5"
       }
     >
       <div className={`flex items-center gap-2 mb-3 ${isFooter ? "justify-center md:justify-start" : ""}`}>

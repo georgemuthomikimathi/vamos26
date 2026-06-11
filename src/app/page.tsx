@@ -25,6 +25,7 @@ import { useScrollSpy } from "@/hooks/useScrollSpy";
 
 const SECTIONS = [
   "home",
+  "newsletter",
   "donate",
   "live",
   "friendlies",
@@ -47,7 +48,12 @@ export default function Home() {
       <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
       <SectionQuickNav activeTab={activeTab} onTabChange={setActiveTab} />
       <Hero onNavigate={setActiveTab} />
-      <NewsletterSignup />
+      <section
+        id="newsletter"
+        className="section-anchor scroll-mt-28 py-10 md:py-14 px-4 sm:px-6 lg:px-8 bg-navy-light/40 border-y border-pitch/10"
+      >
+        <NewsletterSignup />
+      </section>
       <DonateSection />
       <LiveMatchCenter />
       <FriendlyScores />

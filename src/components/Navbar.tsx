@@ -6,6 +6,7 @@ import { scrollToSection } from "@/lib/scroll";
 
 const NAV_ITEMS = [
   { id: "home", label: "Home" },
+  { id: "newsletter", label: "Alerts" },
   { id: "donate", label: "Donate" },
   { id: "live", label: "Live" },
   { id: "friendlies", label: "Friendlies" },

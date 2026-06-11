@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, MapPin, Users, Radio, HeartHandshake } from "lucide-react";
+import { Calendar, MapPin, Users, Radio, HeartHandshake, Bell } from "lucide-react";
 import { HOST_NATIONS, TOURNAMENT_STATS, KEY_DATES } from "@/lib/data";
 import CountdownTimer from "@/components/CountdownTimer";
 import TeamFlagWithFallback from "@/components/TeamFlag";
@@ -14,6 +14,7 @@ type HeroProps = {
 
 const HERO_ACTIONS = [
   { id: "live", label: "Live Scores", icon: Radio },
+  { id: "newsletter", label: "WC26 Alerts", icon: Bell },
   { id: "discover", label: "NYC Guide", icon: MapPin },
   { id: "donate", label: "Support Us", icon: HeartHandshake },
 ] as const;
