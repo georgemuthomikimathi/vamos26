@@ -1,3 +1,5 @@
+import type { MatchEvent } from "@/lib/scores/types";
+
 export type Substitution = {
   minute: number;
   playerIn: string;
@@ -22,6 +24,8 @@ export type MatchMeta = {
   officials: MatchOfficials;
   home: TeamMatchMeta;
   away: TeamMatchMeta;
+  /** Cards and other events not returned by worldcup26.ir */
+  events?: MatchEvent[];
 };
 
 /** Officials, subs & team news keyed by match id */
@@ -184,13 +188,25 @@ export const MATCH_META: Record<string, MatchMeta> = {
     home: {
       coach: "Javier Aguirre",
       potentialSubs: ["Raúl Jiménez", "Carlos Rodríguez", "Orbelín Pineda", "Johan Vásquez"],
-      newsHeadline: "Mexico aim to open World Cup with Azteca roar",
+      subsUsed: [
+        { minute: 61, playerIn: "Orbelín Pineda", playerOut: "Luis Chávez" },
+        { minute: 78, playerIn: "Johan Vásquez", playerOut: "Jorge Sánchez" },
+      ],
+      newsHeadline: "El Tri open World Cup with commanding Azteca win",
     },
     away: {
       coach: "Hugo Broos",
       potentialSubs: ["Percy Tau", "Sphephelo Msimango", "Evidence Makgopa", "Teboho Mokoena"],
-      newsHeadline: "Bafana Bafana chase historic upset in Mexico City",
+      subsUsed: [
+        { minute: 58, playerIn: "Percy Tau", playerOut: "Evidence Makgopa" },
+        { minute: 72, playerIn: "Teboho Mokoena", playerOut: "Sphephelo Msimango" },
+      ],
+      newsHeadline: "Bafana Bafana fall short in Mexico City opener",
     },
+    events: [
+      { minute: 34, type: "yellow", player: "Teboho Mokoena", team: "away" },
+      { minute: 81, type: "yellow", player: "Orbelín Pineda", team: "home" },
+    ],
   },
 };
 

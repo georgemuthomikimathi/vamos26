@@ -115,12 +115,18 @@ function teamName(game: Wc26Game, side: "home" | "away"): string {
 function parseScorers(raw: string | undefined, team: "home" | "away"): MatchEvent[] {
   if (!raw || raw === "null") return [];
 
-  const events: MatchEvent[] = [];
-  const goalPattern = /([^,{}"]+?)\s+(\d+)'/g;
-  let match: RegExpExecArray | null;
+  const normalized = raw
+    .replace(/[{}]/g, "")
+    .replace(/[""''`]/g, "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
 
-  while ((match = goalPattern.exec(raw)) !== null) {
-    const player = match[1].replace(/^[“"'\s]+|[”"'\s]+$/g, "").trim();
+  const events: MatchEvent[] = [];
+  for (const part of normalized) {
+    const match = part.match(/^(.+?)\s+(\d+)'/);
+    if (!match) continue;
+    const player = match[1].trim();
     const minute = Number.parseInt(match[2], 10);
     if (!player || Number.isNaN(minute)) continue;
     events.push({ minute, type: "goal", player, team });
@@ -189,7 +195,7 @@ function filterRelevantGames(games: Wc26Game[]): Wc26Game[] {
   return games.filter((g) => {
     const status = mapStatus(g);
     if (status === "live" || status === "halftime") return true;
-    if (status === "finished" && isInDateWindow(g.local_date, 0, 0)) return true;
+    if (status === "finished" && isInDateWindow(g.local_date, 7, 0)) return true;
     return isInDateWindow(g.local_date, 1, 2);
   });
 }

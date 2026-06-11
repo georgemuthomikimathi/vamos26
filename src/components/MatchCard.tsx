@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { MapPin, ChevronDown } from "lucide-react";
 import type { Match } from "@/lib/scores/types";
 import { formatScore, formatMatchMinute, isPreMatch } from "@/lib/scores/types";
@@ -45,6 +46,7 @@ type MatchCardProps = {
   match: Match;
   compact?: boolean;
   showCompetition?: boolean;
+  animateScore?: boolean;
 };
 
 type DetailTab = "info" | "lineups" | "subs" | "events" | "officials";
@@ -55,7 +57,12 @@ function defaultDetailTab(isLive: boolean, hasLineups: boolean): DetailTab {
   return "info";
 }
 
-export default function MatchCard({ match, compact = true, showCompetition }: MatchCardProps) {
+export default function MatchCard({
+  match,
+  compact = true,
+  showCompetition,
+  animateScore = false,
+}: MatchCardProps) {
   const enriched = attachLineupsToMatch(match);
   const isLive = enriched.status === "live" || enriched.status === "halftime";
   const hasLineups = Boolean(enriched.homeLineup || enriched.awayLineup);
@@ -132,17 +139,35 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
           </div>
 
           <div className="shrink-0 text-center px-2 min-w-[5rem]">
-            <div
-              className={`font-display tracking-wider text-white ${
-                isPreMatch(enriched.score)
-                  ? "text-xl text-muted/60"
-                  : compact
-                    ? "text-2xl"
-                    : "text-4xl"
-              }`}
-            >
-              {scoreDisplay}
-            </div>
+            {animateScore && isLive ? (
+              <motion.div
+                key={scoreDisplay}
+                initial={{ scale: 1.15, color: "#f87171" }}
+                animate={{ scale: 1, color: "#ffffff" }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+                className={`font-display tracking-wider ${
+                  isPreMatch(enriched.score)
+                    ? "text-xl text-muted/60"
+                    : compact
+                      ? "text-2xl"
+                      : "text-4xl"
+                }`}
+              >
+                {scoreDisplay}
+              </motion.div>
+            ) : (
+              <div
+                className={`font-display tracking-wider text-white ${
+                  isPreMatch(enriched.score)
+                    ? "text-xl text-muted/60"
+                    : compact
+                      ? "text-2xl"
+                      : "text-4xl"
+                }`}
+              >
+                {scoreDisplay}
+              </div>
+            )}
             <MatchClock match={enriched} size="sm" />
           </div>
 

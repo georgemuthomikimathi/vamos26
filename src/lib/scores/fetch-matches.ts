@@ -5,6 +5,7 @@ import { attachLineupsToMatches } from "@/lib/scores/lineups";
 import { isApiFootballConfigured } from "@/lib/scores/providers/api-config";
 import { fetchApiFootballFixtures } from "@/lib/scores/providers/api-football";
 import { fetchWorldCup26Fixtures } from "@/lib/scores/providers/worldcup26";
+import { enrichMatchesFromMeta } from "@/lib/scores/enrich-from-meta";
 import { enrichMatches } from "@/lib/scores/providers/fixture-enrichment";
 
 const STATIC: Record<CompetitionId, Match[]> = {
@@ -48,7 +49,7 @@ export function shouldFallbackToWorldCup26(apiFootballError?: string): boolean {
 }
 
 function finalizeMatches(matches: Match[]): Match[] {
-  return attachLineupsToMatches(matches);
+  return enrichMatchesFromMeta(attachLineupsToMatches(matches));
 }
 
 export async function fetchMatchesByCompetition(
