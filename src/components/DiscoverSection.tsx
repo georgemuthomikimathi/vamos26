@@ -89,15 +89,28 @@ function VenueCard({ venue, index }: { venue: Venue; index: number }) {
         {venue.description}
       </p>
 
-      <a
-        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.mapsQuery)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 text-sm text-pitch hover:text-white transition-colors font-medium min-h-[44px] tap-scale focus-ring rounded-lg px-1"
-      >
-        View on Maps
-        <ExternalLink size={14} />
-      </a>
+      <div className="flex flex-wrap gap-x-4 gap-y-2">
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.mapsQuery)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 text-sm text-pitch hover:text-white transition-colors font-medium min-h-[44px] tap-scale focus-ring rounded-lg px-1"
+        >
+          View on Maps
+          <ExternalLink size={14} />
+        </a>
+        {venue.websiteUrl && (
+          <a
+            href={venue.websiteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm text-muted hover:text-white transition-colors font-medium min-h-[44px] tap-scale focus-ring rounded-lg px-1"
+          >
+            Venue website
+            <ExternalLink size={14} />
+          </a>
+        )}
+      </div>
     </motion.article>
   );
 }

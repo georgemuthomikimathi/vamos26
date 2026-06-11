@@ -4,26 +4,26 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Newspaper } from "lucide-react";
 
-const GROUP_PREVIEWS = [
+const GROUP_STORYLINES = [
   {
     letter: "A",
-    title: "Mexico opens at home",
-    body: "El Tri kick off the entire tournament at Estadio Azteca on June 11. South Africa and Korea Republic bring pace on the counter; Czechia could surprise as a compact defensive side.",
+    title: "Mexico open with a win",
+    body: "El Tri kicked off the entire tournament at Estadio Azteca on June 11. South Africa and Korea Republic still loom — every point matters in a tight Group A.",
   },
   {
     letter: "D",
-    title: "USA's MetLife corridor",
-    body: "The hosts share a group with Paraguay, Australia, and Türkiye — all capable of stealing points on the road. Expect loud crowds whenever the Stars and Stripes play within reach of New York.",
+    title: "USA's group stage begins",
+    body: "The hosts face Paraguay, Australia, and Türkiye in Group D. Pochettino's side need a strong start before the road turns toward MetLife and beyond.",
   },
   {
     letter: "J",
-    title: "Argentina's title defense",
-    body: "La Albiceleste face Algeria, Austria, and Jordan in a group that looks manageable on paper but rarely is at a World Cup. Messi's successors will need every ounce of squad depth.",
+    title: "Argentina defend the crown",
+    body: "La Albiceleste navigate Algeria, Austria, and Jordan as Scaloni manages Messi's minutes. Squad depth will be tested from the first whistle.",
   },
   {
     letter: "K",
-    title: "DR Congo's long return",
-    body: "Les Léopards are back on football's biggest stage after more than five decades. Portugal, Colombia, and Uzbekistan make Group K a blend of European structure and African flair.",
+    title: "DR Congo's long-awaited return",
+    body: "Les Léopards are back on football's biggest stage. Portugal, Colombia, and Uzbekistan make Group K a blend of European structure and African flair.",
   },
 ];
 
@@ -39,10 +39,10 @@ export default function EditorialPreview() {
           <Newspaper size={22} className="text-gold" />
           <div>
             <p className="text-gold uppercase tracking-[0.3em] text-xs font-semibold">
-              Tournament Preview
+              Group Stage Live
             </p>
             <h3 className="font-display text-3xl md:text-4xl text-white">
-              GROUP STAGE STORYLINES
+              STORYLINES TO WATCH
             </h3>
           </div>
         </motion.div>
@@ -50,12 +50,12 @@ export default function EditorialPreview() {
         <p className="text-sm text-muted mb-6">
           Deep dive on USA&apos;s group:{" "}
           <Link href="/guides/group-d-usa-preview" className="text-pitch hover:underline font-medium">
-            Group D full preview →
+            Group D guide →
           </Link>
         </p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {GROUP_PREVIEWS.map((item, i) => (
+          {GROUP_STORYLINES.map((item, i) => (
             <motion.article
               key={item.letter}
               initial={{ opacity: 0, y: 16 }}

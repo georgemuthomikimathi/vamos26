@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Newspaper, Filter } from "lucide-react";
-import { TEAM_NEWS, type TeamNewsItem } from "@/lib/team-news";
+import { ArrowUpRight, ExternalLink, Filter, Newspaper } from "lucide-react";
+import { TEAM_NEWS, isExternalNews, type TeamNewsItem } from "@/lib/team-news";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 
 const TAGS: Array<{ id: "all" | TeamNewsItem["tag"]; label: string }> = [
@@ -20,6 +21,34 @@ const TAG_COLOR: Record<TeamNewsItem["tag"], string> = {
   tactics: "text-usa-blue border-usa-blue/30 bg-usa-blue/10",
   injury: "text-red-400 border-red-500/30 bg-red-500/10",
 };
+
+function ArticleReadMore({ item }: { item: TeamNewsItem }) {
+  const external = isExternalNews(item);
+  const className =
+    "inline-flex items-center gap-1.5 text-xs font-semibold text-pitch hover:text-white transition-colors mt-3 group/link";
+
+  if (external) {
+    return (
+      <a
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        aria-label={`Read more: ${item.headline}`}
+      >
+        Read more
+        <ExternalLink size={12} className="group-hover/link:translate-x-0.5 transition-transform" />
+      </a>
+    );
+  }
+
+  return (
+    <Link href={item.url} className={className} aria-label={`Read more: ${item.headline}`}>
+      Read more
+      <ArrowUpRight size={12} className="group-hover/link:translate-x-0.5 transition-transform" />
+    </Link>
+  );
+}
 
 export default function TeamNewsSection() {
   const [tag, setTag] = useState<"all" | TeamNewsItem["tag"]>("all");
@@ -41,7 +70,7 @@ export default function TeamNewsSection() {
             <Newspaper size={24} className="text-pitch" />
             <div>
               <p className="text-pitch uppercase tracking-[0.4em] text-xs font-semibold">
-                Squad Tracker
+                Live Coverage
               </p>
               <h2 className="font-display text-3xl md:text-5xl text-white">
                 TEAM <span className="text-gradient-pitch">NEWS</span>
@@ -49,7 +78,8 @@ export default function TeamNewsSection() {
             </div>
           </div>
           <p className="text-muted text-sm max-w-xl">
-            Follow squad updates, form, and tactics as nations prepare for kickoff.
+            Match reports, squad updates, and tactical takes from World Cup 2026 — updated as the
+            tournament unfolds.
           </p>
         </motion.div>
 
@@ -71,7 +101,7 @@ export default function TeamNewsSection() {
           ))}
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filtered.map((item, i) => (
             <motion.article
               key={item.id}
@@ -79,21 +109,25 @@ export default function TeamNewsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.04 }}
-              className="bg-card border border-white/10 rounded-2xl p-4 hover:border-pitch/30 transition-colors"
+              className="group bg-card border border-white/10 rounded-2xl p-4 hover:border-pitch/30 transition-colors flex flex-col"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <TeamFlagWithFallback code={item.code} name={item.team} size={28} />
-                <span className="text-xs text-muted">{item.date}</span>
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <TeamFlagWithFallback code={item.code} name={item.team} size={28} />
+                  <span className="text-xs text-muted shrink-0">{item.date}</span>
+                </div>
+                <span className="text-[9px] text-muted/80 truncate max-w-[40%]">{item.source}</span>
               </div>
               <span
                 className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${TAG_COLOR[item.tag]}`}
               >
                 {item.tag}
               </span>
-              <h3 className="font-semibold text-white text-sm mt-2 leading-snug">
-                {item.headline}
-              </h3>
-              <p className="text-xs text-muted mt-2 leading-relaxed">{item.summary}</p>
+              <h3 className="font-semibold text-white text-sm mt-2 leading-snug">{item.headline}</h3>
+              <p className="text-xs text-muted mt-2 leading-relaxed line-clamp-3 flex-1">
+                {item.summary}
+              </p>
+              <ArticleReadMore item={item} />
             </motion.article>
           ))}
         </div>

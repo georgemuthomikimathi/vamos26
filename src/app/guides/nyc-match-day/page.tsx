@@ -15,7 +15,7 @@ export default function NYCMatchDayGuidePage() {
   return (
     <StaticPageShell
       title="NYC Match-Day Guide for World Cup 2026"
-      subtitle="Bars, fan zones, hotels, and the fastest route to MetLife — everything you need when the city turns green, gold, and red-white-blue."
+      subtitle="Bars, fan zones, hotels, and the fastest route to MetLife — the tournament is live and NYC is match-ready."
     >
       <p>
         New York City is the <strong className="text-white">media and fan capital</strong> of
@@ -27,11 +27,14 @@ export default function NYCMatchDayGuidePage() {
 
       <h2 className="font-display text-3xl text-white pt-4">Where to watch in NYC</h2>
       <p>
-        Manhattan sports bars pack in for Premier League weekends — World Cup summer will be
-        louder. <strong className="text-white">Brooklyn</strong> neighborhoods like
-        Greenpoint and Bed-Stuy host tight-knit football communities.{" "}
-        <strong className="text-white">Queens</strong> brings global fan culture — ideal for
-        neutral games and Latin American sides.
+        With the tournament underway, Manhattan sports bars like{" "}
+        <strong className="text-white">Smithfield Hall</strong>,{" "}
+        <strong className="text-white">Nevada Smith&apos;s</strong>, and{" "}
+        <strong className="text-white">Finnerty&apos;s</strong> fill fast for USA and Mexico
+        matches. <strong className="text-white">Brooklyn</strong> spots from Greenpoint to Red
+        Hook offer waterfront viewing and neighborhood energy.{" "}
+        <strong className="text-white">Queens</strong> and the Bronx bring global fan culture —
+        ideal for neutral games and Latin American sides.
       </p>
       <p>
         Browse our curated map of bars, restaurants, fan zones, and viewing parties on the{" "}
@@ -39,6 +42,15 @@ export default function NYCMatchDayGuidePage() {
           Discover NYC section
         </Link>{" "}
         — filter by borough or search by neighborhood.
+      </p>
+
+      <h2 className="font-display text-3xl text-white pt-4">MetLife corridor</h2>
+      <p>
+        Brazil vs Morocco, France vs Senegal, and the World Cup Final all land at MetLife.
+        Pre-match at spots near East Rutherford or ride NJ Transit from Penn Station — browse
+        our <strong className="text-white">Meadowlands View Pub</strong> and{" "}
+        <strong className="text-white">American Dream Fan Deck</strong> entries for on-site
+        options.
       </p>
 
       <h2 className="font-display text-3xl text-white pt-4">Getting to MetLife Stadium</h2>

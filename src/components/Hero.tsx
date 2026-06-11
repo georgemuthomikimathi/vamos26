@@ -41,6 +41,15 @@ export default function Hero({ onNavigate }: HeroProps) {
             transition={{ duration: 0.8 }}
           >
             <div className="host-stripe h-1.5 w-32 rounded-full mb-6" />
+            <div className="inline-flex items-center gap-2 bg-pitch/20 border border-pitch/40 rounded-full px-4 py-1.5 mb-4">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pitch opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-pitch" />
+              </span>
+              <span className="text-pitch uppercase tracking-[0.25em] text-[10px] font-bold">
+                Live · Kickoff June 11
+              </span>
+            </div>
             <p className="text-pitch uppercase tracking-[0.4em] text-xs font-semibold mb-4">
               USA · MEXICO · CANADA
             </p>
@@ -52,9 +61,8 @@ export default function Hero({ onNavigate }: HeroProps) {
               <span className="text-gradient-gold">2026</span>
             </h1>
             <p className="text-lg md:text-xl text-muted max-w-lg mb-8 leading-relaxed">
-              48 nations. 12 groups. One trophy. One ball. Follow every
-              team&apos;s journey from the group stage to glory at MetLife
-              Stadium.
+              The tournament is LIVE. Follow every goal, lineup, and knockout from Mexico City
+              to the Final at MetLife Stadium — 48 nations, one trophy.
             </p>
 
             <div className="flex flex-wrap gap-4 mb-8">

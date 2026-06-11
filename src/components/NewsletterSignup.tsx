@@ -73,14 +73,14 @@ export default function NewsletterSignup({ variant = "inline" }: NewsletterSignu
       <p
         className={`text-sm text-muted mb-4 ${isFooter ? "text-center md:text-left" : "text-center"}`}
       >
-        Get goal alerts &amp; WC26 updates — kickoff reminders, draw news, and match-day
-        highlights.
+        Get live goal alerts &amp; WC26 updates — knockout reminders, lineup news, and match-day
+        highlights as the tournament unfolds.
       </p>
 
       {status === "success" ? (
         <p className="text-sm text-pitch font-medium flex items-center gap-2 justify-center md:justify-start">
           <Mail size={16} />
-          You&apos;re on the list! We&apos;ll be in touch before kickoff.
+          You&apos;re on the list! We&apos;ll send live tournament updates.
         </p>
       ) : (
         <form

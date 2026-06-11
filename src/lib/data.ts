@@ -40,6 +40,8 @@ export type Venue = {
   description: string;
   highlight?: string;
   mapsQuery: string;
+  /** Optional venue website — shown alongside Google Maps */
+  websiteUrl?: string;
 };
 
 export const HOST_NATIONS = [
@@ -652,6 +654,134 @@ export const NYC_VENUES: Venue[] = [
     description:
       "Massive family portions and multiple dining rooms with TVs — book ahead for USA and Mexico matches in the heart of Midtown.",
     mapsQuery: "Carmine's 200 West 44th Street NYC",
+    websiteUrl: "https://www.carminesnyc.com/",
+  },
+  {
+    name: "Nevada Smith's",
+    neighborhood: "Murray Hill",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "Multi-room soccer pub, early kickoffs",
+    description:
+      "Three floors of football fandom near Grand Central — one of the city's most reliable spots for European and CONCACAF kickoffs at any hour.",
+    highlight: "Best for: Early ET matches",
+    mapsQuery: "Nevada Smith's 235 East 11th Street NYC",
+    websiteUrl: "https://www.nevada-smiths.com/",
+  },
+  {
+    name: "Finnerty's",
+    neighborhood: "Financial District",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "Irish pub, downtown soccer hub",
+    description:
+      "Stone Street institution with wall-to-wall screens and a crowd that shows up for every USMNT and Premier League clash — strong lunch crowd for noon kickoffs.",
+    highlight: "Best for: USA midday matches",
+    mapsQuery: "Finnerty's 78 Pearl Street NYC",
+    websiteUrl: "https://www.finnertys.com/",
+  },
+  {
+    name: "George Keeley's",
+    neighborhood: "Upper West Side",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "Neighborhood alehouse, global football",
+    description:
+      "Beloved UWS pub with craft taps and a devoted football following — quieter than Midtown but packed for knockout rounds and USA nights.",
+    mapsQuery: "George Keeley's 485 Amsterdam Avenue NYC",
+    websiteUrl: "https://www.georgekeeleys.com/",
+  },
+  {
+    name: "Rudy's Bar & Grill",
+    neighborhood: "Hell's Kitchen",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "Classic NYC dive, free hot dogs",
+    description:
+      "No-frills Hell's Kitchen legend with cheap pints, free hot dogs, and TVs tuned to whatever match matters — a local favorite before heading to the Meadowlands.",
+    mapsQuery: "Rudy's Bar 627 9th Avenue NYC",
+    websiteUrl: "https://www.rudysbarnyc.com/",
+  },
+  {
+    name: "McSorley's Old Ale House",
+    neighborhood: "East Village",
+    borough: "Manhattan",
+    type: "Bar",
+    vibe: "Historic ale house, communal tables",
+    description:
+      "NYC's oldest Irish saloon — no TVs inside, but the pre-match pint tradition is unmatched. Pair with a nearby screening spot for the full experience.",
+    highlight: "Pre-match ritual",
+    mapsQuery: "McSorley's Old Ale House 15 East 7th Street NYC",
+    websiteUrl: "https://www.mcsorleysnewyork.com/",
+  },
+  {
+    name: "Barcade Brooklyn",
+    neighborhood: "Williamsburg",
+    borough: "Brooklyn",
+    type: "Bar",
+    vibe: "Arcade games, craft beer, big screens",
+    description:
+      "Williamsburg arcade bar with retro games, local brews, and match-day screens — great for groups who want football plus something to do at halftime.",
+    highlight: "Best for: Group watch parties",
+    mapsQuery: "Barcade Brooklyn 388 Union Avenue",
+    websiteUrl: "https://www.barcade.com/brooklyn",
+  },
+  {
+    name: "Gleason's Tavern",
+    neighborhood: "Long Island City",
+    borough: "Queens",
+    type: "Bar",
+    vibe: "Queens waterfront, neighborhood regulars",
+    description:
+      "LIC sports bar with skyline views, solid pub food, and a loyal crowd for South American and European fixtures — easy 7 train access from Manhattan.",
+    mapsQuery: "Gleason's Tavern Long Island City Queens",
+  },
+  {
+    name: "La Morada",
+    neighborhood: "Mott Haven",
+    borough: "Bronx",
+    type: "Restaurant",
+    vibe: "Oaxacan kitchen, community gathering spot",
+    description:
+      "James Beard–recognized Bronx restaurant and mutual-aid hub — screens go up for Mexico and CONCACAF matches with mole, tlayudas, and neighborhood energy.",
+    highlight: "Best for: Mexico & CONCACAF",
+    mapsQuery: "La Morada 308 Willis Avenue Bronx",
+    websiteUrl: "https://www.lamoradanyc.com/",
+  },
+  {
+    name: "Red Hook Lobster Pound",
+    neighborhood: "Red Hook",
+    borough: "Brooklyn",
+    type: "Restaurant",
+    vibe: "Waterfront seafood, outdoor screens",
+    description:
+      "Brooklyn waterfront spot with lobster rolls and seasonal outdoor viewing setups — sunset kickoffs with harbor breezes and Statue of Liberty views.",
+    highlight: "Best for: Evening matches",
+    mapsQuery: "Red Hook Lobster Pound Brooklyn",
+    websiteUrl: "https://www.redhooklobster.com/",
+  },
+  {
+    name: "Meadowlands View Pub",
+    neighborhood: "East Rutherford",
+    borough: "NY/NJ",
+    type: "Bar",
+    vibe: "Steps from MetLife, pre-match HQ",
+    description:
+      "Sports bar cluster near MetLife Stadium — the go-to pre-game stop before Brazil, France, or the World Cup Final. Shuttle and rideshare pickup nearby.",
+    highlight: "Best for: MetLife match days",
+    mapsQuery: "MetLife Stadium sports bars East Rutherford NJ",
+  },
+  {
+    name: "American Dream Fan Deck",
+    neighborhood: "East Rutherford",
+    borough: "NY/NJ",
+    type: "Fan Zone",
+    vibe: "Mall-scale screens, family-friendly",
+    description:
+      "Indoor fan activations and large-format viewing at American Dream — climate-controlled option when Meadowlands weather turns or you need kid-friendly space.",
+    highlight: "MetLife corridor",
+    mapsQuery: "American Dream Mall East Rutherford NJ",
+    websiteUrl: "https://www.americandream.com/",
   },
 ];
 
@@ -718,9 +848,9 @@ export const OPENING_MATCHES: Match[] = [
 ];
 
 export const KEY_DATES = [
-  { date: "Jun 11", event: "Opening Match", detail: "Mexico vs South Africa — Mexico City" },
-  { date: "Jun 13", event: "NYC Region Kicks Off", detail: "Fan zones open across all 5 boroughs" },
-  { date: "Jun 15", event: "MetLife Matches Begin", detail: "8 matches at NY/NJ Stadium" },
+  { date: "Jun 11", event: "Tournament Underway", detail: "Mexico vs South Africa opens World Cup 2026" },
+  { date: "Jun 13", event: "NYC Region Live", detail: "Fan zones active across all 5 boroughs" },
+  { date: "Jun 15", event: "MetLife Matches Begin", detail: "Brazil vs Morocco & France vs Senegal in NJ" },
   { date: "Jul 6", event: "Rockefeller Fan Village", detail: "Knockout round HQ opens in Manhattan" },
   { date: "Jul 19", event: "THE FINAL", detail: "MetLife Stadium — East Rutherford, NJ" },
 ];
