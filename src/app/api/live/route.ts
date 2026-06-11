@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   const competition = getCompetition(competitionParam)!;
-  const { matches, source, reason, apiError } =
+  const { matches, source, provider, reason, apiError } =
     await fetchMatchesByCompetition(competitionParam);
 
   return NextResponse.json({
@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
     liveCount: getLiveCount(matches),
     matches,
     source,
+    provider,
     reason,
     apiError: source === "static" ? apiError : undefined,
   });

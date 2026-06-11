@@ -97,8 +97,8 @@ export default function LiveMatchCenter() {
               {lastUpdate && (
                 <span className="text-pitch/70 block text-xs mt-1">
                   Last updated {lastUpdate}
-                  {dataSource === "api" && " · Live API"}
-                  {dataSource === "static" && " · Schedule preview — add API_FOOTBALL_KEY in Vercel"}
+                  {dataSource === "api" && " · Live scores"}
+                  {dataSource === "static" && " · Schedule preview — live API unavailable"}
                 </span>
               )}
             </p>

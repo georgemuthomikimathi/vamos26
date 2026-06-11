@@ -29,6 +29,8 @@ const TEAM_CODES: Record<string, string> = {
   "South Africa": "za",
   Czechia: "cz",
   "Bosnia & Herzegovina": "ba",
+  "Bosnia and Herzegovina": "ba",
+  "Czech Republic": "cz",
   Qatar: "qa",
   Haiti: "ht",
   "Côte d'Ivoire": "ci",
