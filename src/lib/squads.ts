@@ -85,6 +85,7 @@ export const NATIONAL_SQUADS: Record<string, NationalSquad> = {
     bench: [
       { name: "Raúl Jiménez", role: "ST", club: "Fulham", number: 9 },
       { name: "Carlos Rodríguez", role: "CM", club: "Cruz Azul", number: 8 },
+      { name: "Luis Malagón", role: "GK", club: "América", number: 1 },
     ],
   },
   br: {

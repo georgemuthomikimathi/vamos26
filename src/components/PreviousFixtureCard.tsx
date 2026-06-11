@@ -129,7 +129,7 @@ export default function PreviousFixtureCard({
                     )}
                   </span>
                 ))}
-                {allSubs.slice(0, 4).map((s, i) => (
+                {allSubs.map((s, i) => (
                   <span
                     key={`${s.minute}-${s.playerIn}-${i}`}
                     className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted"
@@ -137,14 +137,9 @@ export default function PreviousFixtureCard({
                     <span className="text-gold font-semibold">
                       {formatSubstitutionMinute(s.minute, s.extraMinute)}
                     </span>{" "}
-                    ↔ {s.playerOut} → {s.playerIn}
+                    Sub: {s.playerOut} → {s.playerIn}
                   </span>
                 ))}
-                {allSubs.length > 4 && (
-                  <span className="text-[10px] text-muted/60 self-center">
-                    +{allSubs.length - 4} more subs
-                  </span>
-                )}
               </div>
             )}
 

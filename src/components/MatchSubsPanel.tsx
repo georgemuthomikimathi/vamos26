@@ -1,6 +1,7 @@
 import type { Match } from "@/lib/scores/types";
 import type { MatchMeta } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
+import { formatSubstitutionMinute } from "@/lib/timezone";
 
 type MatchSubsPanelProps = {
   match: Match;
@@ -19,7 +20,7 @@ function SubColumn({
   teamName: string;
   code: string;
   potential: string[];
-  used?: MatchMeta["home"]["subsUsed"];
+  used?: { minute: number; extraMinute?: number; playerIn: string; playerOut: string }[];
   isLive: boolean;
 }) {
   return (
@@ -40,7 +41,9 @@ function SubColumn({
           <ul className="space-y-1">
             {used.map((s, i) => (
               <li key={i} className="text-xs text-muted">
-                <span className="text-gold font-semibold">{s.minute}&apos;</span>{" "}
+                <span className="text-gold font-semibold">
+                  {formatSubstitutionMinute(s.minute, s.extraMinute)}
+                </span>{" "}
                 Sub: {s.playerOut}
                 <span className="text-muted/60"> → </span>
                 <span className="text-pitch">{s.playerIn}</span>
@@ -72,11 +75,28 @@ function SubColumn({
 export default function MatchSubsPanel({ match, meta }: MatchSubsPanelProps) {
   const isLive = match.status === "live" || match.status === "halftime";
 
+  const homeUsed =
+    match.homeSubs ??
+    meta.home.subsUsed?.map((s) => ({
+      minute: s.minute,
+      extraMinute: s.extraMinute,
+      playerIn: s.playerIn,
+      playerOut: s.playerOut,
+    }));
+  const awayUsed =
+    match.awaySubs ??
+    meta.away.subsUsed?.map((s) => ({
+      minute: s.minute,
+      extraMinute: s.extraMinute,
+      playerIn: s.playerIn,
+      playerOut: s.playerOut,
+    }));
+
   const homeUsedNames = new Set(
-    meta.home.subsUsed?.flatMap((s) => [s.playerIn, s.playerOut]) ?? []
+    homeUsed?.flatMap((s) => [s.playerIn, s.playerOut]) ?? []
   );
   const awayUsedNames = new Set(
-    meta.away.subsUsed?.flatMap((s) => [s.playerIn, s.playerOut]) ?? []
+    awayUsed?.flatMap((s) => [s.playerIn, s.playerOut]) ?? []
   );
 
   const homeRemaining = meta.home.potentialSubs.filter((n) => !homeUsedNames.has(n));
@@ -89,7 +109,7 @@ export default function MatchSubsPanel({ match, meta }: MatchSubsPanelProps) {
         teamName={match.home.name}
         code={match.home.code}
         potential={match.status === "scheduled" ? meta.home.potentialSubs : homeRemaining}
-        used={meta.home.subsUsed}
+        used={homeUsed}
         isLive={isLive}
       />
       <SubColumn
@@ -97,7 +117,7 @@ export default function MatchSubsPanel({ match, meta }: MatchSubsPanelProps) {
         teamName={match.away.name}
         code={match.away.code}
         potential={match.status === "scheduled" ? meta.away.potentialSubs : awayRemaining}
-        used={meta.away.subsUsed}
+        used={awayUsed}
         isLive={isLive}
       />
     </div>

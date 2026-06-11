@@ -78,13 +78,13 @@ export default function MatchCard({
 
   const scoreDisplay = formatScore(enriched.score);
   const meta = getMatchMeta(enriched.id);
-  const hasApiSubs = Boolean(enriched.homeSubs?.length || enriched.awaySubs?.length);
+  const hasSubs = Boolean(enriched.homeSubs?.length || enriched.awaySubs?.length);
   const hasEvents = Boolean(enriched.events?.length);
   const hasDetails =
     Boolean(match.venue) ||
     Boolean(match.time) ||
     hasEvents ||
-    hasApiSubs ||
+    hasSubs ||
     hasLineups ||
     Boolean(meta);
 
@@ -191,7 +191,7 @@ export default function MatchCard({
                 [
                   { id: "events" as const, label: "Events", show: hasEvents || isLive },
                   { id: "lineups" as const, label: "Lineups", show: hasLineups },
-                  { id: "subs" as const, label: "Subs", show: hasApiSubs || Boolean(meta) },
+                  { id: "subs" as const, label: "Subs", show: hasSubs || Boolean(meta) },
                   { id: "info" as const, label: "Info", show: true },
                   { id: "officials" as const, label: "Officials", show: Boolean(meta) },
                 ] as const
@@ -236,7 +236,11 @@ export default function MatchCard({
               </div>
             )}
 
-            {detailTab === "subs" && hasApiSubs && (
+            {detailTab === "subs" && meta && (
+              <MatchSubsPanel match={enriched} meta={meta} />
+            )}
+
+            {detailTab === "subs" && !meta && hasSubs && (
               <div className="grid sm:grid-cols-2 gap-3">
                 {enriched.homeSubs && enriched.homeSubs.length > 0 && (
                   <div className="bg-white/5 rounded-xl p-3 border border-white/10">
@@ -279,8 +283,8 @@ export default function MatchCard({
               </div>
             )}
 
-            {detailTab === "subs" && !hasApiSubs && meta && (
-              <MatchSubsPanel match={enriched} meta={meta} />
+            {detailTab === "subs" && !hasSubs && !meta && (
+              <p className="text-xs text-muted text-center py-2">No substitutions recorded yet.</p>
             )}
 
             {detailTab === "officials" && meta && (

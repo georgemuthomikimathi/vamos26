@@ -1,19 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Target, Handshake, Shield, type LucideIcon } from "lucide-react";
-import { TOP_SCORERS, TOP_ASSISTS, CLEAN_SHEETS } from "@/lib/stats";
+import { Target, Handshake, AlertTriangle, type LucideIcon } from "lucide-react";
 import type { StatLeader } from "@/lib/stats";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 
-const STAT_TABS = [
-  { id: "scorers", label: "Goals", icon: Target, leaders: TOP_SCORERS, unit: "goals", accent: "bg-gradient-to-br from-gold to-orange-600", title: "Top Scorers" },
-  { id: "assists", label: "Assists", icon: Handshake, leaders: TOP_ASSISTS, unit: "assists", accent: "bg-gradient-to-br from-pitch to-emerald-700", title: "Top Assists" },
-  { id: "clean", label: "Clean Sheets", icon: Shield, leaders: CLEAN_SHEETS, unit: "CS", accent: "bg-gradient-to-br from-usa-blue to-blue-900", title: "Clean Sheets" },
-] as const;
+type StatsPayload = {
+  updatedAt: string;
+  matchesPlayed: number;
+  scorers: StatLeader[];
+  assists: StatLeader[];
+  mostCards: StatLeader[];
+};
 
-type TabId = (typeof STAT_TABS)[number]["id"];
+const POLL_MS = 30_000;
+
+function hasRealLeaders(leaders: StatLeader[]): boolean {
+  return leaders.some((p) => p.value > 0 && p.name !== "—");
+}
 
 function LeaderColumn({
   title,
@@ -21,13 +26,17 @@ function LeaderColumn({
   leaders,
   unit,
   accent,
+  emptyMessage,
 }: {
   title: string;
   icon: LucideIcon;
   leaders: StatLeader[];
   unit: string;
   accent: string;
+  emptyMessage?: string;
 }) {
+  const hasData = hasRealLeaders(leaders);
+
   return (
     <div className="bg-card border border-white/10 rounded-3xl p-6 hover:border-pitch/20 transition-colors">
       <div className="flex items-center gap-3 mb-6">
@@ -36,40 +45,104 @@ function LeaderColumn({
         </div>
         <h3 className="font-display text-2xl text-white">{title}</h3>
       </div>
-      <div className="space-y-3">
-        {leaders.map((p) => (
-          <div
-            key={p.rank}
-            className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            <span
-              className={`font-display text-2xl w-8 text-center ${
-                p.rank === 1 ? "text-gold" : "text-muted"
-              }`}
+      {hasData ? (
+        <div className="space-y-3">
+          {leaders.map((p) => (
+            <div
+              key={`${title}-${p.rank}-${p.name}`}
+              className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
             >
-              {p.rank}
-            </span>
-            <TeamFlagWithFallback code={p.code} name={p.country} size={40} />
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-sm truncate">{p.name}</div>
-              <div className="text-[10px] text-muted truncate">{p.club}</div>
-            </div>
-            <div className="text-right">
-              <div className="font-display text-2xl text-pitch">
-                {p.value === 0 ? "—" : p.value}
+              <span
+                className={`font-display text-2xl w-8 text-center ${
+                  p.rank === 1 ? "text-gold" : "text-muted"
+                }`}
+              >
+                {p.rank}
+              </span>
+              <TeamFlagWithFallback code={p.code} name={p.country} size={40} />
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm truncate">{p.name}</div>
+                <div className="text-[10px] text-muted truncate">{p.club}</div>
               </div>
-              <div className="text-[10px] text-muted uppercase">{unit}</div>
+              <div className="text-right">
+                <div className="font-display text-2xl text-pitch">{p.value}</div>
+                <div className="text-[10px] text-muted uppercase">{unit}</div>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-muted text-center py-8">{emptyMessage ?? "No data yet."}</p>
+      )}
     </div>
   );
 }
 
 export default function StatsLeaders() {
-  const [activeTab, setActiveTab] = useState<TabId>("scorers");
-  const current = STAT_TABS.find((t) => t.id === activeTab)!;
+  const [stats, setStats] = useState<StatsPayload | null>(null);
+  const [activeTab, setActiveTab] = useState<"scorers" | "assists" | "cards">("scorers");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadStats() {
+      try {
+        const res = await fetch("/api/stats?competition=world-cup", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as StatsPayload;
+        if (!cancelled) setStats(data);
+      } catch {
+        /* silent */
+      }
+    }
+
+    void loadStats();
+    const interval = setInterval(() => void loadStats(), POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const tabs = useMemo(
+    () =>
+      [
+        {
+          id: "scorers" as const,
+          label: "Goals",
+          icon: Target,
+          leaders: stats?.scorers ?? [],
+          unit: "goals",
+          accent: "bg-gradient-to-br from-gold to-orange-600",
+          title: "Top Scorers",
+          emptyMessage: "Goals will appear as matches finish.",
+        },
+        {
+          id: "assists" as const,
+          label: "Assists",
+          icon: Handshake,
+          leaders: stats?.assists ?? [],
+          unit: "assists",
+          accent: "bg-gradient-to-br from-pitch to-emerald-700",
+          title: "Top Assists",
+          emptyMessage: "Assists tracked when available in match data.",
+        },
+        {
+          id: "cards" as const,
+          label: "Cards",
+          icon: AlertTriangle,
+          leaders: stats?.mostCards ?? [],
+          unit: "cards",
+          accent: "bg-gradient-to-br from-usa-blue to-blue-900",
+          title: "Most Cards",
+          emptyMessage: "Discipline table builds from finished fixtures.",
+        },
+      ] as const,
+    [stats]
+  );
+
+  const current = tabs.find((t) => t.id === activeTab)!;
+  const matchesPlayed = stats?.matchesPlayed ?? 0;
 
   return (
     <section id="stats" className="section-anchor relative py-24 bg-navy">
@@ -87,12 +160,16 @@ export default function StatsLeaders() {
             STATS <span className="text-gradient-gold">BOARD</span>
           </h2>
           <p className="text-muted max-w-2xl mx-auto">
-            Golden Boot race, assist kings, and clean sheets — updates when the tournament begins.
+            Golden Boot race, assist kings, and discipline — compiled live from finished World Cup
+            matches.
+          </p>
+          <p className="text-[11px] text-muted/70 mt-3 uppercase tracking-wider">
+            Updated from {matchesPlayed} match{matchesPlayed === 1 ? "" : "es"} played
           </p>
         </motion.div>
 
         <div className="flex lg:hidden gap-2 overflow-x-auto scrollbar-hide mb-6 snap-x snap-mandatory">
-          {STAT_TABS.map((tab) => {
+          {tabs.map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
             return (
@@ -119,11 +196,12 @@ export default function StatsLeaders() {
             leaders={current.leaders}
             unit={current.unit}
             accent={current.accent}
+            emptyMessage={current.emptyMessage}
           />
         </div>
 
         <div className="hidden lg:grid lg:grid-cols-3 gap-6">
-          {STAT_TABS.map((tab) => (
+          {tabs.map((tab) => (
             <LeaderColumn
               key={tab.id}
               title={tab.title}
@@ -131,6 +209,7 @@ export default function StatsLeaders() {
               leaders={tab.leaders}
               unit={tab.unit}
               accent={tab.accent}
+              emptyMessage={tab.emptyMessage}
             />
           ))}
         </div>

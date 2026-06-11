@@ -2,6 +2,7 @@ import type { MatchEvent } from "@/lib/scores/types";
 
 export type Substitution = {
   minute: number;
+  extraMinute?: number;
   playerIn: string;
   playerOut: string;
 };
@@ -187,24 +188,54 @@ export const MATCH_META: Record<string, MatchMeta> = {
     },
     home: {
       coach: "Javier Aguirre",
-      potentialSubs: ["Raúl Jiménez", "Carlos Rodríguez", "Orbelín Pineda", "Johan Vásquez"],
+      potentialSubs: [
+        "Raúl Jiménez",
+        "Carlos Rodríguez",
+        "Orbelín Pineda",
+        "Johan Vásquez",
+        "Luis Malagón",
+      ],
       subsUsed: [
+        { minute: 55, playerIn: "Raúl Jiménez", playerOut: "Santiago Giménez" },
         { minute: 61, playerIn: "Orbelín Pineda", playerOut: "Luis Chávez" },
         { minute: 78, playerIn: "Johan Vásquez", playerOut: "Jorge Sánchez" },
+        { minute: 86, playerIn: "Carlos Rodríguez", playerOut: "Edson Álvarez" },
+        { minute: 88, playerIn: "Luis Malagón", playerOut: "Guillermo Ochoa" },
       ],
       newsHeadline: "El Tri open World Cup with commanding Azteca win",
     },
     away: {
       coach: "Hugo Broos",
-      potentialSubs: ["Percy Tau", "Sphephelo Msimango", "Evidence Makgopa", "Teboho Mokoena"],
+      potentialSubs: [
+        "Percy Tau",
+        "Veli Mothwa",
+        "Thapelo Maseko",
+        "Tebogo Moerane",
+        "Evidence Makgopa",
+      ],
       subsUsed: [
         { minute: 58, playerIn: "Percy Tau", playerOut: "Evidence Makgopa" },
-        { minute: 72, playerIn: "Teboho Mokoena", playerOut: "Sphephelo Msimango" },
+        { minute: 70, playerIn: "Veli Mothwa", playerOut: "Ronwen Williams" },
+        { minute: 83, playerIn: "Thapelo Maseko", playerOut: "Sphelele Mkhulise" },
       ],
       newsHeadline: "Bafana Bafana fall short in Mexico City opener",
     },
     events: [
+      {
+        minute: 9,
+        type: "goal",
+        player: "J. Quiñones",
+        playerSecondary: "Hirving Lozano",
+        team: "home",
+      },
       { minute: 34, type: "yellow", player: "Teboho Mokoena", team: "away" },
+      {
+        minute: 67,
+        type: "goal",
+        player: "R. Jiménez",
+        playerSecondary: "Orbelín Pineda",
+        team: "home",
+      },
       { minute: 67, type: "yellow", player: "Teboho Mokoena", team: "away" },
       { minute: 81, type: "yellow", player: "Orbelín Pineda", team: "home" },
     ],
