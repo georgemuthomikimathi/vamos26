@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { MAILCHIMP_AUDIENCE_ID, NEWSLETTER_PROVIDER } from "@/lib/mailchimp";
 
 type NewsletterBody = {
   email?: string;
@@ -6,7 +7,7 @@ type NewsletterBody = {
 
 async function subscribeMailchimp(email: string): Promise<void> {
   const apiKey = process.env.MAILCHIMP_API_KEY;
-  const audienceId = process.env.MAILCHIMP_AUDIENCE_ID;
+  const audienceId = MAILCHIMP_AUDIENCE_ID;
   if (!apiKey || !audienceId) {
     throw new Error("Mailchimp is not configured");
   }
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Valid email required" }, { status: 400 });
   }
 
-  const provider = process.env.NEWSLETTER_PROVIDER ?? "mailchimp";
+  const provider = NEWSLETTER_PROVIDER;
 
   try {
     if (provider === "convertkit") {
