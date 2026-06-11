@@ -9,7 +9,6 @@ const NAV_ITEMS = [
   { id: "newsletter", label: "Alerts" },
   { id: "donate", label: "Donate" },
   { id: "live", label: "Live" },
-  { id: "friendlies", label: "Friendlies" },
   { id: "news", label: "News" },
   { id: "stats", label: "Stats" },
   { id: "watchlist", label: "Watch" },

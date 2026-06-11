@@ -1,9 +1,14 @@
 "use client";
 
 import type { Match, MatchEvent } from "@/lib/scores/types";
+import {
+  getDisplayEvents,
+  hasCardEvents,
+  TWO_YELLOWS_NOTE,
+} from "@/lib/scores/card-events";
 import { formatSubstitutionMinute } from "@/lib/timezone";
 
-function eventIcon(type: MatchEvent["type"]): string {
+function eventIcon(type: MatchEvent["type"], detail?: string): string {
   switch (type) {
     case "goal":
       return "⚽";
@@ -12,7 +17,7 @@ function eventIcon(type: MatchEvent["type"]): string {
     case "penalty_missed":
       return "❌";
     case "red":
-      return "🟥";
+      return detail === "Second yellow" ? "🟥" : "🟥";
     case "yellow":
       return "🟨";
     case "subst":
@@ -38,8 +43,10 @@ export default function MatchEventsTimeline({
   expanded = false,
   limit = 4,
 }: MatchEventsTimelineProps) {
-  const events = match.events ?? [];
+  const rawEvents = match.events ?? [];
+  const events = getDisplayEvents(rawEvents);
   const subs = [...(match.homeSubs ?? []), ...(match.awaySubs ?? [])];
+  const showCardNote = hasCardEvents(rawEvents);
 
   if (events.length === 0 && subs.length === 0) {
     if (match.status === "live" || match.status === "halftime") {
@@ -106,8 +113,11 @@ export default function MatchEventsTimeline({
               className="text-xs bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-muted"
             >
               <span className="text-gold font-semibold">{formatEventMinute(e)}</span>{" "}
-              {eventIcon(e.type)}{" "}
+              {eventIcon(e.type, e.detail)}{" "}
               <span className="text-white/90">{e.player}</span>
+              {e.detail === "Second yellow" && (
+                <span className="text-muted/60 text-[10px]"> (2nd yellow)</span>
+              )}
               {e.type === "subst" && e.playerSecondary ? (
                 <span className="text-muted/70">
                   {" "}
@@ -120,6 +130,12 @@ export default function MatchEventsTimeline({
             </li>
           ))}
       </ul>
+
+      {showCardNote && (
+        <p className={`text-[10px] text-muted/50 ${expanded ? "text-center" : ""}`}>
+          {TWO_YELLOWS_NOTE}
+        </p>
+      )}
     </div>
   );
 }

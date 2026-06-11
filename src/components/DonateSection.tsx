@@ -5,7 +5,7 @@ import { HeartHandshake, ExternalLink, Server, Radio, MapPin } from "lucide-reac
 import { DONATE_PRIMARY_URL, DONATE_TIERS, PAYPAL_EMAIL } from "@/lib/donate";
 
 const PERKS = [
-  { icon: Radio, text: "Live scores & friendly results" },
+  { icon: Radio, text: "Live World Cup scores" },
   { icon: Server, text: "Hosting & API costs" },
   { icon: MapPin, text: "NYC bars & viewing party guide" },
 ];

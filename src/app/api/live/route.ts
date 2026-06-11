@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCompetition, isValidCompetition } from "@/lib/competitions";
+import { getCompetition, isLiveCompetition } from "@/lib/competitions";
 import { fetchMatchesByCompetition } from "@/lib/scores/fetch-matches";
 import { getLiveCount } from "@/lib/scores/types";
 
@@ -9,9 +9,9 @@ export const revalidate = 0;
 export async function GET(request: NextRequest) {
   const competitionParam = request.nextUrl.searchParams.get("competition") ?? "world-cup";
 
-  if (!isValidCompetition(competitionParam)) {
+  if (!isLiveCompetition(competitionParam)) {
     return NextResponse.json(
-      { error: "Invalid competition", valid: ["world-cup", "friendly", "premier-league", "serie-a"] },
+      { error: "Invalid competition", valid: ["world-cup"] },
       { status: 400 }
     );
   }

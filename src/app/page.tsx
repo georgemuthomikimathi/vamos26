@@ -7,7 +7,6 @@ import Hero from "@/components/Hero";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import DonateSection from "@/components/DonateSection";
 import LiveMatchCenter from "@/components/LiveMatchCenter";
-import FriendlyScores from "@/components/FriendlyScores";
 import AdUnit, { AD_SLOT_HOMEPAGE_INLINE, AD_SLOT_HOMEPAGE_SIDEBAR } from "@/components/AdUnit";
 import HowToWatch from "@/components/HowToWatch";
 import TeamNewsSection from "@/components/TeamNewsSection";
@@ -28,7 +27,6 @@ const SECTIONS = [
   "newsletter",
   "donate",
   "live",
-  "friendlies",
   "news",
   "stadiums",
   "stats",
@@ -56,7 +54,6 @@ export default function Home() {
       </section>
       <DonateSection />
       <LiveMatchCenter />
-      <FriendlyScores />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AdUnit slot={AD_SLOT_HOMEPAGE_INLINE} className="max-w-3xl mx-auto" />
       </div>

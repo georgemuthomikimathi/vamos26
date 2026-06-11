@@ -39,14 +39,13 @@ export const metadata: Metadata = {
     template: "%s | VAMOS26",
   },
   description:
-    "VAMOS26: live World Cup 2026 scores, friendly results, lineups, subs, officials, stadium guide, stats leaders, and team news.",
+    "VAMOS26: live World Cup 2026 scores, lineups, subs, officials, stadium guide, stats leaders, and team news.",
   keywords: [
     "FIFA World Cup 2026",
     "VAMOS26",
     "live scores",
     "World Cup stadiums",
     "World Cup lineups",
-    "friendly scores",
     "USA Mexico Canada World Cup",
   ],
   alternates: {

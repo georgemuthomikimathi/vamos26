@@ -45,7 +45,6 @@ function StatusBadge({ match }: { match: Match }) {
 type MatchCardProps = {
   match: Match;
   compact?: boolean;
-  showCompetition?: boolean;
   animateScore?: boolean;
 };
 
@@ -60,7 +59,6 @@ function defaultDetailTab(isLive: boolean, hasLineups: boolean): DetailTab {
 export default function MatchCard({
   match,
   compact = true,
-  showCompetition,
   animateScore = false,
 }: MatchCardProps) {
   const enriched = attachLineupsToMatch(match);
@@ -111,11 +109,6 @@ export default function MatchCard({
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 min-w-0">
             <StatusBadge match={enriched} />
-            {showCompetition && enriched.competition === "friendly" && (
-              <span className="text-[10px] text-gold/80 uppercase tracking-wider truncate">
-                Friendly
-              </span>
-            )}
           </div>
           <div className="flex items-center gap-1 min-w-0">
             <span className="text-[10px] text-muted uppercase tracking-wider truncate max-w-[8rem] sm:max-w-none text-right">

@@ -14,8 +14,8 @@ export const COMPETITIONS: Record<CompetitionId, Competition> = {
     name: "International Friendlies",
     shortName: "Friendlies",
     season: "2026",
-    active: true,
-    description: "Pre-tournament warm-up matches",
+    active: false,
+    description: "Pre-tournament warm-up matches (ended)",
   },
   "premier-league": {
     id: "premier-league",
@@ -44,4 +44,9 @@ export function getCompetition(id: string): Competition | null {
 
 export function isValidCompetition(id: string): id is CompetitionId {
   return id in COMPETITIONS;
+}
+
+/** Competitions exposed to live score APIs during the tournament */
+export function isLiveCompetition(id: string): id is CompetitionId {
+  return id === "world-cup";
 }

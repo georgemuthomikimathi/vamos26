@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, MapPin } from "lucide-react";
-import type { Match } from "@/lib/scores/types";
+import type { Match, MatchEvent } from "@/lib/scores/types";
 import { formatScore } from "@/lib/scores/types";
+import { getDisplayEvents } from "@/lib/scores/card-events";
 import { attachLineupsToMatch } from "@/lib/scores/lineups";
 import { getMatchMeta } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
@@ -18,10 +19,10 @@ type PreviousFixtureCardProps = {
   defaultExpanded?: boolean;
 };
 
-function eventIcon(type: string): string {
-  if (type === "goal" || type === "penalty") return "⚽";
-  if (type === "red") return "🟥";
-  if (type === "yellow") return "🟨";
+function eventIcon(event: MatchEvent): string {
+  if (event.type === "goal" || event.type === "penalty") return "⚽";
+  if (event.type === "red") return "🟥";
+  if (event.type === "yellow") return "🟨";
   return "•";
 }
 
@@ -33,10 +34,11 @@ export default function PreviousFixtureCard({
   const meta = getMatchMeta(enriched.id);
   const [expanded, setExpanded] = useState(defaultExpanded);
 
-  const goals = (enriched.events ?? []).filter(
+  const displayEvents = getDisplayEvents(enriched.events ?? []);
+  const goals = displayEvents.filter(
     (e) => e.type === "goal" || e.type === "penalty"
   );
-  const cards = (enriched.events ?? []).filter(
+  const cards = displayEvents.filter(
     (e) => e.type === "red" || e.type === "yellow"
   );
   const allSubs = [
@@ -104,7 +106,7 @@ export default function PreviousFixtureCard({
                     className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted"
                   >
                     <span className="text-gold font-semibold">{g.minute}&apos;</span>{" "}
-                    {eventIcon(g.type)} {g.player}
+                    {eventIcon(g)} {g.player}
                     <span className="text-muted/50 ml-1">
                       ({g.team === "home" ? enriched.home.code.toUpperCase() : enriched.away.code.toUpperCase()})
                     </span>
@@ -121,7 +123,10 @@ export default function PreviousFixtureCard({
                     className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted"
                   >
                     <span className="text-gold font-semibold">{c.minute}&apos;</span>{" "}
-                    {eventIcon(c.type)} {c.player}
+                    {eventIcon(c)} {c.player}
+                    {c.detail === "Second yellow" && (
+                      <span className="text-muted/50"> (2nd yellow)</span>
+                    )}
                   </span>
                 ))}
                 {allSubs.slice(0, 4).map((s, i) => (

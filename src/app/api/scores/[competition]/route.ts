@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCompetition, isValidCompetition } from "@/lib/competitions";
+import { getCompetition, isLiveCompetition } from "@/lib/competitions";
 import { fetchMatchesByCompetition } from "@/lib/scores/fetch-matches";
 import { getLiveCount } from "@/lib/scores/types";
 
@@ -10,9 +10,9 @@ type RouteContext = { params: Promise<{ competition: string }> };
 export async function GET(_request: NextRequest, context: RouteContext) {
   const { competition: competitionId } = await context.params;
 
-  if (!isValidCompetition(competitionId)) {
+  if (!isLiveCompetition(competitionId)) {
     return NextResponse.json(
-      { error: "Competition not found", valid: ["world-cup", "friendly", "premier-league", "serie-a"] },
+      { error: "Competition not found", valid: ["world-cup"] },
       { status: 404 }
     );
   }
