@@ -6,6 +6,7 @@ import { Radio, RefreshCw } from "lucide-react";
 import type { Match } from "@/lib/scores/types";
 import { getLiveCount } from "@/lib/scores/types";
 import { LIVE_MATCHES } from "@/lib/live";
+import { attachLineupsToMatches } from "@/lib/scores/lineups";
 import MatchCard from "@/components/MatchCard";
 import MatchAlertSettings from "@/components/MatchAlertSettings";
 import LiveMatchHero from "@/components/LiveMatchHero";
@@ -28,7 +29,7 @@ export default function LiveMatchCenter() {
     try {
       const res = await fetch("/api/live?competition=world-cup", { cache: "no-store" });
       const data = await res.json();
-      setMatches(data.matches);
+      setMatches(attachLineupsToMatches(data.matches ?? []));
       setLiveCount(data.liveCount);
       if (data.source === "api" || data.source === "static") {
         setDataSource(data.source);

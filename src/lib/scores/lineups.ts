@@ -18,19 +18,21 @@ function squadToLineup(squad: NationalSquad): MatchLineup {
   };
 }
 
+export function attachLineupsToMatch(match: Match): Match {
+  if (match.homeLineup && match.awayLineup) return match;
+
+  const homeSquad = getSquad(match.home.code);
+  const awaySquad = getSquad(match.away.code);
+
+  if (!homeSquad && !awaySquad) return match;
+
+  return {
+    ...match,
+    homeLineup: match.homeLineup ?? (homeSquad ? squadToLineup(homeSquad) : undefined),
+    awayLineup: match.awayLineup ?? (awaySquad ? squadToLineup(awaySquad) : undefined),
+  };
+}
+
 export function attachLineupsToMatches(matches: Match[]): Match[] {
-  return matches.map((match) => {
-    if (match.homeLineup && match.awayLineup) return match;
-
-    const homeSquad = getSquad(match.home.code);
-    const awaySquad = getSquad(match.away.code);
-
-    if (!homeSquad && !awaySquad) return match;
-
-    return {
-      ...match,
-      homeLineup: match.homeLineup ?? (homeSquad ? squadToLineup(homeSquad) : undefined),
-      awayLineup: match.awayLineup ?? (awaySquad ? squadToLineup(awaySquad) : undefined),
-    };
-  });
+  return matches.map(attachLineupsToMatch);
 }

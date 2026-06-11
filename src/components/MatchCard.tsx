@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { MapPin, ChevronDown } from "lucide-react";
 import type { Match } from "@/lib/scores/types";
 import { formatScore, formatMatchMinute, isPreMatch } from "@/lib/scores/types";
+import { attachLineupsToMatch } from "@/lib/scores/lineups";
 import { getMatchMeta } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchOfficialsPanel from "@/components/MatchOfficialsPanel";
@@ -48,20 +49,32 @@ type MatchCardProps = {
 
 type DetailTab = "info" | "lineups" | "subs" | "events" | "officials";
 
+function defaultDetailTab(isLive: boolean, hasLineups: boolean): DetailTab {
+  if (isLive && hasLineups) return "lineups";
+  if (isLive) return "events";
+  return "info";
+}
+
 export default function MatchCard({ match, compact = true, showCompetition }: MatchCardProps) {
-  const isLive = match.status === "live" || match.status === "halftime";
+  const enriched = attachLineupsToMatch(match);
+  const isLive = enriched.status === "live" || enriched.status === "halftime";
+  const hasLineups = Boolean(enriched.homeLineup || enriched.awayLineup);
   const [expanded, setExpanded] = useState(isLive);
-  const [detailTab, setDetailTab] = useState<DetailTab>(isLive ? "events" : "info");
+  const [detailTab, setDetailTab] = useState<DetailTab>(() =>
+    defaultDetailTab(isLive, hasLineups)
+  );
 
   useEffect(() => {
-    if (isLive) setExpanded(true);
-  }, [isLive, match.id]);
+    if (isLive) {
+      setExpanded(true);
+      setDetailTab(defaultDetailTab(true, hasLineups));
+    }
+  }, [isLive, enriched.id, hasLineups]);
 
-  const scoreDisplay = formatScore(match.score);
-  const meta = getMatchMeta(match.id);
-  const hasApiSubs = Boolean(match.homeSubs?.length || match.awaySubs?.length);
-  const hasLineups = Boolean(match.homeLineup || match.awayLineup);
-  const hasEvents = Boolean(match.events?.length);
+  const scoreDisplay = formatScore(enriched.score);
+  const meta = getMatchMeta(enriched.id);
+  const hasApiSubs = Boolean(enriched.homeSubs?.length || enriched.awaySubs?.length);
+  const hasEvents = Boolean(enriched.events?.length);
   const hasDetails =
     Boolean(match.venue) ||
     Boolean(match.time) ||
@@ -90,8 +103,8 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
       >
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 min-w-0">
-            <StatusBadge match={match} />
-            {showCompetition && match.competition === "friendly" && (
+            <StatusBadge match={enriched} />
+            {showCompetition && enriched.competition === "friendly" && (
               <span className="text-[10px] text-gold/80 uppercase tracking-wider truncate">
                 Friendly
               </span>
@@ -99,7 +112,7 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
           </div>
           <div className="flex items-center gap-1 min-w-0">
             <span className="text-[10px] text-muted uppercase tracking-wider truncate max-w-[8rem] sm:max-w-none text-right">
-              {match.stage}
+              {enriched.stage}
             </span>
             {hasDetails && (
               <ChevronDown
@@ -113,15 +126,15 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
         <div className="flex items-center gap-2">
           <div className="flex-1 flex items-center gap-2 min-w-0 justify-end">
             <span className={`font-medium truncate ${compact ? "text-sm" : "text-base"}`}>
-              {match.home.name}
+              {enriched.home.name}
             </span>
-            <TeamFlagWithFallback code={match.home.code} name={match.home.name} size={compact ? 28 : 40} />
+            <TeamFlagWithFallback code={enriched.home.code} name={enriched.home.name} size={compact ? 28 : 40} />
           </div>
 
           <div className="shrink-0 text-center px-2 min-w-[5rem]">
             <div
               className={`font-display tracking-wider text-white ${
-                isPreMatch(match.score)
+                isPreMatch(enriched.score)
                   ? "text-xl text-muted/60"
                   : compact
                     ? "text-2xl"
@@ -130,18 +143,18 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
             >
               {scoreDisplay}
             </div>
-            <MatchClock match={match} size="sm" />
+            <MatchClock match={enriched} size="sm" />
           </div>
 
           <div className="flex-1 flex items-center gap-2 min-w-0">
-            <TeamFlagWithFallback code={match.away.code} name={match.away.name} size={compact ? 28 : 40} />
+            <TeamFlagWithFallback code={enriched.away.code} name={enriched.away.name} size={compact ? 28 : 40} />
             <span className={`font-medium truncate ${compact ? "text-sm" : "text-base"}`}>
-              {match.away.name}
+              {enriched.away.name}
             </span>
           </div>
         </div>
 
-        {isLive && !expanded && <MatchEventsTimeline match={match} limit={3} />}
+        {isLive && !expanded && <MatchEventsTimeline match={enriched} limit={3} />}
 
         {!expanded && hasDetails && !isLive && (
           <p className="text-[10px] text-muted/60 text-center mt-2">Tap for events, subs & venue</p>
@@ -186,20 +199,20 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
             </div>
 
             {detailTab === "events" && (
-              <MatchEventsTimeline match={match} expanded />
+              <MatchEventsTimeline match={enriched} expanded />
             )}
 
             {detailTab === "lineups" && hasLineups && (
-              <MatchLineupPanel match={match} />
+              <MatchLineupPanel match={enriched} />
             )}
 
             {detailTab === "info" && (
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
-                <span>{match.time}</span>
+                <span>{enriched.time}</span>
                 <span className="flex items-center gap-1 min-w-0">
                   <MapPin size={12} className="text-pitch shrink-0" />
                   <span className="truncate">
-                    {match.venue} · {match.city}
+                    {enriched.venue} · {enriched.city}
                   </span>
                 </span>
               </div>
@@ -207,13 +220,13 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
 
             {detailTab === "subs" && hasApiSubs && (
               <div className="grid sm:grid-cols-2 gap-3">
-                {match.homeSubs && match.homeSubs.length > 0 && (
+                {enriched.homeSubs && enriched.homeSubs.length > 0 && (
                   <div className="bg-white/5 rounded-xl p-3 border border-white/10">
                     <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
-                      {match.home.name}
+                      {enriched.home.name}
                     </p>
                     <ul className="space-y-1 text-xs text-muted">
-                      {match.homeSubs.map((s, i) => (
+                      {enriched.homeSubs.map((s, i) => (
                         <li key={i}>
                           <span className="text-gold font-semibold">
                             {formatSubstitutionMinute(s.minute, s.extraMinute)}
@@ -226,13 +239,13 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
                     </ul>
                   </div>
                 )}
-                {match.awaySubs && match.awaySubs.length > 0 && (
+                {enriched.awaySubs && enriched.awaySubs.length > 0 && (
                   <div className="bg-white/5 rounded-xl p-3 border border-white/10">
                     <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
-                      {match.away.name}
+                      {enriched.away.name}
                     </p>
                     <ul className="space-y-1 text-xs text-muted">
-                      {match.awaySubs.map((s, i) => (
+                      {enriched.awaySubs.map((s, i) => (
                         <li key={i}>
                           <span className="text-gold font-semibold">
                             {formatSubstitutionMinute(s.minute, s.extraMinute)}
@@ -249,11 +262,11 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
             )}
 
             {detailTab === "subs" && !hasApiSubs && meta && (
-              <MatchSubsPanel match={match} meta={meta} />
+              <MatchSubsPanel match={enriched} meta={meta} />
             )}
 
             {detailTab === "officials" && meta && (
-              <MatchOfficialsPanel match={match} meta={meta} />
+              <MatchOfficialsPanel match={enriched} meta={meta} />
             )}
           </div>
         </div>

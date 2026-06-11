@@ -1,11 +1,11 @@
 import type { Match } from "@/lib/scores/types";
 import { getLiveCount as countLive } from "@/lib/scores/types";
+import { attachLineupsToMatches } from "@/lib/scores/lineups";
 
 export type { Match, MatchStatus, Score } from "@/lib/scores/types";
 export type LiveMatch = Match;
 
-/** World Cup 2026 fixtures — 0-0 until tournament kicks off */
-export const LIVE_MATCHES: Match[] = [
+const RAW_LIVE_MATCHES: Match[] = [
   {
     id: "m1",
     competition: "world-cup",
@@ -73,6 +73,9 @@ export const LIVE_MATCHES: Match[] = [
     score: { home: null, away: null },
   },
 ];
+
+/** World Cup 2026 fixtures with projected lineups attached for immediate display */
+export const LIVE_MATCHES: Match[] = attachLineupsToMatches(RAW_LIVE_MATCHES);
 
 export function getLiveCount(): number {
   return countLive(LIVE_MATCHES);
