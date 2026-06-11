@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Bebas_Neue, Outfit } from "next/font/google";
 import CookieConsent from "@/components/CookieConsent";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import InstallPrompt from "@/components/InstallPrompt";
 import { ADSENSE_CLIENT, ADSENSE_VERIFICATION_META } from "@/lib/adsense";
 import "./globals.css";
 
@@ -105,6 +107,8 @@ export default function RootLayout({
         {children}
         <CookieConsent />
         <GoogleAnalytics />
+        <ServiceWorkerRegister />
+        <InstallPrompt />
       </body>
     </html>
   );

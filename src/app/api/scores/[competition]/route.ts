@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCompetition, isValidCompetition } from "@/lib/competitions";
-import { getMatchesByCompetition } from "@/lib/scores";
+import { fetchMatchesByCompetition } from "@/lib/scores/fetch-matches";
 import { getLiveCount } from "@/lib/scores/types";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   }
 
   const competition = getCompetition(competitionId)!;
-  const matches = getMatchesByCompetition(competitionId);
+  const { matches, source } = await fetchMatchesByCompetition(competitionId);
 
   return NextResponse.json({
     updatedAt: new Date().toISOString(),
@@ -27,5 +27,6 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     active: competition.active,
     liveCount: getLiveCount(matches),
     matches,
+    source,
   });
 }

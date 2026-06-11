@@ -17,7 +17,7 @@ export const LIVE_MATCHES: Match[] = [
     venue: "Estadio Azteca",
     city: "Mexico City",
     stage: "Group A · Opening Match",
-    score: { home: 0, away: 0 },
+    score: { home: null, away: null },
   },
   {
     id: "m2",
@@ -30,7 +30,7 @@ export const LIVE_MATCHES: Match[] = [
     venue: "BMO Field",
     city: "Toronto",
     stage: "Group B",
-    score: { home: 0, away: 0 },
+    score: { home: null, away: null },
   },
   {
     id: "m3",
@@ -43,7 +43,7 @@ export const LIVE_MATCHES: Match[] = [
     venue: "SoFi Stadium",
     city: "Los Angeles",
     stage: "Group D",
-    score: { home: 0, away: 0 },
+    score: { home: null, away: null },
   },
   {
     id: "m4",
@@ -56,7 +56,7 @@ export const LIVE_MATCHES: Match[] = [
     venue: "Mercedes-Benz Stadium",
     city: "Atlanta",
     stage: "Group C",
-    score: { home: 0, away: 0 },
+    score: { home: null, away: null },
   },
   {
     id: "m5",
@@ -69,7 +69,7 @@ export const LIVE_MATCHES: Match[] = [
     venue: "MetLife Stadium",
     city: "East Rutherford, NJ",
     stage: "Group L",
-    score: { home: 0, away: 0 },
+    score: { home: null, away: null },
   },
 ];
 

@@ -13,6 +13,7 @@ export default function LiveMatchCenter() {
   const [liveCount, setLiveCount] = useState(() => getLiveCount(LIVE_MATCHES));
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [dataSource, setDataSource] = useState<"api" | "static" | "">("");
 
   const fetchLive = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
@@ -21,6 +22,9 @@ export default function LiveMatchCenter() {
       const data = await res.json();
       setMatches(data.matches);
       setLiveCount(data.liveCount);
+      if (data.source === "api" || data.source === "static") {
+        setDataSource(data.source);
+      }
       setLastUpdate(
         new Date(data.updatedAt).toLocaleTimeString(undefined, {
           hour: "numeric",
@@ -72,6 +76,8 @@ export default function LiveMatchCenter() {
               {lastUpdate && (
                 <span className="text-pitch/70 block text-xs mt-1">
                   Last updated {lastUpdate}
+                  {dataSource === "api" && " · Live API"}
+                  {dataSource === "static" && " · Schedule preview"}
                 </span>
               )}
             </p>
