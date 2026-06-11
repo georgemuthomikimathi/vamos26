@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Radio, RefreshCw } from "lucide-react";
 import type { Match } from "@/lib/scores/types";
@@ -8,6 +8,10 @@ import { getLiveCount } from "@/lib/scores/types";
 import { LIVE_MATCHES } from "@/lib/live";
 import MatchCard from "@/components/MatchCard";
 import MatchAlertSettings from "@/components/MatchAlertSettings";
+import LiveMatchHero from "@/components/LiveMatchHero";
+
+const POLL_LIVE_MS = 15_000;
+const POLL_IDLE_MS = 30_000;
 
 export default function LiveMatchCenter() {
   const [matches, setMatches] = useState<Match[]>(LIVE_MATCHES);
@@ -19,7 +23,7 @@ export default function LiveMatchCenter() {
   const fetchLive = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
     try {
-      const res = await fetch("/api/live?competition=world-cup");
+      const res = await fetch("/api/live?competition=world-cup", { cache: "no-store" });
       const data = await res.json();
       setMatches(data.matches);
       setLiveCount(data.liveCount);
@@ -30,6 +34,7 @@ export default function LiveMatchCenter() {
         new Date(data.updatedAt).toLocaleTimeString(undefined, {
           hour: "numeric",
           minute: "2-digit",
+          second: "2-digit",
         })
       );
     } catch {
@@ -40,17 +45,29 @@ export default function LiveMatchCenter() {
   }, []);
 
   useEffect(() => {
-    const boot = window.setTimeout(() => {
-      void fetchLive();
-    }, 0);
-    const interval = setInterval(() => {
-      void fetchLive();
-    }, 30000);
-    return () => {
-      window.clearTimeout(boot);
-      clearInterval(interval);
-    };
-  }, [fetchLive]);
+    void fetchLive();
+    const interval = setInterval(
+      () => void fetchLive(),
+      liveCount > 0 ? POLL_LIVE_MS : POLL_IDLE_MS
+    );
+    return () => clearInterval(interval);
+  }, [fetchLive, liveCount]);
+
+  const featuredMatch = useMemo(() => {
+    const live = matches.find((m) => m.status === "live" || m.status === "halftime");
+    if (live) return live;
+    const soon = matches.find((m) => {
+      if (!m.kickoffAt || m.status !== "scheduled") return false;
+      const diff = new Date(m.kickoffAt).getTime() - Date.now();
+      return diff > -30 * 60_000 && diff < 3 * 60 * 60_000;
+    });
+    return soon ?? null;
+  }, [matches]);
+
+  const listMatches = useMemo(() => {
+    if (!featuredMatch) return matches;
+    return matches.filter((m) => m.id !== featuredMatch.id);
+  }, [matches, featuredMatch]);
 
   return (
     <section id="live" className="section-anchor relative py-20 md:py-24 bg-navy overflow-hidden">
@@ -73,12 +90,12 @@ export default function LiveMatchCenter() {
               LIVE <span className="text-gradient-pitch">SCORES</span>
             </h2>
             <p className="text-muted mt-2 max-w-xl text-sm">
-              Tap any match for kickoff time and venue. Auto-refreshes every 30s.
+              Live clock, goals, cards & subs — refreshes every {liveCount > 0 ? "15" : "30"}s.
               {lastUpdate && (
                 <span className="text-pitch/70 block text-xs mt-1">
                   Last updated {lastUpdate}
                   {dataSource === "api" && " · Live API"}
-                  {dataSource === "static" && " · Schedule preview"}
+                  {dataSource === "static" && " · Schedule preview — add API_FOOTBALL_KEY in Vercel"}
                 </span>
               )}
             </p>
@@ -108,9 +125,13 @@ export default function LiveMatchCenter() {
 
         <MatchAlertSettings />
 
+        {featuredMatch && (
+          <LiveMatchHero match={featuredMatch} />
+        )}
+
         <div className="grid gap-2">
           <AnimatePresence mode="popLayout">
-            {matches.map((match, i) => (
+            {listMatches.map((match, i) => (
               <motion.div
                 key={match.id}
                 layout

@@ -7,10 +7,14 @@ type ApiFixture = {
   fixture: {
     id: number;
     date: string;
-    status: { short: string; elapsed: number | null };
+    status: {
+      short: string;
+      elapsed: number | null;
+      extra?: number | null;
+    };
     venue?: { name?: string; city?: string };
   };
-  league: { round?: string; name?: string };
+  league: { id: number; round?: string; name?: string };
   teams: {
     home: { name: string };
     away: { name: string };
@@ -19,7 +23,7 @@ type ApiFixture = {
 };
 
 function mapStatus(short: string): MatchStatus {
-  if (["1H", "2H", "ET", "P", "LIVE"].includes(short)) return "live";
+  if (["1H", "2H", "ET", "P", "LIVE", "BT"].includes(short)) return "live";
   if (short === "HT") return "halftime";
   if (["FT", "AET", "PEN"].includes(short)) return "finished";
   return "scheduled";
@@ -53,7 +57,10 @@ function normalizeFixture(f: ApiFixture, competition: CompetitionId): Match {
     id: `af-${f.fixture.id}`,
     competition,
     status,
+    statusShort: f.fixture.status.short,
     minute: f.fixture.status.elapsed ?? undefined,
+    extraMinute: f.fixture.status.extra ?? undefined,
+    kickoffAt: f.fixture.date,
     date,
     time,
     home: { name: f.teams.home.name, code: teamNameToCode(f.teams.home.name) },
@@ -65,67 +72,119 @@ function normalizeFixture(f: ApiFixture, competition: CompetitionId): Match {
   };
 }
 
+function sortMatches(matches: Match[]): Match[] {
+  const order = { live: 0, halftime: 1, scheduled: 2, finished: 3 };
+  return [...matches].sort((a, b) => {
+    const sa = order[a.status];
+    const sb = order[b.status];
+    if (sa !== sb) return sa - sb;
+    if (a.kickoffAt && b.kickoffAt) {
+      return new Date(a.kickoffAt).getTime() - new Date(b.kickoffAt).getTime();
+    }
+    return 0;
+  });
+}
+
+function dedupeFixtures(fixtures: ApiFixture[]): ApiFixture[] {
+  const seen = new Set<number>();
+  return fixtures.filter((f) => {
+    if (seen.has(f.fixture.id)) return false;
+    seen.add(f.fixture.id);
+    return true;
+  });
+}
+
+async function apiFetch(path: string): Promise<ApiFixture[]> {
+  const key = process.env.API_FOOTBALL_KEY?.trim();
+  if (!key) return [];
+
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { "x-apisports-key": key },
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { response?: ApiFixture[] };
+    return data.response ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export function isApiFootballConfigured(): boolean {
   return Boolean(process.env.API_FOOTBALL_KEY?.trim());
+}
+
+function leagueParams(competition: CompetitionId): { leagueId: string; season: string } {
+  if (competition === "world-cup") {
+    return {
+      leagueId: process.env.API_FOOTBALL_LEAGUE_WC ?? "1",
+      season: process.env.API_FOOTBALL_SEASON ?? "2026",
+    };
+  }
+  if (competition === "friendly") {
+    return {
+      leagueId: process.env.API_FOOTBALL_LEAGUE_FRIENDLY ?? "10",
+      season: process.env.API_FOOTBALL_SEASON ?? "2026",
+    };
+  }
+  if (competition === "premier-league") {
+    return { leagueId: process.env.API_FOOTBALL_LEAGUE_EPL ?? "39", season: "2025" };
+  }
+  return { leagueId: process.env.API_FOOTBALL_LEAGUE_SERIE_A ?? "135", season: "2025" };
+}
+
+function todayUtc(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function yesterdayUtc(): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - 1);
+  return d.toISOString().slice(0, 10);
 }
 
 export async function fetchApiFootballFixtures(
   competition: CompetitionId
 ): Promise<Match[] | null> {
-  const key = process.env.API_FOOTBALL_KEY?.trim();
-  if (!key) return null;
+  if (!isApiFootballConfigured()) return null;
 
-  const leagueId =
-    competition === "world-cup"
-      ? process.env.API_FOOTBALL_LEAGUE_WC ?? "1"
-      : competition === "friendly"
-        ? process.env.API_FOOTBALL_LEAGUE_FRIENDLY ?? "10"
-        : competition === "premier-league"
-          ? process.env.API_FOOTBALL_LEAGUE_EPL ?? "39"
-          : process.env.API_FOOTBALL_LEAGUE_SERIE_A ?? "135";
+  const { leagueId, season } = leagueParams(competition);
+  const today = todayUtc();
+  const yesterday = yesterdayUtc();
 
-  const season =
-    process.env.API_FOOTBALL_SEASON ??
-    (competition === "world-cup" ? "2026" : "2025");
+  const [bySeason, byToday, byYesterday, liveAll] = await Promise.all([
+    apiFetch(`/fixtures?league=${leagueId}&season=${season}`),
+    apiFetch(`/fixtures?date=${today}&league=${leagueId}`),
+    apiFetch(`/fixtures?date=${yesterday}&league=${leagueId}`),
+    competition === "world-cup" ? apiFetch("/fixtures?live=all") : Promise.resolve([]),
+  ]);
 
-  const url = `${API_BASE}/fixtures?league=${leagueId}&season=${season}`;
+  const wcLive = liveAll.filter(
+    (f) =>
+      /world cup/i.test(f.league.name ?? "") ||
+      String(f.league.id) === leagueId
+  );
 
-  try {
-    const res = await fetch(url, {
-      headers: { "x-apisports-key": key },
-      next: { revalidate: 30 },
-    });
+  const merged = dedupeFixtures([...bySeason, ...byToday, ...byYesterday, ...wcLive]);
+  if (merged.length === 0) return null;
 
-    if (!res.ok) return null;
-
-    const data = (await res.json()) as { response?: ApiFixture[] };
-    const fixtures = data.response ?? [];
-    if (fixtures.length === 0) return null;
-
-    return fixtures.map((f) => normalizeFixture(f, competition));
-  } catch {
-    return null;
-  }
+  return sortMatches(merged.map((f) => normalizeFixture(f, competition)));
 }
 
-/** Live fixtures across all leagues (great for testing before WC fixtures exist) */
 export async function fetchApiFootballLive(): Promise<Match[] | null> {
-  const key = process.env.API_FOOTBALL_KEY?.trim();
-  if (!key) return null;
+  if (!isApiFootballConfigured()) return null;
 
-  try {
-    const res = await fetch(`${API_BASE}/fixtures?live=all`, {
-      headers: { "x-apisports-key": key },
-      next: { revalidate: 15 },
-    });
-    if (!res.ok) return null;
+  const fixtures = await apiFetch("/fixtures?live=all");
+  if (fixtures.length === 0) return null;
 
-    const data = (await res.json()) as { response?: ApiFixture[] };
-    const fixtures = data.response ?? [];
-    if (fixtures.length === 0) return null;
+  const { leagueId } = leagueParams("world-cup");
+  const wc = fixtures.filter(
+    (f) =>
+      /world cup/i.test(f.league.name ?? "") ||
+      String(f.league.id) === leagueId
+  );
 
-    return fixtures.slice(0, 12).map((f) => normalizeFixture(f, "world-cup"));
-  } catch {
-    return null;
-  }
+  const pool = wc.length > 0 ? wc : fixtures;
+  return sortMatches(pool.slice(0, 16).map((f) => normalizeFixture(f, "world-cup")));
 }

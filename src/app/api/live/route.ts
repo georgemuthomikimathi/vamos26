@@ -4,6 +4,7 @@ import { fetchMatchesByCompetition } from "@/lib/scores/fetch-matches";
 import { getLiveCount } from "@/lib/scores/types";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   const competitionParam = request.nextUrl.searchParams.get("competition") ?? "world-cup";

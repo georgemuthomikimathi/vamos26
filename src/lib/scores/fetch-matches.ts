@@ -6,6 +6,7 @@ import {
   fetchApiFootballLive,
   isApiFootballConfigured,
 } from "@/lib/scores/providers/api-football";
+import { enrichMatches } from "@/lib/scores/providers/fixture-enrichment";
 
 const STATIC: Record<CompetitionId, Match[]> = {
   "world-cup": LIVE_MATCHES,
@@ -21,17 +22,15 @@ export async function fetchMatchesByCompetition(
     return { matches: STATIC[competition] ?? [], source: "static" };
   }
 
-  const fromApi = await fetchApiFootballFixtures(competition);
-  if (fromApi && fromApi.length > 0) {
-    return { matches: fromApi, source: "api" };
+  let matches: Match[] | null = await fetchApiFootballFixtures(competition);
+
+  if ((!matches || matches.length === 0) && competition === "world-cup") {
+    matches = await fetchApiFootballLive();
   }
 
-  // World Cup: if no WC fixtures yet, show live matches from API for demo/testing
-  if (competition === "world-cup") {
-    const live = await fetchApiFootballLive();
-    if (live && live.length > 0) {
-      return { matches: live, source: "api" };
-    }
+  if (matches && matches.length > 0) {
+    const enriched = await enrichMatches(matches);
+    return { matches: enriched, source: "api" };
   }
 
   return { matches: STATIC[competition] ?? [], source: "static" };
