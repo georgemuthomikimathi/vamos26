@@ -194,6 +194,13 @@ export const MATCH_META: Record<string, MatchMeta> = {
   },
 };
 
+/** worldcup26.ir game id → static preview meta id */
+const WC26_META_ALIASES: Record<string, string> = {
+  "wc26-1": "m1",
+};
+
 export function getMatchMeta(matchId: string): MatchMeta | undefined {
+  const alias = WC26_META_ALIASES[matchId];
+  if (alias) return MATCH_META[alias];
   return MATCH_META[matchId];
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import type { Match, MatchEvent } from "@/lib/scores/types";
+import { formatSubstitutionMinute } from "@/lib/timezone";
 
 function eventIcon(type: MatchEvent["type"]): string {
   switch (type) {
@@ -63,10 +64,12 @@ export default function MatchEventsTimeline({
               <ul className="space-y-1 text-xs text-muted">
                 {match.homeSubs.map((s, i) => (
                   <li key={i}>
-                    <span className="text-gold font-semibold">{s.minute}&apos;</span>{" "}
+                    <span className="text-gold font-semibold">
+                      {formatSubstitutionMinute(s.minute, s.extraMinute)}
+                    </span>{" "}
+                    Sub: {s.playerOut}
+                    <span className="text-muted/60"> → </span>
                     <span className="text-pitch">{s.playerIn}</span>
-                    <span className="text-muted/60"> for </span>
-                    {s.playerOut}
                   </li>
                 ))}
               </ul>
@@ -80,10 +83,12 @@ export default function MatchEventsTimeline({
               <ul className="space-y-1 text-xs text-muted">
                 {match.awaySubs.map((s, i) => (
                   <li key={i}>
-                    <span className="text-gold font-semibold">{s.minute}&apos;</span>{" "}
+                    <span className="text-gold font-semibold">
+                      {formatSubstitutionMinute(s.minute, s.extraMinute)}
+                    </span>{" "}
+                    Sub: {s.playerOut}
+                    <span className="text-muted/60"> → </span>
                     <span className="text-pitch">{s.playerIn}</span>
-                    <span className="text-muted/60"> for </span>
-                    {s.playerOut}
                   </li>
                 ))}
               </ul>
@@ -103,6 +108,12 @@ export default function MatchEventsTimeline({
               <span className="text-gold font-semibold">{formatEventMinute(e)}</span>{" "}
               {eventIcon(e.type)}{" "}
               <span className="text-white/90">{e.player}</span>
+              {e.type === "subst" && e.playerSecondary ? (
+                <span className="text-muted/70">
+                  {" "}
+                  Sub: {e.playerSecondary} → {e.player}
+                </span>
+              ) : null}
               {e.playerSecondary && e.type === "goal" && (
                 <span className="text-muted/70"> ({e.playerSecondary})</span>
               )}

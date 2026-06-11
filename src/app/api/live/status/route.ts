@@ -4,6 +4,7 @@ import { probeWorldCup26 } from "@/lib/scores/providers/worldcup26";
 import {
   fetchMatchesByCompetition,
   isApiFootballPlanError,
+  isApiFootballRateLimitError,
 } from "@/lib/scores/fetch-matches";
 import { getLiveCount } from "@/lib/scores/types";
 
@@ -17,6 +18,7 @@ export async function GET() {
     await fetchMatchesByCompetition("world-cup");
 
   const apiFootballPlanBlocked = isApiFootballPlanError(apiFootballError);
+  const apiFootballRateLimited = isApiFootballRateLimitError(apiFootballError);
 
   return NextResponse.json({
     ok: source === "api",
@@ -26,6 +28,7 @@ export async function GET() {
     apiError,
     apiFootballError,
     apiFootballPlanBlocked,
+    apiFootballRateLimited,
     liveCount: getLiveCount(matches),
     matchCount: matches.length,
     firstMatch: matches[0]
@@ -48,7 +51,9 @@ export async function GET() {
           : source === "static"
             ? apiFootballPlanBlocked
               ? "API-Football free tier blocked WC 2026; worldcup26.ir fallback also failed — check /get/games"
-              : "Key is set but no fixtures returned. Verify key at dashboard.api-football.com"
+              : apiFootballRateLimited
+                ? "API-Football rate limited; worldcup26.ir fallback also failed — check /get/games"
+                : "Key is set but no fixtures returned. Verify key at dashboard.api-football.com"
             : "API connected via API-Football",
   });
 }

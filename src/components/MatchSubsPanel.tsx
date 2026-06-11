@@ -41,9 +41,9 @@ function SubColumn({
             {used.map((s, i) => (
               <li key={i} className="text-xs text-muted">
                 <span className="text-gold font-semibold">{s.minute}&apos;</span>{" "}
+                Sub: {s.playerOut}
+                <span className="text-muted/60"> → </span>
                 <span className="text-pitch">{s.playerIn}</span>
-                <span className="text-muted/60"> for </span>
-                {s.playerOut}
               </li>
             ))}
           </ul>

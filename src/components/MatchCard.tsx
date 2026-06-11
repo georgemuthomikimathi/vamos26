@@ -8,8 +8,10 @@ import { getMatchMeta } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchOfficialsPanel from "@/components/MatchOfficialsPanel";
 import MatchSubsPanel from "@/components/MatchSubsPanel";
+import MatchLineupPanel from "@/components/MatchLineupPanel";
 import MatchClock from "@/components/MatchClock";
 import MatchEventsTimeline from "@/components/MatchEventsTimeline";
+import { formatSubstitutionMinute } from "@/lib/timezone";
 
 function StatusBadge({ match }: { match: Match }) {
   const { status } = match;
@@ -44,7 +46,7 @@ type MatchCardProps = {
   showCompetition?: boolean;
 };
 
-type DetailTab = "info" | "subs" | "events" | "officials";
+type DetailTab = "info" | "lineups" | "subs" | "events" | "officials";
 
 export default function MatchCard({ match, compact = true, showCompetition }: MatchCardProps) {
   const isLive = match.status === "live" || match.status === "halftime";
@@ -58,12 +60,14 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
   const scoreDisplay = formatScore(match.score);
   const meta = getMatchMeta(match.id);
   const hasApiSubs = Boolean(match.homeSubs?.length || match.awaySubs?.length);
+  const hasLineups = Boolean(match.homeLineup || match.awayLineup);
   const hasEvents = Boolean(match.events?.length);
   const hasDetails =
     Boolean(match.venue) ||
     Boolean(match.time) ||
     hasEvents ||
     hasApiSubs ||
+    hasLineups ||
     Boolean(meta);
 
   return (
@@ -155,6 +159,7 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
               {(
                 [
                   { id: "events" as const, label: "Events", show: hasEvents || isLive },
+                  { id: "lineups" as const, label: "Lineups", show: hasLineups },
                   { id: "subs" as const, label: "Subs", show: hasApiSubs || Boolean(meta) },
                   { id: "info" as const, label: "Info", show: true },
                   { id: "officials" as const, label: "Officials", show: Boolean(meta) },
@@ -184,6 +189,10 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
               <MatchEventsTimeline match={match} expanded />
             )}
 
+            {detailTab === "lineups" && hasLineups && (
+              <MatchLineupPanel match={match} />
+            )}
+
             {detailTab === "info" && (
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
                 <span>{match.time}</span>
@@ -206,10 +215,12 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
                     <ul className="space-y-1 text-xs text-muted">
                       {match.homeSubs.map((s, i) => (
                         <li key={i}>
-                          <span className="text-gold font-semibold">{s.minute}&apos;</span>{" "}
+                          <span className="text-gold font-semibold">
+                            {formatSubstitutionMinute(s.minute, s.extraMinute)}
+                          </span>{" "}
+                          Sub: {s.playerOut}
+                          <span className="text-muted/60"> → </span>
                           <span className="text-pitch">{s.playerIn}</span>
-                          <span className="text-muted/60"> for </span>
-                          {s.playerOut}
                         </li>
                       ))}
                     </ul>
@@ -223,10 +234,12 @@ export default function MatchCard({ match, compact = true, showCompetition }: Ma
                     <ul className="space-y-1 text-xs text-muted">
                       {match.awaySubs.map((s, i) => (
                         <li key={i}>
-                          <span className="text-gold font-semibold">{s.minute}&apos;</span>{" "}
+                          <span className="text-gold font-semibold">
+                            {formatSubstitutionMinute(s.minute, s.extraMinute)}
+                          </span>{" "}
+                          Sub: {s.playerOut}
+                          <span className="text-muted/60"> → </span>
                           <span className="text-pitch">{s.playerIn}</span>
-                          <span className="text-muted/60"> for </span>
-                          {s.playerOut}
                         </li>
                       ))}
                     </ul>

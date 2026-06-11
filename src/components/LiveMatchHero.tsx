@@ -5,6 +5,7 @@ import { formatScore } from "@/lib/scores/types";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchClock from "@/components/MatchClock";
 import MatchEventsTimeline from "@/components/MatchEventsTimeline";
+import MatchLineupPanel from "@/components/MatchLineupPanel";
 
 type LiveMatchHeroProps = {
   match: Match;
@@ -43,6 +44,15 @@ export default function LiveMatchHero({ match }: LiveMatchHeroProps) {
       </div>
 
       <MatchEventsTimeline match={match} expanded />
+
+      {(match.homeLineup || match.awayLineup) && (
+        <div className="mt-6 pt-6 border-t border-white/10">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-pitch font-semibold mb-3 text-center">
+            Starting XI
+          </p>
+          <MatchLineupPanel match={match} />
+        </div>
+      )}
     </article>
   );
 }

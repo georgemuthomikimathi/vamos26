@@ -24,6 +24,19 @@ export type MatchSubstitution = {
   playerOut: string;
 };
 
+export type LineupPlayer = {
+  name: string;
+  number: number;
+  position: string;
+};
+
+export type MatchLineup = {
+  formation?: string;
+  coach?: string;
+  startingXI: LineupPlayer[];
+  bench?: LineupPlayer[];
+};
+
 export type MatchEvent = {
   minute: number;
   extraMinute?: number;
@@ -54,6 +67,8 @@ export type Match = {
   events?: MatchEvent[];
   homeSubs?: MatchSubstitution[];
   awaySubs?: MatchSubstitution[];
+  homeLineup?: MatchLineup;
+  awayLineup?: MatchLineup;
 };
 
 export type Competition = {

@@ -1,6 +1,7 @@
 import type { CompetitionId, Match } from "@/lib/scores/types";
 import { FRIENDLY_MATCHES } from "@/lib/friendlies";
 import { LIVE_MATCHES } from "@/lib/live";
+import { attachLineupsToMatches } from "@/lib/scores/lineups";
 import { isApiFootballConfigured } from "@/lib/scores/providers/api-config";
 import { fetchApiFootballFixtures } from "@/lib/scores/providers/api-football";
 import { fetchWorldCup26Fixtures } from "@/lib/scores/providers/worldcup26";
@@ -28,6 +29,28 @@ export function isApiFootballPlanError(error?: string): boolean {
   return /free plans do not have access|do not have access to this season/i.test(error);
 }
 
+export function isApiFootballRateLimitError(error?: string): boolean {
+  if (!error) return false;
+  return /rate limit|too many requests|request limit|requests per day/i.test(error);
+}
+
+export function isApiFootballAuthError(error?: string): boolean {
+  if (!error) return false;
+  return /^auth_/.test(error) || /invalid api key|missing application key/i.test(error);
+}
+
+export function shouldFallbackToWorldCup26(apiFootballError?: string): boolean {
+  return (
+    isApiFootballPlanError(apiFootballError) ||
+    isApiFootballRateLimitError(apiFootballError) ||
+    isApiFootballAuthError(apiFootballError)
+  );
+}
+
+function finalizeMatches(matches: Match[]): Match[] {
+  return attachLineupsToMatches(matches);
+}
+
 export async function fetchMatchesByCompetition(
   competition: CompetitionId
 ): Promise<{
@@ -44,11 +67,12 @@ export async function fetchMatchesByCompetition(
     if (isApiFootballConfigured()) {
       const { matches, error } = await fetchApiFootballFixtures(competition);
       apiFootballError = error;
+      const forceWorldCup26 = shouldFallbackToWorldCup26(error);
 
-      if (matches && matches.length > 0) {
+      if (matches && matches.length > 0 && !forceWorldCup26) {
         const enriched = await enrichMatches(matches);
         return {
-          matches: enriched,
+          matches: finalizeMatches(enriched),
           source: "api",
           provider: "api-football",
           reason: "api_football",
@@ -60,23 +84,28 @@ export async function fetchMatchesByCompetition(
 
     const { matches: wc26Matches, error: wc26Error } = await fetchWorldCup26Fixtures(competition);
     if (wc26Matches && wc26Matches.length > 0) {
+      const fallbackReason = shouldFallbackToWorldCup26(apiFootballError)
+        ? "static_plan_fallback"
+        : "worldcup26";
       return {
-        matches: wc26Matches,
+        matches: finalizeMatches(wc26Matches),
         source: "api",
         provider: "worldcup26",
-        reason: isApiFootballPlanError(apiFootballError) ? "static_plan_fallback" : "worldcup26",
+        reason: fallbackReason,
         apiFootballError,
         apiError: isApiFootballPlanError(apiFootballError)
           ? "API-Football free plan cannot access WC 2026 — using worldcup26.ir instead."
-          : undefined,
+          : isApiFootballRateLimitError(apiFootballError)
+            ? "API-Football rate limit hit — using worldcup26.ir instead."
+            : undefined,
       };
     }
 
     return {
-      matches: STATIC[competition] ?? [],
+      matches: finalizeMatches(STATIC[competition] ?? []),
       source: "static",
       provider: "static",
-      reason: isApiFootballPlanError(apiFootballError)
+      reason: shouldFallbackToWorldCup26(apiFootballError)
         ? "static_plan_fallback"
         : apiFootballError === "no_key"
           ? "static_no_key"
@@ -104,7 +133,7 @@ export async function fetchMatchesByCompetition(
   if (matches && matches.length > 0) {
     const enriched = await enrichMatches(matches);
     return {
-      matches: enriched,
+      matches: finalizeMatches(enriched),
       source: "api",
       provider: "api-football",
       reason: "api_football",
@@ -112,7 +141,7 @@ export async function fetchMatchesByCompetition(
   }
 
   return {
-    matches: STATIC[competition] ?? [],
+    matches: finalizeMatches(STATIC[competition] ?? []),
     source: "static",
     provider: "static",
     reason: error === "no_key" ? "static_no_key" : "static_api_empty",

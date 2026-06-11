@@ -10,6 +10,7 @@ import MatchCard from "@/components/MatchCard";
 import MatchAlertSettings from "@/components/MatchAlertSettings";
 import LiveMatchHero from "@/components/LiveMatchHero";
 import LiveApiBanner from "@/components/LiveApiBanner";
+import { formatUpdatedET } from "@/lib/timezone";
 
 const POLL_LIVE_MS = 15_000;
 const POLL_IDLE_MS = 30_000;
@@ -33,13 +34,7 @@ export default function LiveMatchCenter() {
         setDataSource(data.source);
       }
       setApiError(data.apiError);
-      setLastUpdate(
-        new Date(data.updatedAt).toLocaleTimeString(undefined, {
-          hour: "numeric",
-          minute: "2-digit",
-          second: "2-digit",
-        })
-      );
+      setLastUpdate(formatUpdatedET(data.updatedAt));
     } catch {
       /* silent */
     } finally {

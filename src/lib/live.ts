@@ -10,6 +10,7 @@ export const LIVE_MATCHES: Match[] = [
     id: "m1",
     competition: "world-cup",
     status: "scheduled",
+    kickoffAt: "2026-06-11T19:00:00.000Z",
     date: "Jun 11",
     time: "3:00 PM ET",
     home: { name: "Mexico", code: "mx" },

@@ -1,5 +1,10 @@
 import type { CompetitionId, Match, MatchEvent, MatchStatus, Score } from "@/lib/scores/types";
 import { teamNameToCode } from "@/lib/scores/providers/team-codes";
+import {
+  formatKickoffET,
+  stadiumTimeZone,
+  zonedLocalToUtc,
+} from "@/lib/timezone";
 
 const DEFAULT_BASE = "https://worldcup26.ir";
 
@@ -34,6 +39,7 @@ type Wc26Stadium = {
   id: string;
   name_en: string;
   city_en: string;
+  country_en?: string;
 };
 
 type GamesResponse = { games?: Wc26Game[] };
@@ -64,31 +70,28 @@ function mapScore(game: Wc26Game, status: MatchStatus): Score {
 }
 
 function parseMinute(timeElapsed: string): number | undefined {
-  if (timeElapsed === "live") return undefined;
+  if (timeElapsed === "live" || timeElapsed === "notstarted") return undefined;
   if (/^\d+$/.test(timeElapsed)) return Number.parseInt(timeElapsed, 10);
   return undefined;
 }
 
-/** local_date is MM/DD/YYYY HH:mm in host-region local time */
-function parseKickoff(localDate: string): { kickoffAt: string; date: string; time: string } {
+/** local_date is MM/DD/YYYY HH:mm in stadium-local time */
+function parseKickoff(
+  localDate: string,
+  stadium?: Wc26Stadium
+): { kickoffAt: string; date: string; time: string } {
   const [datePart, timePart] = localDate.split(" ");
   const [month, day, year] = datePart.split("/").map(Number);
   const [hour, minute] = (timePart ?? "00:00").split(":").map(Number);
 
-  const kickoffAt = new Date(
-    Date.UTC(year, month - 1, day, hour + 6, minute)
-  ).toISOString();
+  const timeZone = stadium
+    ? stadiumTimeZone(stadium.city_en, stadium.country_en ?? "United States")
+    : "America/New_York";
 
-  const display = new Date(year, month - 1, day, hour, minute);
-  return {
-    kickoffAt,
-    date: display.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    time: display.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      timeZoneName: "short",
-    }),
-  };
+  const kickoffAt = zonedLocalToUtc(year, month, day, hour, minute, timeZone).toISOString();
+  const { date, time } = formatKickoffET(kickoffAt);
+
+  return { kickoffAt, date, time };
 }
 
 function formatStage(game: Wc26Game): string {
@@ -128,8 +131,8 @@ function parseScorers(raw: string | undefined, team: "home" | "away"): MatchEven
 
 function normalizeGame(game: Wc26Game, competition: CompetitionId, stadiums: Map<string, Wc26Stadium>): Match {
   const status = mapStatus(game);
-  const { kickoffAt, date, time } = parseKickoff(game.local_date);
   const stadium = stadiums.get(game.stadium_id);
+  const { kickoffAt, date, time } = parseKickoff(game.local_date, stadium);
   const homeName = teamName(game, "home");
   const awayName = teamName(game, "away");
   const homeEvents = parseScorers(game.home_scorers, "home");
@@ -194,7 +197,14 @@ function filterRelevantGames(games: Wc26Game[]): Wc26Game[] {
 async function fetchJson<T>(path: string): Promise<{ data: T | null; error?: string }> {
   const base = getWorldCup26BaseUrl();
   try {
-    const res = await fetch(`${base}${path}`, { cache: "no-store" });
+    const res = await fetch(`${base}${path}`, {
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "vamos26-live/1.0",
+      },
+      signal: AbortSignal.timeout(12_000),
+    });
     if (!res.ok) return { data: null, error: `http_${res.status}` };
     const data = (await res.json()) as T;
     return { data };
