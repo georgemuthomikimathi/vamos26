@@ -58,9 +58,13 @@ export default function LiveMatchCenter() {
     const soon = matches.find((m) => {
       if (!m.kickoffAt || m.status !== "scheduled") return false;
       const diff = new Date(m.kickoffAt).getTime() - Date.now();
-      return diff > -30 * 60_000 && diff < 3 * 60 * 60_000;
+      return diff > -30 * 60_000 && diff < 6 * 60 * 60_000;
     });
-    return soon ?? null;
+    if (soon) return soon;
+    const withLineups = matches.find(
+      (m) => m.status === "scheduled" && (m.homeLineup || m.awayLineup)
+    );
+    return withLineups ?? null;
   }, [matches]);
 
   const listMatches = useMemo(() => {

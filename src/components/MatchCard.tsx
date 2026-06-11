@@ -50,7 +50,7 @@ type MatchCardProps = {
 type DetailTab = "info" | "lineups" | "subs" | "events" | "officials";
 
 function defaultDetailTab(isLive: boolean, hasLineups: boolean): DetailTab {
-  if (isLive && hasLineups) return "lineups";
+  if (hasLineups) return "lineups";
   if (isLive) return "events";
   return "info";
 }
