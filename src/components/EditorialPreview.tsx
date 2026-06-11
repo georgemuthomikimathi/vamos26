@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Newspaper } from "lucide-react";
 
@@ -45,6 +46,13 @@ export default function EditorialPreview() {
             </h3>
           </div>
         </motion.div>
+
+        <p className="text-sm text-muted mb-6">
+          Deep dive on USA&apos;s group:{" "}
+          <Link href="/guides/group-d-usa-preview" className="text-pitch hover:underline font-medium">
+            Group D full preview →
+          </Link>
+        </p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {GROUP_PREVIEWS.map((item, i) => (

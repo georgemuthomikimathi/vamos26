@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,6 +14,7 @@ import {
   Search,
   Hotel,
   Train,
+  BookOpen,
 } from "lucide-react";
 import { NYC_VENUES, type Venue } from "@/lib/data";
 import {
@@ -140,11 +142,18 @@ export default function DiscoverSection() {
           <h2 className="font-display text-5xl md:text-7xl text-white mb-4">
             DISCOVER <span className="text-gradient-pitch">NYC</span>
           </h2>
-          <p className="text-muted max-w-2xl mx-auto">
+          <p className="text-muted max-w-2xl mx-auto mb-6">
             Where to watch, where to eat, and where the city comes alive for
             World Cup 2026. Bars, restaurants, fan zones, and viewing parties
             across all five boroughs.
           </p>
+          <Link
+            href="/guides/nyc-match-day"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-pitch hover:text-white border border-pitch/30 rounded-full px-5 py-2.5 tap-scale focus-ring transition-colors"
+          >
+            <BookOpen size={16} />
+            NYC match-day guide
+          </Link>
         </motion.div>
 
         <div className="relative max-w-xl mx-auto mb-8">
@@ -190,7 +199,7 @@ export default function DiscoverSection() {
           {filtered.length} venue{filtered.length === 1 ? "" : "s"} found
         </p>
 
-        <div className="grid sm:grid-cols-3 gap-4 mb-10 max-w-4xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10 max-w-5xl mx-auto">
           {NYC_TRAVEL_AFFILIATES.map((link) => (
             <a
               key={link.id}

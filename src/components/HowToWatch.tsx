@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Tv, ExternalLink } from "lucide-react";
+import { Tv, ExternalLink, BookOpen } from "lucide-react";
 import { AFFILIATE_REL, STREAMING_AFFILIATES } from "@/lib/affiliates";
 
 export default function HowToWatch() {
@@ -21,10 +22,17 @@ export default function HowToWatch() {
           <h2 className="font-display text-5xl md:text-7xl text-white mb-4">
             HOW TO <span className="text-gradient-pitch">WATCH</span>
           </h2>
-          <p className="text-muted max-w-2xl mx-auto">
+          <p className="text-muted max-w-2xl mx-auto mb-6">
             Every match, every time zone. Fox holds English rights in the USA; Telemundo
             covers Spanish. Stream on the go or catch replays with these trusted services.
           </p>
+          <Link
+            href="/guides/how-to-watch"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-pitch hover:text-white border border-pitch/30 rounded-full px-5 py-2.5 tap-scale focus-ring transition-colors"
+          >
+            <BookOpen size={16} />
+            Read full USA broadcast guide
+          </Link>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

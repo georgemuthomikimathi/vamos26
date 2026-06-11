@@ -32,6 +32,9 @@ export default function Footer() {
             <Link href="/privacy" className="text-muted hover:text-pitch transition-colors">
               Privacy
             </Link>
+            <Link href="/guides" className="text-muted hover:text-pitch transition-colors">
+              Guides
+            </Link>
           </nav>
 
           <div className="flex items-center gap-3">

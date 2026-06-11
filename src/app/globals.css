@@ -229,3 +229,22 @@ body {
 .animate-in.fade-in {
   animation: fade-in 0.25s ease-out;
 }
+
+.prose-vamos h2 {
+  margin-top: 0.5rem;
+}
+
+.prose-vamos strong {
+  color: var(--foreground);
+}
+
+.prose-vamos a {
+  color: var(--pitch);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose-vamos ul,
+.prose-vamos ol {
+  margin-top: 0.75rem;
+}
