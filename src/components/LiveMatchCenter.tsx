@@ -7,6 +7,7 @@ import type { Match } from "@/lib/scores/types";
 import { getLiveCount } from "@/lib/scores/types";
 import { LIVE_MATCHES } from "@/lib/live";
 import MatchCard from "@/components/MatchCard";
+import MatchAlertSettings from "@/components/MatchAlertSettings";
 
 export default function LiveMatchCenter() {
   const [matches, setMatches] = useState<Match[]>(LIVE_MATCHES);
@@ -104,6 +105,8 @@ export default function LiveMatchCenter() {
             )}
           </div>
         </motion.div>
+
+        <MatchAlertSettings />
 
         <div className="grid gap-2">
           <AnimatePresence mode="popLayout">

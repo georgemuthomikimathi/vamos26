@@ -50,3 +50,16 @@ curl -s "https://www.vamos26.com/api/live?competition=world-cup" | head -c 500
 ```
 
 Look for `"source":"api"` in the JSON.
+
+---
+
+## Match alerts (goals, red cards, penalties)
+
+1. Open **Live Scores** on the site (or installed PWA)
+2. Tap **Enable goal & card alerts** → allow notifications
+3. Toggle **Goals**, **Red cards**, **Penalties** as you like
+4. During live matches, alerts fire every ~30s when new events are detected
+
+Requires `API_FOOTBALL_KEY` for card/penalty events. Goals also work via score changes.
+
+**Best experience:** install PWA to home screen (Android/iOS) so alerts work when the app is backgrounded.

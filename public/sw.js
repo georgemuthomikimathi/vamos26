@@ -36,3 +36,21 @@ self.addEventListener("fetch", (event) => {
       .catch(() => caches.match(request).then((r) => r || caches.match("/")))
   );
 });
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = event.notification.data?.url || "/#live";
+  const absolute = new URL(target, self.location.origin).href;
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if ("focus" in client) {
+          client.navigate(absolute);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) return clients.openWindow(absolute);
+    })
+  );
+});

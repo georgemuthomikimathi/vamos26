@@ -4,6 +4,7 @@ import CookieConsent from "@/components/CookieConsent";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import InstallPrompt from "@/components/InstallPrompt";
+import MatchNotificationWatcher from "@/components/MatchNotificationWatcher";
 import { ADSENSE_CLIENT, ADSENSE_VERIFICATION_META } from "@/lib/adsense";
 import "./globals.css";
 
@@ -109,6 +110,7 @@ export default function RootLayout({
         <GoogleAnalytics />
         <ServiceWorkerRegister />
         <InstallPrompt />
+        <MatchNotificationWatcher />
       </body>
     </html>
   );
