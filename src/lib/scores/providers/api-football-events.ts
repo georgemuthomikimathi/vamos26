@@ -1,3 +1,4 @@
+import { getApiFootballKey } from "@/lib/scores/providers/api-config";
 import { teamNameToCode } from "@/lib/scores/providers/team-codes";
 import { eventKey } from "@/lib/notifications/match-state";
 
@@ -71,7 +72,7 @@ function classifyEvent(raw: RawEvent, matchId: string): ApiMatchEvent | null {
 }
 
 export async function fetchFixtureEvents(fixtureId: string): Promise<ApiMatchEvent[]> {
-  const key = process.env.API_FOOTBALL_KEY?.trim();
+  const key = getApiFootballKey();
   if (!key) return [];
 
   const numericId = fixtureId.replace(/^af-/, "");

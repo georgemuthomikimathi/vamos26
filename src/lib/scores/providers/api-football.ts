@@ -1,7 +1,23 @@
 import type { CompetitionId, Match, MatchStatus, Score } from "@/lib/scores/types";
+import {
+  getApiFootballKey,
+  getWcLeagueId,
+  getWcSeason,
+  isApiFootballConfigured,
+} from "@/lib/scores/providers/api-config";
 import { teamNameToCode } from "@/lib/scores/providers/team-codes";
 
 const API_BASE = "https://v3.football.api-sports.io";
+
+export type ApiFetchDebug = {
+  configured: boolean;
+  leagueId: string;
+  season: string;
+  today: string;
+  counts: Record<string, number>;
+  errors: string[];
+  sampleFixtureId?: number;
+};
 
 type ApiFixture = {
   fixture: {
@@ -31,10 +47,7 @@ function mapStatus(short: string): MatchStatus {
 
 function mapScore(goals: { home: number | null; away: number | null }, status: MatchStatus): Score {
   if (status === "scheduled") return { home: null, away: null };
-  return {
-    home: goals.home ?? 0,
-    away: goals.away ?? 0,
-  };
+  return { home: goals.home ?? 0, away: goals.away ?? 0 };
 }
 
 function formatFixtureDate(iso: string): { date: string; time: string } {
@@ -94,38 +107,59 @@ function dedupeFixtures(fixtures: ApiFixture[]): ApiFixture[] {
   });
 }
 
-async function apiFetch(path: string): Promise<ApiFixture[]> {
-  const key = process.env.API_FOOTBALL_KEY?.trim();
-  if (!key) return [];
+function datesAroundToday(): string[] {
+  const dates = new Set<string>();
+  const now = new Date();
+  for (let offset = -1; offset <= 2; offset++) {
+    const d = new Date(now);
+    d.setUTCDate(d.getUTCDate() + offset);
+    dates.add(d.toISOString().slice(0, 10));
+  }
+  return [...dates];
+}
+
+async function apiFetchRaw(path: string): Promise<{ fixtures: ApiFixture[]; error?: string }> {
+  const key = getApiFootballKey();
+  if (!key) return { fixtures: [], error: "no_key" };
 
   try {
     const res = await fetch(`${API_BASE}${path}`, {
       headers: { "x-apisports-key": key },
       cache: "no-store",
     });
-    if (!res.ok) return [];
-    const data = (await res.json()) as { response?: ApiFixture[] };
-    return data.response ?? [];
-  } catch {
-    return [];
+
+    if (res.status === 401 || res.status === 403) {
+      return { fixtures: [], error: `auth_${res.status}` };
+    }
+    if (!res.ok) {
+      return { fixtures: [], error: `http_${res.status}` };
+    }
+
+    const data = (await res.json()) as {
+      response?: ApiFixture[];
+      errors?: Record<string, string>;
+    };
+
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      return { fixtures: [], error: JSON.stringify(data.errors) };
+    }
+
+    return { fixtures: data.response ?? [] };
+  } catch (e) {
+    return { fixtures: [], error: e instanceof Error ? e.message : "fetch_failed" };
   }
 }
 
-export function isApiFootballConfigured(): boolean {
-  return Boolean(process.env.API_FOOTBALL_KEY?.trim());
-}
+export { isApiFootballConfigured } from "@/lib/scores/providers/api-config";
 
 function leagueParams(competition: CompetitionId): { leagueId: string; season: string } {
   if (competition === "world-cup") {
-    return {
-      leagueId: process.env.API_FOOTBALL_LEAGUE_WC ?? "1",
-      season: process.env.API_FOOTBALL_SEASON ?? "2026",
-    };
+    return { leagueId: getWcLeagueId(), season: getWcSeason() };
   }
   if (competition === "friendly") {
     return {
       leagueId: process.env.API_FOOTBALL_LEAGUE_FRIENDLY ?? "10",
-      season: process.env.API_FOOTBALL_SEASON ?? "2026",
+      season: getWcSeason(),
     };
   }
   if (competition === "premier-league") {
@@ -134,31 +168,65 @@ function leagueParams(competition: CompetitionId): { leagueId: string; season: s
   return { leagueId: process.env.API_FOOTBALL_LEAGUE_SERIE_A ?? "135", season: "2025" };
 }
 
-function todayUtc(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+export async function probeApiFootball(): Promise<ApiFetchDebug> {
+  const { leagueId, season } = leagueParams("world-cup");
+  const today = new Date().toISOString().slice(0, 10);
+  const debug: ApiFetchDebug = {
+    configured: isApiFootballConfigured(),
+    leagueId,
+    season,
+    today,
+    counts: {},
+    errors: [],
+  };
 
-function yesterdayUtc(): string {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() - 1);
-  return d.toISOString().slice(0, 10);
+  if (!debug.configured) {
+    debug.errors.push("API_FOOTBALL_KEY not set in Vercel environment variables");
+    return debug;
+  }
+
+  const probes = [
+    ["live", "/fixtures?live=all"],
+    ["season", `/fixtures?league=${leagueId}&season=${season}`],
+    ["today", `/fixtures?date=${today}&league=${leagueId}`],
+    [
+      "active",
+      `/fixtures?league=${leagueId}&season=${season}&status=NS-1H-HT-2H-ET-P-LIVE`,
+    ],
+  ] as const;
+
+  for (const [name, path] of probes) {
+    const { fixtures, error } = await apiFetchRaw(path);
+    debug.counts[name] = fixtures.length;
+    if (error) debug.errors.push(`${name}: ${error}`);
+    if (!debug.sampleFixtureId && fixtures[0]) {
+      debug.sampleFixtureId = fixtures[0].fixture.id;
+    }
+  }
+
+  return debug;
 }
 
 export async function fetchApiFootballFixtures(
   competition: CompetitionId
-): Promise<Match[] | null> {
-  if (!isApiFootballConfigured()) return null;
+): Promise<{ matches: Match[] | null; error?: string }> {
+  if (!isApiFootballConfigured()) {
+    return { matches: null, error: "no_key" };
+  }
 
   const { leagueId, season } = leagueParams(competition);
-  const today = todayUtc();
-  const yesterday = yesterdayUtc();
+  const dates = datesAroundToday();
 
-  const [bySeason, byToday, byYesterday, liveAll] = await Promise.all([
-    apiFetch(`/fixtures?league=${leagueId}&season=${season}`),
-    apiFetch(`/fixtures?date=${today}&league=${leagueId}`),
-    apiFetch(`/fixtures?date=${yesterday}&league=${leagueId}`),
-    competition === "world-cup" ? apiFetch("/fixtures?live=all") : Promise.resolve([]),
+  const results = await Promise.all([
+    apiFetchRaw(`/fixtures?league=${leagueId}&season=${season}`),
+    apiFetchRaw(`/fixtures?league=${leagueId}&season=${season}&status=NS-1H-HT-2H-ET-P-LIVE`),
+    apiFetchRaw("/fixtures?live=all"),
+    ...dates.map((d) => apiFetchRaw(`/fixtures?date=${d}&league=${leagueId}`)),
+    ...dates.map((d) => apiFetchRaw(`/fixtures?date=${d}`)),
   ]);
+
+  const errors = results.map((r) => r.error).filter(Boolean) as string[];
+  const liveAll = results[2]?.fixtures ?? [];
 
   const wcLive = liveAll.filter(
     (f) =>
@@ -166,25 +234,26 @@ export async function fetchApiFootballFixtures(
       String(f.league.id) === leagueId
   );
 
-  const merged = dedupeFixtures([...bySeason, ...byToday, ...byYesterday, ...wcLive]);
-  if (merged.length === 0) return null;
+  const merged = dedupeFixtures([
+    ...results.flatMap((r) => r.fixtures),
+    ...wcLive,
+  ]);
 
-  return sortMatches(merged.map((f) => normalizeFixture(f, competition)));
+  if (merged.length === 0) {
+    return {
+      matches: null,
+      error: errors[0] ?? "no_fixtures",
+    };
+  }
+
+  return { matches: sortMatches(merged.map((f) => normalizeFixture(f, competition))) };
 }
 
 export async function fetchApiFootballLive(): Promise<Match[] | null> {
-  if (!isApiFootballConfigured()) return null;
-
-  const fixtures = await apiFetch("/fixtures?live=all");
-  if (fixtures.length === 0) return null;
-
-  const { leagueId } = leagueParams("world-cup");
-  const wc = fixtures.filter(
-    (f) =>
-      /world cup/i.test(f.league.name ?? "") ||
-      String(f.league.id) === leagueId
+  const { matches } = await fetchApiFootballFixtures("world-cup");
+  if (!matches) return null;
+  const live = matches.filter(
+    (m) => m.status === "live" || m.status === "halftime"
   );
-
-  const pool = wc.length > 0 ? wc : fixtures;
-  return sortMatches(pool.slice(0, 16).map((f) => normalizeFixture(f, "world-cup")));
+  return live.length > 0 ? live : matches.slice(0, 16);
 }

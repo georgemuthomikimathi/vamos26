@@ -1,4 +1,5 @@
 import type { Match, MatchEvent, MatchSubstitution } from "@/lib/scores/types";
+import { getApiFootballKey } from "@/lib/scores/providers/api-config";
 
 const API_BASE = "https://v3.football.api-sports.io";
 
@@ -87,7 +88,7 @@ function parseEvents(raw: RawEvent[], match: Match): {
 }
 
 export async function enrichMatchFromApi(match: Match): Promise<Match> {
-  const key = process.env.API_FOOTBALL_KEY?.trim();
+  const key = getApiFootballKey();
   if (!key || !match.id.startsWith("af-")) return match;
 
   const fixtureId = match.id.replace(/^af-/, "");

@@ -18,7 +18,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   }
 
   const competition = getCompetition(competitionId)!;
-  const { matches, source } = await fetchMatchesByCompetition(competitionId);
+  const { matches, source, reason } = await fetchMatchesByCompetition(competitionId);
 
   return NextResponse.json({
     updatedAt: new Date().toISOString(),
@@ -28,5 +28,6 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     liveCount: getLiveCount(matches),
     matches,
     source,
+    reason,
   });
 }

@@ -9,6 +9,7 @@ import { LIVE_MATCHES } from "@/lib/live";
 import MatchCard from "@/components/MatchCard";
 import MatchAlertSettings from "@/components/MatchAlertSettings";
 import LiveMatchHero from "@/components/LiveMatchHero";
+import LiveApiBanner from "@/components/LiveApiBanner";
 
 const POLL_LIVE_MS = 15_000;
 const POLL_IDLE_MS = 30_000;
@@ -19,6 +20,7 @@ export default function LiveMatchCenter() {
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [dataSource, setDataSource] = useState<"api" | "static" | "">("");
+  const [apiError, setApiError] = useState<string | undefined>();
 
   const fetchLive = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
@@ -30,6 +32,7 @@ export default function LiveMatchCenter() {
       if (data.source === "api" || data.source === "static") {
         setDataSource(data.source);
       }
+      setApiError(data.apiError);
       setLastUpdate(
         new Date(data.updatedAt).toLocaleTimeString(undefined, {
           hour: "numeric",
@@ -122,6 +125,8 @@ export default function LiveMatchCenter() {
             )}
           </div>
         </motion.div>
+
+        <LiveApiBanner source={dataSource} apiError={apiError} />
 
         <MatchAlertSettings />
 
