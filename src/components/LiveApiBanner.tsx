@@ -81,6 +81,7 @@ export default function LiveApiBanner({ source, provider, apiError }: LiveApiBan
             <li>Vercel → project <strong className="text-white">vamos26</strong> → Settings → Environment Variables</li>
             <li>Add <code className="text-pitch">API_FOOTBALL_KEY</code> = your key from api-football.com</li>
             <li>Add <code className="text-pitch">API_FOOTBALL_SEASON</code> = <code className="text-pitch">2026</code></li>
+            <li>Add <code className="text-pitch">API_FOOTBALL_LEAGUE_WC</code> = <code className="text-pitch">1</code> (not your API key)</li>
             <li>Deployments → Redeploy (required!)</li>
           </ol>
         </div>

@@ -23,7 +23,7 @@ import LiveMatchHero from "@/components/LiveMatchHero";
 import LiveApiBanner from "@/components/LiveApiBanner";
 import { formatUpdatedET } from "@/lib/timezone";
 
-const POLL_LIVE_MS = 15_000;
+const POLL_LIVE_MS = 10_000;
 const POLL_IDLE_MS = 30_000;
 
 const TABS: { id: MatchCenterTab; label: string; icon: typeof Radio }[] = [
@@ -171,7 +171,8 @@ export default function LiveMatchCenter() {
               LIVE <span className="text-gradient-pitch">SCORES</span>
             </h2>
             <p className="text-muted mt-2 max-w-xl text-sm">
-              Live clock, goals, cards & subs — refreshes every {liveCount > 0 ? "15" : "30"}s.
+              Live clock (to the second), goals, cards & subs — refreshes every{" "}
+              {liveCount > 0 ? "10" : "30"}s.
               {lastUpdate && (
                 <span className="text-pitch/70 block text-xs mt-1">
                   Last updated {lastUpdate}

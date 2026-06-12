@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, ChevronDown } from "lucide-react";
 import type { Match } from "@/lib/scores/types";
-import { formatScore, formatMatchMinute, isPreMatch } from "@/lib/scores/types";
+import {
+  formatScore,
+  formatLiveClock,
+  liveClockSyncKey,
+  isPreMatch,
+} from "@/lib/scores/types";
 import { attachLineupsToMatch } from "@/lib/scores/lineups";
 import { getMatchMeta } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
@@ -15,11 +20,29 @@ import MatchClock from "@/components/MatchClock";
 import MatchEventsTimeline from "@/components/MatchEventsTimeline";
 
 function StatusBadge({ match }: { match: Match }) {
+  const [now, setNow] = useState(() => Date.now());
+  const syncAtRef = useRef(Date.now());
+  const syncKeyRef = useRef(liveClockSyncKey(match));
+
+  useEffect(() => {
+    if (match.status !== "live" && match.status !== "halftime") return;
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(tick);
+  }, [match.status]);
+
+  useEffect(() => {
+    const key = liveClockSyncKey(match);
+    if (key !== syncKeyRef.current) {
+      syncKeyRef.current = key;
+      syncAtRef.current = Date.now();
+    }
+  }, [match]);
+
   const { status } = match;
   if (status === "live")
     return (
       <span className="inline-flex items-center gap-1 bg-red-500/20 text-red-400 border border-red-500/40 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider animate-pulse">
-        Live {formatMatchMinute(match)}
+        Live {formatLiveClock(match, syncAtRef.current, now)}
       </span>
     );
   if (status === "halftime")

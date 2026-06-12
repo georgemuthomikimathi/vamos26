@@ -103,3 +103,30 @@ export function formatMatchMinute(match: Match): string {
   }
   return `${match.minute}'`;
 }
+
+/**
+ * Live clock with ticking seconds between API polls.
+ * syncAtMs should reset whenever minute/extraMinute/statusShort changes from a poll.
+ */
+export function formatLiveClock(
+  match: Match,
+  syncAtMs: number,
+  nowMs: number = Date.now()
+): string {
+  if (match.status === "halftime") return "HT";
+  if (match.status === "finished") return "FT";
+  if (match.status === "scheduled") return match.time;
+  if (match.minute == null) return "LIVE";
+
+  const elapsedSec = Math.max(0, Math.floor((nowMs - syncAtMs) / 1000));
+  const sec = String(elapsedSec % 60).padStart(2, "0");
+
+  if (match.extraMinute && match.extraMinute > 0) {
+    return `${match.minute}+${match.extraMinute}:${sec}`;
+  }
+  return `${match.minute}:${sec}`;
+}
+
+export function liveClockSyncKey(match: Match): string {
+  return `${match.id}:${match.status}:${match.statusShort ?? ""}:${match.minute ?? ""}:${match.extraMinute ?? ""}`;
+}

@@ -14,6 +14,10 @@ import MatchSubsPanel from "@/components/MatchSubsPanel";
 import MatchOfficialsPanel from "@/components/MatchOfficialsPanel";
 import { formatSubstitutionMinute } from "@/lib/timezone";
 
+function formatGoalMinute(minute: number, extraMinute?: number): string {
+  return formatSubstitutionMinute(minute, extraMinute);
+}
+
 type PreviousFixtureCardProps = {
   match: Match;
   defaultExpanded?: boolean;
@@ -28,7 +32,7 @@ function eventIcon(event: MatchEvent): string {
 
 export default function PreviousFixtureCard({
   match,
-  defaultExpanded = false,
+  defaultExpanded = true,
 }: PreviousFixtureCardProps) {
   const enriched = attachLineupsToMatch(match);
   const meta = getMatchMeta(enriched.id);
@@ -105,7 +109,7 @@ export default function PreviousFixtureCard({
                     key={`${g.minute}-${g.player}-${i}`}
                     className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted"
                   >
-                    <span className="text-gold font-semibold">{g.minute}&apos;</span>{" "}
+                    <span className="text-gold font-semibold">{formatGoalMinute(g.minute, g.extraMinute)}</span>{" "}
                     {eventIcon(g)} {g.player}
                     {g.playerSecondary && (
                       <span className="text-muted/60"> ({g.playerSecondary})</span>
@@ -125,7 +129,7 @@ export default function PreviousFixtureCard({
                     key={`${c.minute}-${c.player}-${i}`}
                     className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted"
                   >
-                    <span className="text-gold font-semibold">{c.minute}&apos;</span>{" "}
+                    <span className="text-gold font-semibold">{formatGoalMinute(c.minute, c.extraMinute)}</span>{" "}
                     {eventIcon(c)} {c.player}
                     {c.detail === "Second yellow" && (
                       <span className="text-muted/50"> (2nd yellow)</span>

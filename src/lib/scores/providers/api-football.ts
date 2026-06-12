@@ -5,6 +5,7 @@ import {
   getWcLeagueId,
   getWcSeason,
   isApiFootballConfigured,
+  checkApiFootballEnv,
 } from "@/lib/scores/providers/api-config";
 import { teamNameToCode } from "@/lib/scores/providers/team-codes";
 
@@ -17,6 +18,8 @@ export type ApiFetchDebug = {
   today: string;
   counts: Record<string, number>;
   errors: string[];
+  envWarnings?: string[];
+  keySource?: string;
   sampleFixtureId?: number;
 };
 
@@ -178,19 +181,22 @@ function leagueParams(competition: CompetitionId): { leagueId: string; season: s
 }
 
 export async function probeApiFootball(): Promise<ApiFetchDebug> {
+  const env = checkApiFootballEnv();
   const { leagueId, season } = leagueParams("world-cup");
   const today = new Date().toISOString().slice(0, 10);
   const debug: ApiFetchDebug = {
-    configured: isApiFootballConfigured(),
+    configured: env.configured,
     leagueId,
     season,
     today,
     counts: {},
-    errors: [],
+    errors: [...env.warnings],
+    envWarnings: env.warnings,
+    keySource: env.keySource,
   };
 
   if (!debug.configured) {
-    debug.errors.push("API_FOOTBALL_KEY not set in Vercel environment variables");
+    debug.errors.push("API_FOOTBALL_KEY not set correctly in Vercel environment variables");
     return debug;
   }
 
