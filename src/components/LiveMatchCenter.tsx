@@ -38,6 +38,7 @@ export default function LiveMatchCenter() {
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [dataSource, setDataSource] = useState<"api" | "static" | "">("");
+  const [provider, setProvider] = useState<"api-football" | "worldcup26" | "static" | "">("");
   const [apiError, setApiError] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<MatchCenterTab>("live");
   const [stageFilter, setStageFilter] = useState<string | null>(null);
@@ -58,6 +59,9 @@ export default function LiveMatchCenter() {
       setLiveCount(data.liveCount);
       if (data.source === "api" || data.source === "static") {
         setDataSource(data.source);
+      }
+      if (data.provider) {
+        setProvider(data.provider);
       }
       setApiError(data.apiError);
       setLastUpdate(formatUpdatedET(data.updatedAt));
@@ -157,6 +161,11 @@ export default function LiveMatchCenter() {
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               )}
               World Cup 2026
+              {provider === "api-football" && (
+                <span className="normal-case tracking-normal bg-pitch/20 text-pitch border border-pitch/40 rounded-full px-2 py-0.5 text-[10px] font-bold">
+                  Live API
+                </span>
+              )}
             </p>
             <h2 className="font-display text-4xl md:text-6xl text-white">
               LIVE <span className="text-gradient-pitch">SCORES</span>
@@ -166,7 +175,8 @@ export default function LiveMatchCenter() {
               {lastUpdate && (
                 <span className="text-pitch/70 block text-xs mt-1">
                   Last updated {lastUpdate}
-                  {dataSource === "api" && " · Live scores"}
+                  {provider === "api-football" && " · Live API (API-Football)"}
+                  {dataSource === "api" && provider !== "api-football" && " · Live scores"}
                   {dataSource === "static" && " · Schedule preview — live API unavailable"}
                 </span>
               )}
@@ -195,7 +205,7 @@ export default function LiveMatchCenter() {
           </div>
         </motion.div>
 
-        <LiveApiBanner source={dataSource} apiError={apiError} />
+        <LiveApiBanner source={dataSource} provider={provider} apiError={apiError} />
 
         <MatchAlertSettings />
 

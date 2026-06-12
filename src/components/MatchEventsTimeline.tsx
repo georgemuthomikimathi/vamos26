@@ -124,8 +124,8 @@ export default function MatchEventsTimeline({
                   Sub: {e.playerSecondary} → {e.player}
                 </span>
               ) : null}
-              {e.playerSecondary && e.type === "goal" && (
-                <span className="text-muted/70"> ({e.playerSecondary})</span>
+              {e.playerSecondary && (e.type === "goal" || e.type === "penalty") && (
+                <span className="text-muted/70"> · assist {e.playerSecondary}</span>
               )}
             </li>
           ))}

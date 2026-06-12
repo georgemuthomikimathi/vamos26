@@ -107,6 +107,9 @@ export default function PreviousFixtureCard({
                   >
                     <span className="text-gold font-semibold">{g.minute}&apos;</span>{" "}
                     {eventIcon(g)} {g.player}
+                    {g.playerSecondary && (
+                      <span className="text-muted/60"> ({g.playerSecondary})</span>
+                    )}
                     <span className="text-muted/50 ml-1">
                       ({g.team === "home" ? enriched.home.code.toUpperCase() : enriched.away.code.toUpperCase()})
                     </span>

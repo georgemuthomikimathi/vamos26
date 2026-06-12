@@ -13,7 +13,6 @@ import MatchSubsPanel from "@/components/MatchSubsPanel";
 import MatchLineupPanel from "@/components/MatchLineupPanel";
 import MatchClock from "@/components/MatchClock";
 import MatchEventsTimeline from "@/components/MatchEventsTimeline";
-import { formatSubstitutionMinute } from "@/lib/timezone";
 
 function StatusBadge({ match }: { match: Match }) {
   const { status } = match;
@@ -236,51 +235,8 @@ export default function MatchCard({
               </div>
             )}
 
-            {detailTab === "subs" && meta && (
+            {detailTab === "subs" && (meta || hasSubs) && (
               <MatchSubsPanel match={enriched} meta={meta} />
-            )}
-
-            {detailTab === "subs" && !meta && hasSubs && (
-              <div className="grid sm:grid-cols-2 gap-3">
-                {enriched.homeSubs && enriched.homeSubs.length > 0 && (
-                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                    <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
-                      {enriched.home.name}
-                    </p>
-                    <ul className="space-y-1 text-xs text-muted">
-                      {enriched.homeSubs.map((s, i) => (
-                        <li key={i}>
-                          <span className="text-gold font-semibold">
-                            {formatSubstitutionMinute(s.minute, s.extraMinute)}
-                          </span>{" "}
-                          Sub: {s.playerOut}
-                          <span className="text-muted/60"> → </span>
-                          <span className="text-pitch">{s.playerIn}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {enriched.awaySubs && enriched.awaySubs.length > 0 && (
-                  <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                    <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
-                      {enriched.away.name}
-                    </p>
-                    <ul className="space-y-1 text-xs text-muted">
-                      {enriched.awaySubs.map((s, i) => (
-                        <li key={i}>
-                          <span className="text-gold font-semibold">
-                            {formatSubstitutionMinute(s.minute, s.extraMinute)}
-                          </span>{" "}
-                          Sub: {s.playerOut}
-                          <span className="text-muted/60"> → </span>
-                          <span className="text-pitch">{s.playerIn}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
             )}
 
             {detailTab === "subs" && !hasSubs && !meta && (

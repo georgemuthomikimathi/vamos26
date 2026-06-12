@@ -47,19 +47,25 @@ Dedicated route per competition (e.g. `/api/scores/friendly`).
 - **Friendly matches** use real scores (e.g. USA 2-1 Mexico) and are labeled "International Friendly".
 - **Live badge** only appears when `status` is `live` or `halftime`.
 
+## API-Football integration (paid tier)
+
+`src/lib/scores/providers/`:
+
+| File | Endpoints | Purpose |
+|------|-----------|---------|
+| `api-football.ts` | `/fixtures?…` | Fixtures, scores, live clock |
+| `fixture-enrichment.ts` | `/fixtures/events`, `/fixtures/lineups` | Goals, assists, cards, all subs, official lineups |
+| `api-football-events.ts` | `/fixtures/events` | Push notification event polling |
+| `api-football-lineups.ts` | `/fixtures/lineups` | Starting XI + full bench |
+| `fetch-matches.ts` | — | API-Football first; worldcup26.ir fallback on failure |
+
+`enrichMatches()` runs for all live, halftime, finished, and kickoff-soon API fixtures.
+
+`enrich-from-meta.ts` supplements only missing data (officials); API events/subs take priority.
+
 ## Future Sports API Integration
 
-1. Create a fetch adapter in `src/lib/scores/providers/` (e.g. `api-football.ts`).
-2. Map external payloads to `Match` type in a normalizer.
-3. Swap seed data in `getMatchesByCompetition()` for cached API responses.
-4. Add ISR or edge caching with 30s revalidation for live matches.
-5. Optional: service worker for push notifications on goal events.
-
-### Recommended providers
-
-- [API-Football](https://www.api-football.com/) — broad coverage
-- [Sportradar](https://developer.sportradar.com/) — enterprise grade
-- [Football-Data.org](https://www.football-data.org/) — free tier for EPL
+Additional competitions (EPL, Serie A) are scaffolded in `src/lib/competitions.ts`.
 
 ## Service Worker (future)
 

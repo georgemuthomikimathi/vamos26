@@ -5,8 +5,16 @@ import { formatSubstitutionMinute } from "@/lib/timezone";
 
 type MatchSubsPanelProps = {
   match: Match;
-  meta: MatchMeta;
+  meta?: MatchMeta;
 };
+
+function benchRemaining(
+  bench: { name: string }[] | undefined,
+  usedNames: Set<string>
+): string[] {
+  if (!bench?.length) return [];
+  return bench.map((p) => p.name).filter((name) => !usedNames.has(name));
+}
 
 function SubColumn({
   side,
@@ -75,22 +83,8 @@ function SubColumn({
 export default function MatchSubsPanel({ match, meta }: MatchSubsPanelProps) {
   const isLive = match.status === "live" || match.status === "halftime";
 
-  const homeUsed =
-    match.homeSubs ??
-    meta.home.subsUsed?.map((s) => ({
-      minute: s.minute,
-      extraMinute: s.extraMinute,
-      playerIn: s.playerIn,
-      playerOut: s.playerOut,
-    }));
-  const awayUsed =
-    match.awaySubs ??
-    meta.away.subsUsed?.map((s) => ({
-      minute: s.minute,
-      extraMinute: s.extraMinute,
-      playerIn: s.playerIn,
-      playerOut: s.playerOut,
-    }));
+  const homeUsed = match.homeSubs;
+  const awayUsed = match.awaySubs;
 
   const homeUsedNames = new Set(
     homeUsed?.flatMap((s) => [s.playerIn, s.playerOut]) ?? []
@@ -99,8 +93,32 @@ export default function MatchSubsPanel({ match, meta }: MatchSubsPanelProps) {
     awayUsed?.flatMap((s) => [s.playerIn, s.playerOut]) ?? []
   );
 
-  const homeRemaining = meta.home.potentialSubs.filter((n) => !homeUsedNames.has(n));
-  const awayRemaining = meta.away.potentialSubs.filter((n) => !awayUsedNames.has(n));
+  const homeFromLineup = benchRemaining(match.homeLineup?.bench, homeUsedNames);
+  const awayFromLineup = benchRemaining(match.awayLineup?.bench, awayUsedNames);
+
+  const homeRemaining =
+    homeFromLineup.length > 0
+      ? homeFromLineup
+      : meta?.home.potentialSubs.filter((n) => !homeUsedNames.has(n)) ?? [];
+
+  const awayRemaining =
+    awayFromLineup.length > 0
+      ? awayFromLineup
+      : meta?.away.potentialSubs.filter((n) => !awayUsedNames.has(n)) ?? [];
+
+  const homePotential =
+    match.status === "scheduled"
+      ? match.homeLineup?.bench?.map((p) => p.name) ??
+        meta?.home.potentialSubs ??
+        []
+      : homeRemaining;
+
+  const awayPotential =
+    match.status === "scheduled"
+      ? match.awayLineup?.bench?.map((p) => p.name) ??
+        meta?.away.potentialSubs ??
+        []
+      : awayRemaining;
 
   return (
     <div className="grid sm:grid-cols-2 gap-3">
@@ -108,7 +126,7 @@ export default function MatchSubsPanel({ match, meta }: MatchSubsPanelProps) {
         side="Home"
         teamName={match.home.name}
         code={match.home.code}
-        potential={match.status === "scheduled" ? meta.home.potentialSubs : homeRemaining}
+        potential={homePotential}
         used={homeUsed}
         isLive={isLive}
       />
@@ -116,7 +134,7 @@ export default function MatchSubsPanel({ match, meta }: MatchSubsPanelProps) {
         side="Away"
         teamName={match.away.name}
         code={match.away.code}
-        potential={match.status === "scheduled" ? meta.away.potentialSubs : awayRemaining}
+        potential={awayPotential}
         used={awayUsed}
         isLive={isLive}
       />

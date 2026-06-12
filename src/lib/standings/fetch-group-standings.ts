@@ -14,22 +14,29 @@ function mergeGroupMatches(primary: Match[], fallback: Match[]): Match[] {
 }
 
 export async function fetchGroupStandings(): Promise<
-  CompiledGroupStandings & { source: "worldcup26" | "fallback" }
+  CompiledGroupStandings & { source: "api-football" | "worldcup26" | "fallback" }
 > {
-  const [{ matches: allGroupMatches }, { matches: liveMatches }] = await Promise.all([
-    fetchWorldCup26AllGroupMatches("world-cup"),
+  const [{ matches: apiMatches, provider }, { matches: wc26Matches }] = await Promise.all([
     fetchMatchesByCompetition("world-cup"),
+    fetchWorldCup26AllGroupMatches("world-cup"),
   ]);
 
   const matches =
-    allGroupMatches && allGroupMatches.length > 0
-      ? mergeGroupMatches(allGroupMatches, liveMatches)
-      : liveMatches;
+    provider === "api-football"
+      ? apiMatches
+      : wc26Matches && wc26Matches.length > 0
+        ? mergeGroupMatches(wc26Matches, apiMatches)
+        : apiMatches;
 
   const compiled = compileGroupStandings(matches);
 
   return {
     ...compiled,
-    source: allGroupMatches && allGroupMatches.length > 0 ? "worldcup26" : "fallback",
+    source:
+      provider === "api-football"
+        ? "api-football"
+        : wc26Matches && wc26Matches.length > 0
+          ? "worldcup26"
+          : "fallback",
   };
 }

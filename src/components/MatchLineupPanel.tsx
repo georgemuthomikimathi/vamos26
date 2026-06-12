@@ -16,8 +16,8 @@ function groupByRow(lineup: MatchLineup) {
   for (const p of lineup.startingXI) {
     const role = p.position;
     if (role === "GK") rows.GK.push(p);
-    else if (["RB", "CB", "LB"].includes(role)) rows.DEF.push(p);
-    else if (["DM", "CM", "AM"].includes(role)) rows.MID.push(p);
+    else if (["RB", "CB", "LB", "DEF"].includes(role)) rows.DEF.push(p);
+    else if (["DM", "CM", "AM", "MID"].includes(role)) rows.MID.push(p);
     else rows.FWD.push(p);
   }
 
@@ -106,7 +106,9 @@ export default function MatchLineupPanel({ match, focus }: MatchLineupPanelProps
   if (!match.homeLineup && !match.awayLineup) {
     return (
       <p className="text-xs text-muted text-center py-2">
-        Lineups will appear closer to kickoff.
+        {match.id.startsWith("af-")
+          ? "Official lineups from API-Football appear closer to kickoff."
+          : "Lineups will appear closer to kickoff."}
       </p>
     );
   }

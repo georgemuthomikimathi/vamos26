@@ -18,8 +18,20 @@ function squadToLineup(squad: NationalSquad): MatchLineup {
   };
 }
 
+function hasApiLineup(match: Match): boolean {
+  return match.id.startsWith("af-") && Boolean(match.homeLineup || match.awayLineup);
+}
+
 export function attachLineupsToMatch(match: Match): Match {
   if (match.homeLineup && match.awayLineup) return match;
+
+  if (hasApiLineup(match)) {
+    return {
+      ...match,
+      homeLineup: match.homeLineup,
+      awayLineup: match.awayLineup,
+    };
+  }
 
   const homeSquad = getSquad(match.home.code);
   const awaySquad = getSquad(match.away.code);

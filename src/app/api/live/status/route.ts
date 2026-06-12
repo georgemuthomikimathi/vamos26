@@ -54,6 +54,6 @@ export async function GET() {
               : apiFootballRateLimited
                 ? "API-Football rate limited; worldcup26.ir fallback also failed — check /get/games"
                 : "Key is set but no fixtures returned. Verify key at dashboard.api-football.com"
-            : "API connected via API-Football",
+            : "Paid API-Football connected — live lineups, all subs, cards, goals & assists enabled",
   });
 }

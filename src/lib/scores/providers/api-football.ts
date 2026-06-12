@@ -205,11 +205,37 @@ export async function probeApiFootball(): Promise<ApiFetchDebug> {
   ] as const;
 
   for (const [name, path] of probes) {
+    if (!path) continue;
     const { fixtures, error } = await apiFetchRaw(path);
     debug.counts[name] = fixtures.length;
     if (error) debug.errors.push(`${name}: ${error}`);
     if (!debug.sampleFixtureId && fixtures[0]) {
       debug.sampleFixtureId = fixtures[0].fixture.id;
+    }
+  }
+
+  if (debug.sampleFixtureId) {
+    const key = getApiFootballKey();
+    for (const [name, path] of [
+      ["events", `/fixtures/events?fixture=${debug.sampleFixtureId}`],
+      ["lineups", `/fixtures/lineups?fixture=${debug.sampleFixtureId}`],
+    ] as const) {
+      try {
+        const res = await fetch(`${API_BASE}${path}`, {
+          headers: { "x-apisports-key": key },
+          cache: "no-store",
+        });
+        if (!res.ok) {
+          debug.counts[name] = 0;
+          debug.errors.push(`${name}: http_${res.status}`);
+          continue;
+        }
+        const data = (await res.json()) as { response?: unknown[] };
+        debug.counts[name] = data.response?.length ?? 0;
+      } catch (e) {
+        debug.counts[name] = 0;
+        debug.errors.push(`${name}: ${e instanceof Error ? e.message : "fetch_failed"}`);
+      }
     }
   }
 

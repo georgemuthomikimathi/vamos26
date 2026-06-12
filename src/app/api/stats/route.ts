@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   const competition = getCompetition(competitionParam)!;
-  const { matches } = await fetchMatchesByCompetition(competitionParam);
+  const { matches, provider } = await fetchMatchesByCompetition(competitionParam);
   const compiled = compileTournamentStats(matches);
 
   return NextResponse.json({
@@ -27,5 +27,6 @@ export async function GET(request: NextRequest) {
     scorers: compiled.topScorers,
     assists: compiled.topAssists,
     mostCards: compiled.mostCards,
+    provider,
   });
 }

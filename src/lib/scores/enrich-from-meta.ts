@@ -14,36 +14,20 @@ function subsFromMeta(
   }));
 }
 
-function subKey(sub: MatchSubstitution): string {
-  return `${sub.minute}-${sub.extraMinute ?? 0}-${sub.playerIn}-${sub.playerOut}`;
-}
-
-function mergeSubs(
-  existing: MatchSubstitution[] | undefined,
-  extra: MatchSubstitution[] | undefined
-): MatchSubstitution[] {
-  const seen = new Set<string>();
-  const merged: MatchSubstitution[] = [];
-
-  for (const sub of [...(existing ?? []), ...(extra ?? [])]) {
-    const key = subKey(sub);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    merged.push(sub);
-  }
-
-  return merged.sort((a, b) => a.minute - b.minute || (a.extraMinute ?? 0) - (b.extraMinute ?? 0));
-}
-
 function eventKey(event: MatchEvent): string {
   return `${event.minute}-${event.extraMinute ?? 0}-${event.type}-${event.team}-${event.player}`;
 }
 
-function mergeEvents(existing: MatchEvent[] | undefined, extra: MatchEvent[] | undefined): MatchEvent[] | undefined {
+function mergeEvents(
+  apiEvents: MatchEvent[] | undefined,
+  metaEvents: MatchEvent[] | undefined
+): MatchEvent[] | undefined {
+  if (apiEvents?.length) return apiEvents;
+
   const seen = new Set<string>();
   const combined: MatchEvent[] = [];
 
-  for (const event of [...(existing ?? []), ...(extra ?? [])]) {
+  for (const event of metaEvents ?? []) {
     const key = eventKey(event);
     if (seen.has(key)) continue;
     seen.add(key);
@@ -58,14 +42,25 @@ export function enrichMatchFromMeta(match: Match): Match {
   const meta = getMatchMeta(match.id);
   if (!meta) return match;
 
-  const homeSubs = mergeSubs(match.homeSubs, subsFromMeta(meta.home.subsUsed));
-  const awaySubs = mergeSubs(match.awaySubs, subsFromMeta(meta.away.subsUsed));
+  const homeSubs =
+    match.homeSubs?.length
+      ? match.homeSubs
+      : subsFromMeta(meta.home.subsUsed).length > 0
+        ? subsFromMeta(meta.home.subsUsed)
+        : match.homeSubs;
+
+  const awaySubs =
+    match.awaySubs?.length
+      ? match.awaySubs
+      : subsFromMeta(meta.away.subsUsed).length > 0
+        ? subsFromMeta(meta.away.subsUsed)
+        : match.awaySubs;
 
   return {
     ...match,
     events: mergeEvents(match.events, meta.events),
-    homeSubs: homeSubs.length > 0 ? homeSubs : match.homeSubs,
-    awaySubs: awaySubs.length > 0 ? awaySubs : match.awaySubs,
+    homeSubs,
+    awaySubs,
   };
 }
 
