@@ -47,7 +47,7 @@ export default function Hero({ onNavigate }: HeroProps) {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-pitch" />
               </span>
               <span className="text-pitch uppercase tracking-[0.25em] text-[10px] font-bold">
-                Live · Kickoff June 11
+                Live · USA vs Paraguay 9PM ET
               </span>
             </div>
             <p className="text-pitch uppercase tracking-[0.4em] text-xs font-semibold mb-4">
@@ -61,8 +61,9 @@ export default function Hero({ onNavigate }: HeroProps) {
               <span className="text-gradient-gold">2026</span>
             </h1>
             <p className="text-lg md:text-xl text-muted max-w-lg mb-8 leading-relaxed">
-              The tournament is LIVE. Follow every goal, lineup, and knockout from Mexico City
-              to the Final at MetLife Stadium — 48 nations, one trophy.
+              Day 2 of the tournament. Korea Republic and Canada have played — tonight USA
+              open Group D vs Paraguay at SoFi Stadium (9PM ET). Every goal, lineup, and
+              knockout moment from Mexico City to MetLife.
             </p>
 
             <div className="flex flex-wrap gap-4 mb-8">

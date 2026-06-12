@@ -21,6 +21,7 @@ import PreviousFixtureCard from "@/components/PreviousFixtureCard";
 import MatchAlertSettings from "@/components/MatchAlertSettings";
 import LiveMatchHero from "@/components/LiveMatchHero";
 import LiveApiBanner from "@/components/LiveApiBanner";
+import ApiFootballBadge from "@/components/ApiFootballBadge";
 import { formatUpdatedET } from "@/lib/timezone";
 
 const POLL_LIVE_MS = 10_000;
@@ -161,11 +162,7 @@ export default function LiveMatchCenter() {
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               )}
               World Cup 2026
-              {provider === "api-football" && (
-                <span className="normal-case tracking-normal bg-pitch/20 text-pitch border border-pitch/40 rounded-full px-2 py-0.5 text-[10px] font-bold">
-                  Live API
-                </span>
-              )}
+              {provider === "api-football" && <ApiFootballBadge />}
             </p>
             <h2 className="font-display text-4xl md:text-6xl text-white">
               LIVE <span className="text-gradient-pitch">SCORES</span>

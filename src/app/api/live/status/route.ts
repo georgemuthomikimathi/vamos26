@@ -39,6 +39,8 @@ export async function GET() {
     envCheck: {
       configured: envCheck.configured,
       keySource: envCheck.keySource,
+      keyRecovered: envCheck.keyRecovered,
+      recoveredFromVar: envCheck.recoveredFromVar,
       leagueId: envCheck.leagueId,
       season: envCheck.season,
       warnings: envCheck.warnings,
@@ -59,7 +61,9 @@ export async function GET() {
     worldcup26: worldcup26Probe,
     fix:
       provider === "api-football"
-        ? "Paid API-Football connected — live lineups, all subs, cards, goals & assists enabled"
+        ? envCheck.keyRecovered
+          ? "API key auto-recovered from misplaced env var — move key to API_FOOTBALL_KEY and set league=1"
+          : "Paid API-Football connected — live lineups, all subs, cards, goals & assists enabled"
         : envMisconfigured
           ? `Fix Vercel env: ${envCheck.warnings[0]}`
           : provider === "worldcup26"

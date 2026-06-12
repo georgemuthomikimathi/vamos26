@@ -17,6 +17,43 @@ export type TeamNewsItem = {
 /** Curated tournament articles — update as the World Cup progresses */
 export const TEAM_NEWS: TeamNewsItem[] = [
   {
+    id: "n13",
+    code: "kr",
+    team: "Korea Republic",
+    headline: "Korea Republic beat Mexico 2-1 in Group A shock",
+    summary:
+      "Son Heung-min's side overturned El Tri in Guadalajara — a stunning result that reshuffles Group A after Mexico's opening-night win over South Africa.",
+    date: "Jun 12",
+    tag: "form",
+    url: "https://www.fifa.com/en/tournaments/mens/worldcup/canada-usa-mexico-2026/articles/korea-republic-mexico-group-a",
+    source: "FIFA.com",
+  },
+  {
+    id: "n14",
+    code: "ca",
+    team: "Canada",
+    headline: "Canada held 1-1 by Qatar in Toronto opener",
+    summary:
+      "Alphonso Davies scored for the co-hosts but Qatar equalized at BMO Field — Marsch's side share the points in a frustrating start to Group B.",
+    date: "Jun 12",
+    tag: "form",
+    url: "https://www.nytimes.com/athletic/6234601/2026/06/12/canada-qatar-world-cup-2026-draw-bmo-field/",
+    source: "The Athletic",
+  },
+  {
+    id: "n15",
+    code: "us",
+    team: "USA",
+    headline: "USA vs Paraguay: Group D opener tonight at SoFi (9PM ET)",
+    summary:
+      "Pochettino's 4-3-3 features Pulisic on the left and Adams anchoring midfield. The hosts need a strong start on home soil before Australia and Türkiye arrive.",
+    date: "Jun 12",
+    tag: "tactics",
+    url: "/guides/group-d-usa-preview",
+    source: "VAMOS26 Guide",
+    external: false,
+  },
+  {
     id: "n1",
     code: "mx",
     team: "Mexico",

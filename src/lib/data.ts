@@ -848,8 +848,8 @@ export const OPENING_MATCHES: Match[] = [
 ];
 
 export const KEY_DATES = [
-  { date: "Jun 11", event: "Tournament Underway", detail: "Mexico vs South Africa opens World Cup 2026" },
-  { date: "Jun 13", event: "NYC Region Live", detail: "Fan zones active across all 5 boroughs" },
+  { date: "Jun 11", event: "Tournament Underway", detail: "Mexico beat South Africa in the Azteca opener" },
+  { date: "Jun 12", event: "USA vs Paraguay", detail: "Group D kicks off at SoFi Stadium — 9PM ET" },
   { date: "Jun 15", event: "MetLife Matches Begin", detail: "Brazil vs Morocco & France vs Senegal in NJ" },
   { date: "Jul 6", event: "Rockefeller Fan Village", detail: "Knockout round HQ opens in Manhattan" },
   { date: "Jul 19", event: "THE FINAL", detail: "MetLife Stadium — East Rutherford, NJ" },

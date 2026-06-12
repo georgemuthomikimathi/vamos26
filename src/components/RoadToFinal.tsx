@@ -7,6 +7,7 @@ import { GROUPS } from "@/lib/data";
 import { KNOCKOUT_ROUNDS, buildBracketMatches } from "@/lib/bracket";
 import type { GroupStandings } from "@/lib/standings/compile-group-standings";
 import TeamFlagWithFallback from "@/components/TeamFlag";
+import ApiFootballBadge from "@/components/ApiFootballBadge";
 import { formatUpdatedET } from "@/lib/timezone";
 
 const POLL_LIVE_MS = 15_000;
@@ -232,6 +233,7 @@ function ConnectorArrow() {
 export default function RoadToFinal() {
   const [standings, setStandings] = useState<GroupStandings[]>(buildEmptyStandings);
   const [matchesPlayed, setMatchesPlayed] = useState(0);
+  const [dataSource, setDataSource] = useState<"api-football" | "worldcup26" | "fallback">("fallback");
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
@@ -244,6 +246,7 @@ export default function RoadToFinal() {
         setStandings(data.groups);
         setMatchesPlayed(data.matchesPlayed ?? 0);
         setLastUpdate(formatUpdatedET(data.updatedAt));
+        if (data.source) setDataSource(data.source);
       }
     } catch {
       /* silent */
@@ -273,8 +276,9 @@ export default function RoadToFinal() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <p className="text-pitch uppercase tracking-[0.4em] text-xs font-semibold mb-3">
+          <p className="text-pitch uppercase tracking-[0.4em] text-xs font-semibold mb-3 flex items-center justify-center gap-2 flex-wrap">
             Tournament Tree
+            {dataSource === "api-football" && <ApiFootballBadge />}
           </p>
           <h2 className="font-display text-5xl md:text-7xl text-white mb-4">
             ROAD TO THE <span className="text-gradient-gold">FINAL</span>

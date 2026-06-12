@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertTriangle, CheckCircle2, ExternalLink } from "lucide-react";
+import ApiFootballBadge from "@/components/ApiFootballBadge";
 
 type LiveApiBannerProps = {
   source: "api" | "static" | "";
@@ -20,9 +21,7 @@ export default function LiveApiBanner({ source, provider, apiError }: LiveApiBan
           <div className="flex-1 min-w-0">
             <p className="font-display text-xl text-white mb-1 flex items-center gap-2">
               Live API connected
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-pitch/20 text-pitch border border-pitch/40 rounded-full px-2 py-0.5">
-                Live API
-              </span>
+              <ApiFootballBadge />
             </p>
             <p className="text-sm text-muted leading-relaxed">
               Paid API-Football tier active — live clock, official lineups, all substitutions,

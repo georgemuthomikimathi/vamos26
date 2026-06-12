@@ -7,23 +7,23 @@ import { Newspaper } from "lucide-react";
 const GROUP_STORYLINES = [
   {
     letter: "A",
-    title: "Mexico open with a win",
-    body: "El Tri kicked off the entire tournament at Estadio Azteca on June 11. South Africa and Korea Republic still loom — every point matters in a tight Group A.",
+    title: "Korea Republic stun Mexico",
+    body: "Group A flipped on its head — Korea Republic beat Mexico 2-1 in Guadalajara. South Africa and Czechia still to play as the group tightens after the opening day.",
+  },
+  {
+    letter: "B",
+    title: "Canada held in Toronto opener",
+    body: "Co-hosts Canada drew 1-1 with Qatar at BMO Field. Alphonso Davies scored but Marsch's side couldn't find a winner — Switzerland and Bosnia & Herzegovina await.",
   },
   {
     letter: "D",
-    title: "USA's group stage begins",
-    body: "The hosts face Paraguay, Australia, and Türkiye in Group D. Pochettino's side need a strong start before the road turns toward MetLife and beyond.",
+    title: "USA host Paraguay tonight",
+    body: "The big one tonight: USA vs Paraguay at SoFi Stadium, 9PM ET. Pochettino's hosts need a statement win in Group D before Australia and Türkiye arrive.",
   },
   {
-    letter: "J",
-    title: "Argentina defend the crown",
-    body: "La Albiceleste navigate Algeria, Austria, and Jordan as Scaloni manages Messi's minutes. Squad depth will be tested from the first whistle.",
-  },
-  {
-    letter: "K",
-    title: "DR Congo's long-awaited return",
-    body: "Les Léopards are back on football's biggest stage. Portugal, Colombia, and Uzbekistan make Group K a blend of European structure and African flair.",
+    letter: "C",
+    title: "Brazil vs Morocco at MetLife",
+    body: "Seleção face the Atlas Lions in East Rutherford — a sell-out and the first World Cup match in the NY/NJ corridor. Regragui's compact block meets Vinícius Jr's pace.",
   },
 ];
 
@@ -39,7 +39,7 @@ export default function EditorialPreview() {
           <Newspaper size={22} className="text-gold" />
           <div>
             <p className="text-gold uppercase tracking-[0.3em] text-xs font-semibold">
-              Group Stage Live
+              June 12 · Match Day 2
             </p>
             <h3 className="font-display text-3xl md:text-4xl text-white">
               STORYLINES TO WATCH
@@ -48,7 +48,7 @@ export default function EditorialPreview() {
         </motion.div>
 
         <p className="text-sm text-muted mb-6">
-          Deep dive on USA&apos;s group:{" "}
+          USA opener preview:{" "}
           <Link href="/guides/group-d-usa-preview" className="text-pitch hover:underline font-medium">
             Group D guide →
           </Link>
