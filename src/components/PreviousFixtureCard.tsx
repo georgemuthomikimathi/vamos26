@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { ChevronDown, ExternalLink, MapPin, Users } from "lucide-react";
 import type { Match, MatchEvent } from "@/lib/scores/types";
 import { formatScore } from "@/lib/scores/types";
@@ -40,6 +39,10 @@ export default function PreviousFixtureCard({
   const coaches = getCoachInfo(enriched);
   const [expanded, setExpanded] = useState(defaultExpanded);
 
+  useEffect(() => {
+    if (defaultExpanded) setExpanded(true);
+  }, [defaultExpanded]);
+
   const displayEvents = getDisplayEvents(enriched.events ?? []);
   const goals = displayEvents.filter(
     (e) => e.type === "goal" || e.type === "penalty"
@@ -53,6 +56,8 @@ export default function PreviousFixtureCard({
   ];
   const scoreDisplay = formatScore(enriched.score);
 
+  const toggle = () => setExpanded((v) => !v);
+
   return (
     <article
       className={`bg-card border rounded-xl transition-all ${
@@ -61,9 +66,16 @@ export default function PreviousFixtureCard({
           : "border-white/10 hover:border-pitch/20"
       }`}
     >
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={toggle}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggle();
+          }
+        }}
         aria-expanded={expanded}
         className="w-full text-left focus-ring rounded-xl p-3 md:p-4 cursor-pointer"
       >
@@ -169,65 +181,68 @@ export default function PreviousFixtureCard({
 
             <p className="text-[10px] text-muted/60 text-center flex items-center justify-center gap-1">
               <MapPin size={10} className="text-pitch" />
-              {enriched.venue} · Tap for full squads & match report
+              {enriched.venue}
+            </p>
+            <p className="text-[10px] text-pitch font-semibold text-center flex items-center justify-center gap-1">
+              View match events & squads
+              <ChevronDown size={12} />
             </p>
           </div>
         )}
-      </button>
+      </div>
 
-      <motion.div
-        initial={false}
-        animate={{
-          height: expanded ? "auto" : 0,
-          opacity: expanded ? 1 : 0,
-        }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className="overflow-hidden"
+      <div
+        className={`grid transition-all duration-300 ease-out ${
+          expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
       >
-        <div className="px-3 md:px-4 pb-4 pt-0 border-t border-white/10 mx-3 md:mx-4 space-y-4">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted pt-3">
-            <span>{enriched.date} · {enriched.time} ET</span>
-            <span className="flex items-center gap-1 min-w-0">
-              <MapPin size={12} className="text-pitch shrink-0" />
-              <span className="truncate font-medium text-white/90">
-                {enriched.venue}
+        <div className="overflow-hidden">
+          <div className="px-3 md:px-4 pb-4 pt-0 border-t border-white/10 mx-3 md:mx-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted pt-3">
+              <span>{enriched.date} · {enriched.time} ET</span>
+              <span className="flex items-center gap-1 min-w-0">
+                <MapPin size={12} className="text-pitch shrink-0" />
+                <span className="truncate font-medium text-white/90">
+                  {enriched.venue}
+                </span>
+                <span className="text-muted">· {enriched.city}</span>
               </span>
-              <span className="text-muted">· {enriched.city}</span>
-            </span>
+            </div>
+
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-pitch mb-2 flex items-center gap-1.5">
+                <Users size={12} />
+                Full squads · starting XI & bench
+              </p>
+              <MatchLineupPanel match={enriched} />
+            </div>
+
+            <MatchOfficialsPanel match={enriched} meta={meta} coaches={coaches} />
+
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
+                Match timeline
+              </p>
+              <MatchEventsTimeline match={enriched} expanded />
+            </div>
+
+            <MatchSubsPanel match={enriched} meta={meta} />
+
+            {enriched.detailUrl && (
+              <a
+                href={enriched.detailUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-pitch hover:text-white transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Full match report on FIFA.com
+                <ExternalLink size={12} />
+              </a>
+            )}
           </div>
-
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-pitch mb-2 flex items-center gap-1.5">
-              <Users size={12} />
-              Full squads · starting XI & bench
-            </p>
-            <MatchLineupPanel match={enriched} />
-          </div>
-
-          <MatchOfficialsPanel match={enriched} meta={meta} coaches={coaches} />
-
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
-              Match timeline
-            </p>
-            <MatchEventsTimeline match={enriched} expanded />
-          </div>
-
-          <MatchSubsPanel match={enriched} meta={meta} />
-
-          {enriched.detailUrl && (
-            <a
-              href={enriched.detailUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-pitch hover:text-white transition-colors"
-            >
-              Full match report on FIFA.com
-              <ExternalLink size={12} />
-            </a>
-          )}
         </div>
-      </motion.div>
+      </div>
     </article>
   );
 }

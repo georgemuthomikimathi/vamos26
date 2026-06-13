@@ -54,6 +54,13 @@ export default function MatchEventsTimeline({
         <p className="text-center text-xs text-muted">Waiting for match events…</p>
       );
     }
+    if (match.status === "finished") {
+      return (
+        <p className="text-center text-xs text-muted py-2">
+          Goal scorers shown in scoreline — full event log updating.
+        </p>
+      );
+    }
     return null;
   }
 

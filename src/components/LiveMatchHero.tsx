@@ -4,7 +4,7 @@ import { ExternalLink } from "lucide-react";
 import type { Match } from "@/lib/scores/types";
 import { formatScore } from "@/lib/scores/types";
 import { attachLineupsToMatch } from "@/lib/scores/lineups";
-import { getMatchMeta, getCoachInfo } from "@/lib/match-meta";
+import { getMatchMetaForMatch, getCoachInfo } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchClock from "@/components/MatchClock";
 import MatchEventsTimeline from "@/components/MatchEventsTimeline";
@@ -20,7 +20,7 @@ type LiveMatchHeroProps = {
 export default function LiveMatchHero({ match, onKickoff }: LiveMatchHeroProps) {
   const enriched = attachLineupsToMatch(match);
   const score = formatScore(enriched.score);
-  const meta = getMatchMeta(enriched.id);
+  const meta = getMatchMetaForMatch(enriched);
   const coaches = getCoachInfo(enriched);
   const isLive = enriched.status === "live" || enriched.status === "halftime";
 

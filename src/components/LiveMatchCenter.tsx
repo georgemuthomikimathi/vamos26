@@ -326,7 +326,6 @@ export default function LiveMatchCenter() {
               {listMatches.map((match, i) => (
                 <motion.div
                   key={match.id}
-                  layout
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98 }}

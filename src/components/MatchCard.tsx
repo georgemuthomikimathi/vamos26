@@ -11,7 +11,7 @@ import {
   isPreMatch,
 } from "@/lib/scores/types";
 import { attachLineupsToMatch } from "@/lib/scores/lineups";
-import { getMatchMeta, getCoachInfo } from "@/lib/match-meta";
+import { getMatchMetaForMatch, getCoachInfo } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchOfficialsPanel from "@/components/MatchOfficialsPanel";
 import MatchSubsPanel from "@/components/MatchSubsPanel";
@@ -73,9 +73,16 @@ type MatchCardProps = {
 
 type DetailTab = "info" | "lineups" | "subs" | "events" | "officials";
 
-function defaultDetailTab(isLive: boolean, hasLineups: boolean): DetailTab {
-  if (hasLineups) return "lineups";
+function defaultDetailTab(
+  isLive: boolean,
+  isFinished: boolean,
+  hasLineups: boolean,
+  hasEvents: boolean,
+  hasSubs: boolean
+): DetailTab {
   if (isLive) return "events";
+  if (isFinished && (hasEvents || hasSubs)) return "events";
+  if (hasLineups) return "lineups";
   return "info";
 }
 
@@ -87,25 +94,13 @@ export default function MatchCard({
 }: MatchCardProps) {
   const enriched = attachLineupsToMatch(match);
   const isLive = enriched.status === "live" || enriched.status === "halftime";
+  const isFinished = enriched.status === "finished";
   const hasLineups = Boolean(enriched.homeLineup || enriched.awayLineup);
-  const [expanded, setExpanded] = useState(isLive);
-  const [detailTab, setDetailTab] = useState<DetailTab>(() =>
-    defaultDetailTab(isLive, hasLineups)
-  );
-
-  useEffect(() => {
-    if (isLive) {
-      setExpanded(true);
-      setDetailTab(defaultDetailTab(true, hasLineups));
-    }
-  }, [isLive, enriched.id, hasLineups]);
-
-  const scoreDisplay = formatScore(enriched.score);
-  const meta = getMatchMeta(enriched.id);
+  const meta = getMatchMetaForMatch(enriched);
   const coaches = getCoachInfo(enriched);
   const hasCoaches = Boolean(coaches.homeCoach || coaches.awayCoach);
-  const hasSubs = Boolean(enriched.homeSubs?.length || enriched.awaySubs?.length);
-  const hasEvents = Boolean(enriched.events?.length);
+  const hasSubs = Boolean(enriched.homeSubs?.length || enriched.awaySubs?.length || meta);
+  const hasEvents = Boolean(enriched.events?.length || meta?.events?.length);
   const hasDetails =
     Boolean(match.venue) ||
     Boolean(match.time) ||
@@ -114,6 +109,20 @@ export default function MatchCard({
     hasLineups ||
     hasCoaches ||
     Boolean(meta);
+
+  const [expanded, setExpanded] = useState(isLive);
+  const [detailTab, setDetailTab] = useState<DetailTab>(() =>
+    defaultDetailTab(isLive, isFinished, hasLineups, hasEvents, hasSubs)
+  );
+
+  useEffect(() => {
+    if (isLive) {
+      setExpanded(true);
+      setDetailTab(defaultDetailTab(true, false, hasLineups, hasEvents, hasSubs));
+    }
+  }, [isLive, enriched.id, hasLineups, hasEvents, hasSubs]);
+
+  const scoreDisplay = formatScore(enriched.score);
 
   return (
     <article
@@ -129,7 +138,14 @@ export default function MatchCard({
     >
       <button
         type="button"
-        onClick={() => hasDetails && setExpanded((v) => !v)}
+        onClick={() => {
+          if (!hasDetails) return;
+          const next = !expanded;
+          setExpanded(next);
+          if (next && isFinished) {
+            setDetailTab(defaultDetailTab(false, true, hasLineups, hasEvents, hasSubs));
+          }
+        }}
         aria-expanded={hasDetails ? expanded : undefined}
         className={`w-full text-left focus-ring rounded-lg ${hasDetails ? "cursor-pointer" : "cursor-default"}`}
       >
@@ -202,7 +218,9 @@ export default function MatchCard({
         {isLive && !expanded && <MatchEventsTimeline match={enriched} limit={3} />}
 
         {!expanded && hasDetails && !isLive && (
-          <p className="text-[10px] text-muted/60 text-center mt-2">Tap for events, subs & venue</p>
+          <p className="text-[10px] text-pitch font-semibold text-center mt-2">
+            View match events, subs & venue
+          </p>
         )}
       </button>
 
@@ -216,7 +234,7 @@ export default function MatchCard({
             <div className="flex flex-wrap gap-1">
               {(
                 [
-                  { id: "events" as const, label: "Events", show: hasEvents || isLive },
+                  { id: "events" as const, label: "Events", show: hasEvents || hasSubs || isLive },
                   { id: "lineups" as const, label: "Lineups", show: hasLineups },
                   { id: "subs" as const, label: "Subs", show: hasSubs || Boolean(meta) },
                   { id: "info" as const, label: "Info", show: true },
