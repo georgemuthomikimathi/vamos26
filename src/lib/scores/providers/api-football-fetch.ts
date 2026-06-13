@@ -87,6 +87,8 @@ export async function apiFootballFetch<T>(
 export async function verifyApiFootballKey(): Promise<{
   keyLength: number;
   keyPrefix: string;
+  keySuffix: string;
+  isHexKey: boolean;
   configured: boolean;
   workingMode: ApiFootballAuthMode | null;
   direct: { ok: boolean; error?: string };
@@ -121,6 +123,8 @@ export async function verifyApiFootballKey(): Promise<{
   return {
     keyLength: key.length,
     keyPrefix: key.slice(0, 4) + "…",
+    keySuffix: "…" + key.slice(-4),
+    isHexKey: /^[a-f0-9]{32}$/i.test(key),
     configured,
     workingMode,
     direct,

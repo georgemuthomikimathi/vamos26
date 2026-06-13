@@ -27,15 +27,22 @@ function isPlaceholderKey(value: string): boolean {
   return /your_key|example|placeholder|changeme/i.test(value);
 }
 
-/** Strip quotes, newlines, Bearer/key= prefix from pasted Vercel values */
+/** Strip quotes, newlines, Bearer/key= prefix; extract 32-char hex if embedded in junk */
 function sanitizeKey(value: string): string {
-  return value
+  let cleaned = value
     .trim()
     .replace(/^Bearer\s+/i, "")
     .replace(/^key\s*=\s*/i, "")
     .replace(/^["']|["']$/g, "")
-    .replace(/[\r\n\t]/g, "")
+    .replace(/[\r\n\t\u200b\uFEFF]/g, "")
     .trim();
+
+  if (looksLikeApiKey(cleaned)) return cleaned;
+
+  const hexMatch = cleaned.match(/[a-f0-9]{32}/i);
+  if (hexMatch) return hexMatch[0].toLowerCase();
+
+  return cleaned;
 }
 
 export type ApiFootballAuthMode = "direct" | "rapidapi";
