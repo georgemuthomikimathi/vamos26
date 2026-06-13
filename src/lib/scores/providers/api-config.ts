@@ -27,14 +27,27 @@ function isPlaceholderKey(value: string): boolean {
   return /your_key|example|placeholder|changeme/i.test(value);
 }
 
-/** Strip quotes, newlines, and Bearer prefix from pasted Vercel values */
+/** Strip quotes, newlines, Bearer/key= prefix from pasted Vercel values */
 function sanitizeKey(value: string): string {
   return value
     .trim()
     .replace(/^Bearer\s+/i, "")
+    .replace(/^key\s*=\s*/i, "")
     .replace(/^["']|["']$/g, "")
     .replace(/[\r\n\t]/g, "")
     .trim();
+}
+
+export type ApiFootballAuthMode = "direct" | "rapidapi";
+
+/** direct = x-apisports-key (dashboard.api-football.com). rapidapi = x-rapidapi-key */
+export function getApiFootballAuthMode(): ApiFootballAuthMode {
+  const mode = process.env.API_FOOTBALL_AUTH?.trim().toLowerCase();
+  if (mode === "rapidapi") return "rapidapi";
+  if (mode === "direct" || mode === "apisports") return "direct";
+  const source = resolveApiKey().source ?? "";
+  if (/RAPIDAPI/i.test(source)) return "rapidapi";
+  return "direct";
 }
 
 function isValidApiKey(value: string): boolean {

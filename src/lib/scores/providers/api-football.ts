@@ -1,15 +1,13 @@
 import type { CompetitionId, Match, MatchStatus, Score } from "@/lib/scores/types";
 import { formatKickoffET } from "@/lib/timezone";
 import {
-  getApiFootballKey,
   getWcLeagueId,
   getWcSeason,
   isApiFootballConfigured,
   checkApiFootballEnv,
 } from "@/lib/scores/providers/api-config";
+import { apiFootballFetch } from "@/lib/scores/providers/api-football-fetch";
 import { teamNameToCode } from "@/lib/scores/providers/team-codes";
-
-const API_BASE = "https://v3.football.api-sports.io";
 
 export type ApiFetchDebug = {
   configured: boolean;
@@ -131,35 +129,9 @@ function datesAroundToday(): string[] {
 }
 
 async function apiFetchRaw(path: string): Promise<{ fixtures: ApiFixture[]; error?: string }> {
-  const key = getApiFootballKey();
-  if (!key) return { fixtures: [], error: "no_key" };
-
-  try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      headers: { "x-apisports-key": key },
-      cache: "no-store",
-    });
-
-    if (res.status === 401 || res.status === 403) {
-      return { fixtures: [], error: `auth_${res.status}` };
-    }
-    if (!res.ok) {
-      return { fixtures: [], error: `http_${res.status}` };
-    }
-
-    const data = (await res.json()) as {
-      response?: ApiFixture[];
-      errors?: Record<string, string>;
-    };
-
-    if (data.errors && Object.keys(data.errors).length > 0) {
-      return { fixtures: [], error: JSON.stringify(data.errors) };
-    }
-
-    return { fixtures: data.response ?? [] };
-  } catch (e) {
-    return { fixtures: [], error: e instanceof Error ? e.message : "fetch_failed" };
-  }
+  const { data, error } = await apiFootballFetch<ApiFixture[]>(path);
+  if (error) return { fixtures: [], error };
+  return { fixtures: data ?? [] };
 }
 
 export { isApiFootballConfigured } from "@/lib/scores/providers/api-config";
@@ -221,27 +193,17 @@ export async function probeApiFootball(): Promise<ApiFetchDebug> {
   }
 
   if (debug.sampleFixtureId) {
-    const key = getApiFootballKey();
     for (const [name, path] of [
       ["events", `/fixtures/events?fixture=${debug.sampleFixtureId}`],
       ["lineups", `/fixtures/lineups?fixture=${debug.sampleFixtureId}`],
     ] as const) {
-      try {
-        const res = await fetch(`${API_BASE}${path}`, {
-          headers: { "x-apisports-key": key },
-          cache: "no-store",
-        });
-        if (!res.ok) {
-          debug.counts[name] = 0;
-          debug.errors.push(`${name}: http_${res.status}`);
-          continue;
-        }
-        const data = (await res.json()) as { response?: unknown[] };
-        debug.counts[name] = data.response?.length ?? 0;
-      } catch (e) {
+      const { data, error } = await apiFootballFetch<unknown[]>(path);
+      if (error) {
         debug.counts[name] = 0;
-        debug.errors.push(`${name}: ${e instanceof Error ? e.message : "fetch_failed"}`);
+        debug.errors.push(`${name}: ${error}`);
+        continue;
       }
+      debug.counts[name] = data?.length ?? 0;
     }
   }
 
