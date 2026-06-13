@@ -22,12 +22,10 @@ function mergeEvents(
   apiEvents: MatchEvent[] | undefined,
   metaEvents: MatchEvent[] | undefined
 ): MatchEvent[] | undefined {
-  if (apiEvents?.length) return apiEvents;
-
   const seen = new Set<string>();
   const combined: MatchEvent[] = [];
 
-  for (const event of metaEvents ?? []) {
+  for (const event of [...(apiEvents ?? []), ...(metaEvents ?? [])]) {
     const key = eventKey(event);
     if (seen.has(key)) continue;
     seen.add(key);

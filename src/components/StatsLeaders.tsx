@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Target, Handshake, AlertTriangle, type LucideIcon } from "lucide-react";
 import type { StatLeader } from "@/lib/stats";
+import { onDataRefresh } from "@/lib/realtime/cascade";
+import { POLL_IDLE_MS, POLL_STATS_LIVE_MS } from "@/lib/realtime/polling";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 
 type StatsPayload = {
@@ -15,7 +17,7 @@ type StatsPayload = {
   provider?: "worldcup26" | "static";
 };
 
-const POLL_MS = 30_000;
+const POLL_MS = POLL_IDLE_MS;
 
 function hasRealLeaders(leaders: StatLeader[]): boolean {
   return leaders.some((p) => p.value > 0 && p.name !== "—");
@@ -82,27 +84,43 @@ function LeaderColumn({
 export default function StatsLeaders() {
   const [stats, setStats] = useState<StatsPayload | null>(null);
   const [activeTab, setActiveTab] = useState<"scorers" | "assists" | "cards">("scorers");
+  const [pollMs, setPollMs] = useState(POLL_MS);
+
+  const loadStats = async () => {
+    try {
+      const res = await fetch("/api/stats?competition=world-cup", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = (await res.json()) as StatsPayload;
+      setStats(data);
+      if ((data.matchesPlayed ?? 0) > 0) {
+        setPollMs(POLL_STATS_LIVE_MS);
+      }
+    } catch {
+      /* silent */
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadStats() {
-      try {
-        const res = await fetch("/api/stats?competition=world-cup", { cache: "no-store" });
-        if (!res.ok) return;
-        const data = (await res.json()) as StatsPayload;
-        if (!cancelled) setStats(data);
-      } catch {
-        /* silent */
-      }
+    async function init() {
+      if (!cancelled) await loadStats();
     }
 
-    void loadStats();
-    const interval = setInterval(() => void loadStats(), POLL_MS);
+    void init();
+    const interval = setInterval(() => void loadStats(), pollMs);
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
+  }, [pollMs]);
+
+  useEffect(() => {
+    return onDataRefresh((reason) => {
+      if (reason === "match-finished" || reason === "kickoff") {
+        void loadStats();
+      }
+    });
   }, []);
 
   const tabs = useMemo(

@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, MapPin } from "lucide-react";
+import { ChevronDown, ExternalLink, MapPin } from "lucide-react";
 import type { Match, MatchEvent } from "@/lib/scores/types";
 import { formatScore } from "@/lib/scores/types";
 import { getDisplayEvents } from "@/lib/scores/card-events";
 import { attachLineupsToMatch } from "@/lib/scores/lineups";
-import { getMatchMeta } from "@/lib/match-meta";
+import { getMatchMeta, getCoachInfo } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchEventsTimeline from "@/components/MatchEventsTimeline";
 import MatchSubsPanel from "@/components/MatchSubsPanel";
@@ -36,6 +36,7 @@ export default function PreviousFixtureCard({
 }: PreviousFixtureCardProps) {
   const enriched = attachLineupsToMatch(match);
   const meta = getMatchMeta(enriched.id);
+  const coaches = getCoachInfo(enriched);
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   const displayEvents = getDisplayEvents(enriched.events ?? []);
@@ -224,7 +225,21 @@ export default function PreviousFixtureCard({
             <MatchSubsPanel match={enriched} meta={meta} />
           ) : null}
 
-          {meta && <MatchOfficialsPanel match={enriched} meta={meta} />}
+          {(meta || coaches.homeCoach || coaches.awayCoach) && (
+            <MatchOfficialsPanel match={enriched} meta={meta} coaches={coaches} />
+          )}
+
+          {enriched.detailUrl && (
+            <a
+              href={enriched.detailUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-pitch hover:text-white transition-colors"
+            >
+              Full match report
+              <ExternalLink size={12} />
+            </a>
+          )}
         </div>
       </motion.div>
     </article>

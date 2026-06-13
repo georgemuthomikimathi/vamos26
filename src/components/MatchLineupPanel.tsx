@@ -106,9 +106,7 @@ export default function MatchLineupPanel({ match, focus }: MatchLineupPanelProps
   if (!match.homeLineup && !match.awayLineup) {
     return (
       <p className="text-xs text-muted text-center py-2">
-        {match.id.startsWith("af-")
-          ? "Official lineups from API-Football appear closer to kickoff."
-          : "Lineups will appear closer to kickoff."}
+        Lineups publish 30 minutes before kickoff.
       </p>
     );
   }

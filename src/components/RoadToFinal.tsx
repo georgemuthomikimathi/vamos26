@@ -6,11 +6,13 @@ import { ChevronRight, MapPin, RefreshCw, Trophy } from "lucide-react";
 import { GROUPS } from "@/lib/data";
 import { KNOCKOUT_ROUNDS, buildBracketMatches } from "@/lib/bracket";
 import type { GroupStandings } from "@/lib/standings/compile-group-standings";
+import { onDataRefresh } from "@/lib/realtime/cascade";
+import { POLL_IDLE_MS, POLL_LIVE_MS } from "@/lib/realtime/polling";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import { formatUpdatedET } from "@/lib/timezone";
 
-const POLL_LIVE_MS = 15_000;
-const POLL_IDLE_MS = 30_000;
+const POLL_IDLE = POLL_IDLE_MS;
+const POLL_LIVE = POLL_LIVE_MS;
 
 function buildEmptyStandings(): GroupStandings[] {
   return GROUPS.map((group) => ({
@@ -236,6 +238,8 @@ export default function RoadToFinal() {
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
+  const [pollMs, setPollMs] = useState(POLL_IDLE);
+
   const fetchStandings = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
     try {
@@ -244,6 +248,7 @@ export default function RoadToFinal() {
       if (data.groups?.length) {
         setStandings(data.groups);
         setMatchesPlayed(data.matchesPlayed ?? 0);
+        if ((data.matchesPlayed ?? 0) > 0) setPollMs(POLL_LIVE);
         setLastUpdate(formatUpdatedET(data.updatedAt));
         if (data.source) setDataSource(data.source);
       }
@@ -256,12 +261,15 @@ export default function RoadToFinal() {
 
   useEffect(() => {
     void fetchStandings();
-    const interval = setInterval(
-      () => void fetchStandings(),
-      matchesPlayed > 0 ? POLL_LIVE_MS : POLL_IDLE_MS
-    );
+    const interval = setInterval(() => void fetchStandings(), pollMs);
     return () => clearInterval(interval);
-  }, [fetchStandings, matchesPlayed]);
+  }, [fetchStandings, pollMs]);
+
+  useEffect(() => {
+    return onDataRefresh((reason) => {
+      if (reason === "match-finished") void fetchStandings();
+    });
+  }, [fetchStandings]);
 
   return (
     <section id="roadmap" className="relative py-24 bg-navy-light overflow-hidden">

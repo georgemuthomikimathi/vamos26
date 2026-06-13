@@ -8,6 +8,7 @@ import { DISPLAY_TZ_LABEL } from "@/lib/timezone";
 type MatchClockProps = {
   match: Match;
   size?: "sm" | "lg";
+  onKickoff?: () => void;
 };
 
 function formatCountdown(ms: number): string {
@@ -22,10 +23,11 @@ function formatCountdown(ms: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-export default function MatchClock({ match, size = "sm" }: MatchClockProps) {
+export default function MatchClock({ match, size = "sm", onKickoff }: MatchClockProps) {
   const [now, setNow] = useState(() => Date.now());
   const syncAtRef = useRef(Date.now());
   const syncKeyRef = useRef(liveClockSyncKey(match));
+  const kickoffFiredRef = useRef(false);
 
   useEffect(() => {
     const tick = setInterval(() => setNow(Date.now()), 1000);
@@ -48,6 +50,15 @@ export default function MatchClock({ match, size = "sm" }: MatchClockProps) {
     untilKickoff != null &&
     untilKickoff > 0 &&
     untilKickoff < 24 * 60 * 60_000;
+
+  useEffect(() => {
+    if (!onKickoff || kickoffFiredRef.current) return;
+    if (match.status !== "scheduled" || untilKickoff == null) return;
+    if (untilKickoff > 0) return;
+
+    kickoffFiredRef.current = true;
+    onKickoff();
+  }, [match.status, onKickoff, untilKickoff]);
 
   const lg = size === "lg";
   const liveClock = formatLiveClock(match, syncAtRef.current, now);

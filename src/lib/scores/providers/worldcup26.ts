@@ -147,6 +147,7 @@ function normalizeGame(game: Wc26Game, competition: CompetitionId, stadiums: Map
 
   return {
     id: `wc26-${game.id}`,
+    detailUrl: `https://www.fifa.com/en/matches?search=${encodeURIComponent(homeName + " " + awayName)}`,
     competition,
     status,
     statusShort: game.time_elapsed === "live" ? "LIVE" : game.time_elapsed.toUpperCase(),

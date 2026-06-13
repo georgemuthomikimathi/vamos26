@@ -1,4 +1,6 @@
 import type { MatchEvent } from "@/lib/scores/types";
+import type { Match } from "@/lib/scores/types";
+import { getSquad } from "@/lib/squads";
 
 export type Substitution = {
   minute: number;
@@ -251,4 +253,25 @@ export function getMatchMeta(matchId: string): MatchMeta | undefined {
   const alias = WC26_META_ALIASES[matchId];
   if (alias) return MATCH_META[alias];
   return MATCH_META[matchId];
+}
+
+export type CoachInfo = {
+  homeCoach?: string;
+  awayCoach?: string;
+};
+
+/** Coaches from squads/lineups when manual MATCH_META is absent. */
+export function getCoachInfo(match: Match): CoachInfo {
+  const meta = getMatchMeta(match.id);
+  if (meta) {
+    return { homeCoach: meta.home.coach, awayCoach: meta.away.coach };
+  }
+
+  const homeSquad = getSquad(match.home.code);
+  const awaySquad = getSquad(match.away.code);
+
+  return {
+    homeCoach: match.homeLineup?.coach ?? homeSquad?.coach,
+    awayCoach: match.awayLineup?.coach ?? awaySquad?.coach,
+  };
 }

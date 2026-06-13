@@ -15,15 +15,18 @@ import {
   pickDefaultTab,
   type MatchCenterTab,
 } from "@/lib/scores/match-buckets";
+import { applyKickoffHints, nextKickoffMs } from "@/lib/realtime/kickoff";
+import {
+  dispatchDataRefresh,
+  dispatchMatchFinished,
+} from "@/lib/realtime/cascade";
+import { pickLivePollInterval } from "@/lib/realtime/polling";
 import MatchCard from "@/components/MatchCard";
 import PreviousFixtureCard from "@/components/PreviousFixtureCard";
 import MatchAlertSettings from "@/components/MatchAlertSettings";
 import LiveMatchHero from "@/components/LiveMatchHero";
 import LiveApiBanner from "@/components/LiveApiBanner";
 import { formatUpdatedET } from "@/lib/timezone";
-
-const POLL_LIVE_MS = 10_000;
-const POLL_IDLE_MS = 30_000;
 
 const TABS: { id: MatchCenterTab; label: string; icon: typeof Radio }[] = [
   { id: "live", label: "Live", icon: Radio },
@@ -44,9 +47,12 @@ export default function LiveMatchCenter() {
   const [justFinishedId, setJustFinishedId] = useState<string | null>(null);
   const prevLiveIdsRef = useRef<Set<string>>(new Set());
   const userPickedTabRef = useRef(false);
+  const kickoffTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const tabCounts = useMemo(() => getMatchTabCounts(matches), [matches]);
-  const buckets = useMemo(() => bucketMatches(matches), [matches]);
+  const displayMatches = useMemo(() => applyKickoffHints(matches), [matches]);
+  const tabCounts = useMemo(() => getMatchTabCounts(displayMatches), [displayMatches]);
+  const buckets = useMemo(() => bucketMatches(displayMatches), [displayMatches]);
+  const pollMs = useMemo(() => pickLivePollInterval(displayMatches), [displayMatches]);
 
   const fetchLive = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
@@ -55,7 +61,7 @@ export default function LiveMatchCenter() {
       const data = await res.json();
       const nextMatches = enrichMatchesFromMeta(data.matches ?? []);
       setMatches(nextMatches);
-      setLiveCount(data.liveCount);
+      setLiveCount(data.liveCount ?? getLiveCount(nextMatches));
       if (data.source === "api" || data.source === "static") {
         setDataSource(data.source);
       }
@@ -73,12 +79,28 @@ export default function LiveMatchCenter() {
 
   useEffect(() => {
     void fetchLive();
-    const interval = setInterval(
-      () => void fetchLive(),
-      liveCount > 0 ? POLL_LIVE_MS : POLL_IDLE_MS
-    );
+    const interval = setInterval(() => void fetchLive(), pollMs);
     return () => clearInterval(interval);
-  }, [fetchLive, liveCount]);
+  }, [fetchLive, pollMs]);
+
+  useEffect(() => {
+    if (kickoffTimerRef.current) {
+      clearTimeout(kickoffTimerRef.current);
+      kickoffTimerRef.current = null;
+    }
+
+    const ms = nextKickoffMs(displayMatches);
+    if (ms == null) return;
+
+    kickoffTimerRef.current = setTimeout(() => {
+      void fetchLive();
+      dispatchDataRefresh("kickoff");
+    }, ms + 500);
+
+    return () => {
+      if (kickoffTimerRef.current) clearTimeout(kickoffTimerRef.current);
+    };
+  }, [displayMatches, fetchLive]);
 
   useEffect(() => {
     if (!userPickedTabRef.current) {
@@ -88,14 +110,22 @@ export default function LiveMatchCenter() {
 
   useEffect(() => {
     const liveIds = new Set(
-      matches.filter((m) => m.status === "live" || m.status === "halftime").map((m) => m.id)
+      displayMatches
+        .filter((m) => m.status === "live" || m.status === "halftime")
+        .map((m) => m.id)
     );
-    const newlyFinished = matches.find(
+    const newlyFinished = displayMatches.find(
       (m) => m.status === "finished" && prevLiveIdsRef.current.has(m.id)
     );
 
     if (newlyFinished) {
       setJustFinishedId(newlyFinished.id);
+      dispatchMatchFinished({
+        matchId: newlyFinished.id,
+        home: newlyFinished.home.name,
+        away: newlyFinished.away.name,
+      });
+      dispatchDataRefresh("match-finished");
       if (!userPickedTabRef.current || activeTab === "live") {
         setActiveTab("previous");
       }
@@ -105,23 +135,23 @@ export default function LiveMatchCenter() {
     }
 
     prevLiveIdsRef.current = liveIds;
-  }, [matches, activeTab]);
+  }, [displayMatches, activeTab]);
 
   const featuredMatch = useMemo(() => {
     if (activeTab !== "live") return null;
-    const live = matches.find((m) => m.status === "live" || m.status === "halftime");
+    const live = displayMatches.find((m) => m.status === "live" || m.status === "halftime");
     if (live) return live;
-    const soon = matches.find((m) => {
+    const soon = displayMatches.find((m) => {
       if (!m.kickoffAt || m.status !== "scheduled") return false;
       const diff = new Date(m.kickoffAt).getTime() - Date.now();
       return diff > -30 * 60_000 && diff < 6 * 60 * 60_000;
     });
     if (soon) return soon;
-    const withLineups = matches.find(
+    const withLineups = displayMatches.find(
       (m) => m.status === "scheduled" && (m.homeLineup || m.awayLineup)
     );
     return withLineups ?? null;
-  }, [matches, activeTab]);
+  }, [displayMatches, activeTab]);
 
   const listMatches = useMemo(() => {
     if (activeTab === "live") {
@@ -144,6 +174,8 @@ export default function LiveMatchCenter() {
     if (tab !== "previous") setStageFilter(null);
   };
 
+  const pollLabel = pollMs <= 5_000 ? "5" : pollMs <= 10_000 ? "10" : "30";
+
   return (
     <section id="live" className="section-anchor relative py-20 md:py-24 bg-navy overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-red-500/5 via-transparent to-pitch/5" />
@@ -165,8 +197,7 @@ export default function LiveMatchCenter() {
               LIVE <span className="text-gradient-pitch">SCORES</span>
             </h2>
             <p className="text-muted mt-2 max-w-xl text-sm">
-              Live clock (to the second), goals, cards & subs — refreshes every{" "}
-              {liveCount > 0 ? "10" : "30"}s.
+              Live clock (to the second), goals, cards & subs — refreshes every {pollLabel}s.
               {lastUpdate && (
                 <span className="text-pitch/70 block text-xs mt-1">
                   Last updated {lastUpdate}
@@ -243,7 +274,7 @@ export default function LiveMatchCenter() {
             exit={{ opacity: 0 }}
             className="mb-4 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-gold"
           >
-            Full time — match moved to Previous Fixtures.
+            Full time — match moved to Previous Fixtures. Stats & standings updating…
           </motion.div>
         )}
 
@@ -278,7 +309,7 @@ export default function LiveMatchCenter() {
         )}
 
         {featuredMatch && activeTab === "live" && (
-          <LiveMatchHero match={featuredMatch} />
+          <LiveMatchHero match={featuredMatch} onKickoff={() => void fetchLive()} />
         )}
 
         {listMatches.length === 0 ? (
@@ -308,7 +339,11 @@ export default function LiveMatchCenter() {
                       defaultExpanded={justFinishedId === match.id}
                     />
                   ) : (
-                    <MatchCard match={match} animateScore={activeTab === "live"} />
+                    <MatchCard
+                      match={match}
+                      animateScore={activeTab === "live"}
+                      onKickoff={() => void fetchLive()}
+                    />
                   )}
                 </motion.div>
               ))}

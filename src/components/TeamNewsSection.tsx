@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUpRight, ExternalLink, Filter, Newspaper } from "lucide-react";
-import { TEAM_NEWS, isExternalNews, type TeamNewsItem } from "@/lib/team-news";
+import { ArrowUpRight, ExternalLink, Filter, Newspaper, RefreshCw } from "lucide-react";
+import { isExternalNews, type TeamNewsItem } from "@/lib/team-news";
+import { onDataRefresh } from "@/lib/realtime/cascade";
+import { POLL_NEWS_MS } from "@/lib/realtime/polling";
 import TeamFlagWithFallback from "@/components/TeamFlag";
+import { formatUpdatedET } from "@/lib/timezone";
 
 const TAGS: Array<{ id: "all" | TeamNewsItem["tag"]; label: string }> = [
   { id: "all", label: "All" },
@@ -52,9 +55,39 @@ function ArticleReadMore({ item }: { item: TeamNewsItem }) {
 
 export default function TeamNewsSection() {
   const [tag, setTag] = useState<"all" | TeamNewsItem["tag"]>("all");
+  const [items, setItems] = useState<TeamNewsItem[]>([]);
+  const [sources, setSources] = useState<string[]>([]);
+  const [lastUpdate, setLastUpdate] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const filtered =
-    tag === "all" ? TEAM_NEWS : TEAM_NEWS.filter((n) => n.tag === tag);
+  const fetchNews = useCallback(async () => {
+    try {
+      const res = await fetch("/api/news", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.items?.length) setItems(data.items);
+      if (data.sources) setSources(data.sources);
+      if (data.updatedAt) setLastUpdate(formatUpdatedET(data.updatedAt));
+    } catch {
+      /* silent */
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchNews();
+    const interval = setInterval(() => void fetchNews(), POLL_NEWS_MS);
+    return () => clearInterval(interval);
+  }, [fetchNews]);
+
+  useEffect(() => {
+    return onDataRefresh((reason) => {
+      if (reason === "match-finished") void fetchNews();
+    });
+  }, [fetchNews]);
+
+  const filtered = tag === "all" ? items : items.filter((n) => n.tag === tag);
 
   return (
     <section id="news" className="section-anchor relative py-20 bg-navy overflow-hidden">
@@ -66,21 +99,40 @@ export default function TeamNewsSection() {
           viewport={{ once: true }}
           className="mb-8"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <Newspaper size={24} className="text-pitch" />
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
-              <p className="text-pitch uppercase tracking-[0.4em] text-xs font-semibold">
-                Live Coverage
+              <div className="flex items-center gap-3 mb-2">
+                <Newspaper size={24} className="text-pitch" />
+                <div>
+                  <p className="text-pitch uppercase tracking-[0.4em] text-xs font-semibold">
+                    Live Coverage
+                  </p>
+                  <h2 className="font-display text-3xl md:text-5xl text-white">
+                    TEAM <span className="text-gradient-pitch">NEWS</span>
+                  </h2>
+                </div>
+              </div>
+              <p className="text-muted text-sm max-w-xl">
+                Match reports, squad updates, and tactical takes — curated headlines plus live RSS
+                from BBC Sport, FIFA, ESPN, and The Guardian.
               </p>
-              <h2 className="font-display text-3xl md:text-5xl text-white">
-                TEAM <span className="text-gradient-pitch">NEWS</span>
-              </h2>
+              {lastUpdate && (
+                <p className="text-[10px] text-muted/70 mt-2 uppercase tracking-wider">
+                  Updated {lastUpdate}
+                  {sources.length > 0 && ` · ${sources.join(", ")}`}
+                </p>
+              )}
             </div>
+            <button
+              type="button"
+              onClick={() => void fetchNews()}
+              className="inline-flex items-center gap-2 text-xs text-pitch hover:text-white transition-colors"
+              aria-label="Refresh team news"
+            >
+              <RefreshCw size={14} />
+              Refresh
+            </button>
           </div>
-          <p className="text-muted text-sm max-w-xl">
-            Match reports, squad updates, and tactical takes from World Cup 2026 — updated as the
-            tournament unfolds.
-          </p>
         </motion.div>
 
         <div className="flex flex-wrap gap-2 mb-6">
@@ -101,36 +153,42 @@ export default function TeamNewsSection() {
           ))}
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map((item, i) => (
-            <motion.article
-              key={item.id}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.04 }}
-              className="group bg-card border border-white/10 rounded-2xl p-4 hover:border-pitch/30 transition-colors flex flex-col"
-            >
-              <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <TeamFlagWithFallback code={item.code} name={item.team} size={28} />
-                  <span className="text-xs text-muted shrink-0">{item.date}</span>
-                </div>
-                <span className="text-[9px] text-muted/80 truncate max-w-[40%]">{item.source}</span>
-              </div>
-              <span
-                className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${TAG_COLOR[item.tag]}`}
+        {loading && items.length === 0 ? (
+          <p className="text-sm text-muted text-center py-12">Loading team news…</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-sm text-muted text-center py-12">No articles in this category yet.</p>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filtered.map((item, i) => (
+              <motion.article
+                key={item.id}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.04 }}
+                className="group bg-card border border-white/10 rounded-2xl p-4 hover:border-pitch/30 transition-colors flex flex-col"
               >
-                {item.tag}
-              </span>
-              <h3 className="font-semibold text-white text-sm mt-2 leading-snug">{item.headline}</h3>
-              <p className="text-xs text-muted mt-2 leading-relaxed line-clamp-3 flex-1">
-                {item.summary}
-              </p>
-              <ArticleReadMore item={item} />
-            </motion.article>
-          ))}
-        </div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <TeamFlagWithFallback code={item.code} name={item.team} size={28} />
+                    <span className="text-xs text-muted shrink-0">{item.date}</span>
+                  </div>
+                  <span className="text-[9px] text-muted/80 truncate max-w-[40%]">{item.source}</span>
+                </div>
+                <span
+                  className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${TAG_COLOR[item.tag]}`}
+                >
+                  {item.tag}
+                </span>
+                <h3 className="font-semibold text-white text-sm mt-2 leading-snug">{item.headline}</h3>
+                <p className="text-xs text-muted mt-2 leading-relaxed line-clamp-3 flex-1">
+                  {item.summary}
+                </p>
+                <ArticleReadMore item={item} />
+              </motion.article>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -69,6 +69,8 @@ export type Match = {
   awaySubs?: MatchSubstitution[];
   homeLineup?: MatchLineup;
   awayLineup?: MatchLineup;
+  /** External match report / FIFA detail page when available */
+  detailUrl?: string;
 };
 
 export type Competition = {

@@ -11,7 +11,7 @@ import {
   isPreMatch,
 } from "@/lib/scores/types";
 import { attachLineupsToMatch } from "@/lib/scores/lineups";
-import { getMatchMeta } from "@/lib/match-meta";
+import { getMatchMeta, getCoachInfo } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchOfficialsPanel from "@/components/MatchOfficialsPanel";
 import MatchSubsPanel from "@/components/MatchSubsPanel";
@@ -68,6 +68,7 @@ type MatchCardProps = {
   match: Match;
   compact?: boolean;
   animateScore?: boolean;
+  onKickoff?: () => void;
 };
 
 type DetailTab = "info" | "lineups" | "subs" | "events" | "officials";
@@ -82,6 +83,7 @@ export default function MatchCard({
   match,
   compact = true,
   animateScore = false,
+  onKickoff,
 }: MatchCardProps) {
   const enriched = attachLineupsToMatch(match);
   const isLive = enriched.status === "live" || enriched.status === "halftime";
@@ -100,6 +102,8 @@ export default function MatchCard({
 
   const scoreDisplay = formatScore(enriched.score);
   const meta = getMatchMeta(enriched.id);
+  const coaches = getCoachInfo(enriched);
+  const hasCoaches = Boolean(coaches.homeCoach || coaches.awayCoach);
   const hasSubs = Boolean(enriched.homeSubs?.length || enriched.awaySubs?.length);
   const hasEvents = Boolean(enriched.events?.length);
   const hasDetails =
@@ -108,6 +112,7 @@ export default function MatchCard({
     hasEvents ||
     hasSubs ||
     hasLineups ||
+    hasCoaches ||
     Boolean(meta);
 
   return (
@@ -183,7 +188,7 @@ export default function MatchCard({
                 {scoreDisplay}
               </div>
             )}
-            <MatchClock match={enriched} size="sm" />
+            <MatchClock match={enriched} size="sm" onKickoff={onKickoff} />
           </div>
 
           <div className="flex-1 flex items-center gap-2 min-w-0">
@@ -215,7 +220,7 @@ export default function MatchCard({
                   { id: "lineups" as const, label: "Lineups", show: hasLineups },
                   { id: "subs" as const, label: "Subs", show: hasSubs || Boolean(meta) },
                   { id: "info" as const, label: "Info", show: true },
-                  { id: "officials" as const, label: "Officials", show: Boolean(meta) },
+                  { id: "officials" as const, label: "Officials", show: Boolean(meta) || hasCoaches },
                 ] as const
               )
                 .filter((t) => t.show)
@@ -266,8 +271,19 @@ export default function MatchCard({
               <p className="text-xs text-muted text-center py-2">No substitutions recorded yet.</p>
             )}
 
-            {detailTab === "officials" && meta && (
-              <MatchOfficialsPanel match={enriched} meta={meta} />
+            {detailTab === "officials" && (meta || hasCoaches) && (
+              <MatchOfficialsPanel match={enriched} meta={meta} coaches={coaches} />
+            )}
+
+            {enriched.detailUrl && detailTab === "info" && (
+              <a
+                href={enriched.detailUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex text-xs text-pitch hover:text-white transition-colors"
+              >
+                Full match report →
+              </a>
             )}
           </div>
         </div>
