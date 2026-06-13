@@ -27,8 +27,18 @@ function isPlaceholderKey(value: string): boolean {
   return /your_key|example|placeholder|changeme/i.test(value);
 }
 
+/** Strip quotes, newlines, and Bearer prefix from pasted Vercel values */
+function sanitizeKey(value: string): string {
+  return value
+    .trim()
+    .replace(/^Bearer\s+/i, "")
+    .replace(/^["']|["']$/g, "")
+    .replace(/[\r\n\t]/g, "")
+    .trim();
+}
+
 function isValidApiKey(value: string): boolean {
-  const trimmed = value.trim();
+  const trimmed = sanitizeKey(value);
   return (
     trimmed.length >= 32 &&
     looksLikeApiKey(trimmed) &&
@@ -46,18 +56,18 @@ type ResolvedKey = {
 
 function resolveApiKey(): ResolvedKey {
   for (const { env, source } of PRIMARY_KEY_VARS) {
-    const value = process.env[env]?.trim() ?? "";
+    const value = sanitizeKey(process.env[env] ?? "");
     if (!value) continue;
     if (isValidApiKey(value)) {
-      return { key: value, source };
+      return { key: sanitizeKey(value), source };
     }
   }
 
   for (const env of RECOVERY_LEAGUE_VARS) {
-    const value = process.env[env]?.trim() ?? "";
+    const value = sanitizeKey(process.env[env] ?? "");
     if (isValidApiKey(value)) {
       return {
-        key: value,
+        key: sanitizeKey(value),
         source: `${env} (auto-recovered)`,
         recoveredFromLeagueVar: env === "API_FOOTBALL_LEAGUE_WC",
         recoveredFromVar: env,
@@ -66,7 +76,7 @@ function resolveApiKey(): ResolvedKey {
   }
 
   for (const { env } of PRIMARY_KEY_VARS) {
-    const value = process.env[env]?.trim() ?? "";
+    const value = sanitizeKey(process.env[env] ?? "");
     if (value) return { key: value };
   }
 

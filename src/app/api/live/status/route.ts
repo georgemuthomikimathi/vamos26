@@ -76,7 +76,9 @@ export async function GET() {
                   : apiFootballRateLimited
                     ? "API-Football rate limited; worldcup26.ir fallback also failed"
                     : apiFootballAuthError
-                      ? "API_FOOTBALL_KEY rejected — verify paid key at dashboard.api-football.com"
+                      ? envCheck.configured
+                        ? "API_FOOTBALL_KEY is set but rejected — copy fresh key from dashboard.api-football.com → Profile → API key (not subscription ID), paste into API_FOOTBALL_KEY, redeploy"
+                        : "API_FOOTBALL_KEY rejected — verify paid key at dashboard.api-football.com"
                       : "Key is set but no fixtures returned. Verify key and league=1 season=2026"
                 : "Check API configuration",
   });
