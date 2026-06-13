@@ -1,16 +1,15 @@
 "use client";
 
 import { AlertTriangle, CheckCircle2, ExternalLink } from "lucide-react";
-import ApiFootballBadge from "@/components/ApiFootballBadge";
 
 type LiveApiBannerProps = {
   source: "api" | "static" | "";
-  provider?: "api-football" | "worldcup26" | "static" | "";
+  provider?: "worldcup26" | "static" | "";
   apiError?: string;
 };
 
 export default function LiveApiBanner({ source, provider, apiError }: LiveApiBannerProps) {
-  if (source === "api" && provider === "api-football") {
+  if (source === "api" && provider === "worldcup26") {
     return (
       <div
         role="status"
@@ -19,13 +18,20 @@ export default function LiveApiBanner({ source, provider, apiError }: LiveApiBan
         <div className="flex gap-3 items-start">
           <CheckCircle2 className="text-pitch shrink-0 mt-0.5" size={20} />
           <div className="flex-1 min-w-0">
-            <p className="font-display text-xl text-white mb-1 flex items-center gap-2">
-              Live API connected
-              <ApiFootballBadge />
+            <p className="font-display text-xl text-white mb-1">
+              Live scores connected
             </p>
             <p className="text-sm text-muted leading-relaxed">
-              Paid API-Football tier active — live clock, official lineups, all substitutions,
-              cards (yellow/red/2nd yellow), goals, and assists across every section.
+              World Cup 2026 data via{" "}
+              <a
+                href="https://worldcup26.ir"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-pitch font-semibold hover:underline"
+              >
+                worldcup26.ir
+              </a>
+              — live scores, standings, goals, lineups, and match events. No API key required.
             </p>
             <a
               href="/api/live/status"
@@ -33,7 +39,7 @@ export default function LiveApiBanner({ source, provider, apiError }: LiveApiBan
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-sm text-pitch font-semibold hover:underline mt-3"
             >
-              View API status <ExternalLink size={14} />
+              View data status <ExternalLink size={14} />
             </a>
           </div>
         </div>
@@ -52,37 +58,20 @@ export default function LiveApiBanner({ source, provider, apiError }: LiveApiBan
         <AlertTriangle className="text-gold shrink-0 mt-0.5" size={20} />
         <div className="flex-1 min-w-0">
           <p className="font-display text-xl text-white mb-1">
-            Live API not connected
+            Live feed temporarily unavailable
           </p>
           <p className="text-sm text-muted leading-relaxed">
             {apiError ??
-              "Scores are showing the preview schedule, not real match data. Add your API-Football key to Vercel and redeploy."}
+              "Showing preview schedule. worldcup26.ir will reconnect automatically on refresh."}
           </p>
-          <div className="flex flex-wrap gap-3 mt-3 text-sm">
-            <a
-              href="/api/live/status"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-pitch font-semibold hover:underline"
-            >
-              Check API status <ExternalLink size={14} />
-            </a>
-            <a
-              href="https://dashboard.api-football.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-muted hover:text-white"
-            >
-              API-Football dashboard <ExternalLink size={14} />
-            </a>
-          </div>
-          <ol className="mt-3 text-xs text-muted space-y-1 list-decimal list-inside">
-            <li>Vercel → project <strong className="text-white">vamos26</strong> → Settings → Environment Variables</li>
-            <li>Add <code className="text-pitch">API_FOOTBALL_KEY</code> = your key from api-football.com</li>
-            <li>Add <code className="text-pitch">API_FOOTBALL_SEASON</code> = <code className="text-pitch">2026</code></li>
-            <li>Add <code className="text-pitch">API_FOOTBALL_LEAGUE_WC</code> = <code className="text-pitch">1</code> (not your API key)</li>
-            <li>Deployments → Redeploy (required!)</li>
-          </ol>
+          <a
+            href="/api/live/status"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-sm text-pitch font-semibold hover:underline mt-3"
+          >
+            Check status <ExternalLink size={14} />
+          </a>
         </div>
       </div>
     </div>

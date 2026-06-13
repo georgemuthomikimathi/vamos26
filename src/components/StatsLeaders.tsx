@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { Target, Handshake, AlertTriangle, type LucideIcon } from "lucide-react";
 import type { StatLeader } from "@/lib/stats";
 import TeamFlagWithFallback from "@/components/TeamFlag";
-import ApiFootballBadge from "@/components/ApiFootballBadge";
 
 type StatsPayload = {
   updatedAt: string;
@@ -13,7 +12,7 @@ type StatsPayload = {
   scorers: StatLeader[];
   assists: StatLeader[];
   mostCards: StatLeader[];
-  provider?: "api-football" | "worldcup26" | "static";
+  provider?: "worldcup26" | "static";
 };
 
 const POLL_MS = 30_000;
@@ -155,9 +154,8 @@ export default function StatsLeaders() {
           viewport={{ once: true }}
           className="text-center mb-10"
         >
-          <p className="text-gold uppercase tracking-[0.4em] text-xs font-semibold mb-3 flex items-center justify-center gap-2 flex-wrap">
+          <p className="text-gold uppercase tracking-[0.4em] text-xs font-semibold mb-3">
             Tournament Leaders
-            {stats?.provider === "api-football" && <ApiFootballBadge />}
           </p>
           <h2 className="font-display text-5xl md:text-7xl text-white mb-4">
             STATS <span className="text-gradient-gold">BOARD</span>

@@ -6,7 +6,6 @@ import { History, Radio, RefreshCw, CalendarClock } from "lucide-react";
 import type { Match } from "@/lib/scores/types";
 import { getLiveCount } from "@/lib/scores/types";
 import { LIVE_MATCHES } from "@/lib/live";
-import { attachLineupsToMatches } from "@/lib/scores/lineups";
 import { enrichMatchesFromMeta } from "@/lib/scores/enrich-from-meta";
 import {
   bucketMatches,
@@ -21,7 +20,6 @@ import PreviousFixtureCard from "@/components/PreviousFixtureCard";
 import MatchAlertSettings from "@/components/MatchAlertSettings";
 import LiveMatchHero from "@/components/LiveMatchHero";
 import LiveApiBanner from "@/components/LiveApiBanner";
-import ApiFootballBadge from "@/components/ApiFootballBadge";
 import { formatUpdatedET } from "@/lib/timezone";
 
 const POLL_LIVE_MS = 10_000;
@@ -39,7 +37,7 @@ export default function LiveMatchCenter() {
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [dataSource, setDataSource] = useState<"api" | "static" | "">("");
-  const [provider, setProvider] = useState<"api-football" | "worldcup26" | "static" | "">("");
+  const [provider, setProvider] = useState<"worldcup26" | "static" | "">("");
   const [apiError, setApiError] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<MatchCenterTab>("live");
   const [stageFilter, setStageFilter] = useState<string | null>(null);
@@ -55,7 +53,7 @@ export default function LiveMatchCenter() {
     try {
       const res = await fetch("/api/live?competition=world-cup", { cache: "no-store" });
       const data = await res.json();
-      const nextMatches = enrichMatchesFromMeta(attachLineupsToMatches(data.matches ?? []));
+      const nextMatches = enrichMatchesFromMeta(data.matches ?? []);
       setMatches(nextMatches);
       setLiveCount(data.liveCount);
       if (data.source === "api" || data.source === "static") {
@@ -162,7 +160,6 @@ export default function LiveMatchCenter() {
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               )}
               World Cup 2026
-              {provider === "api-football" && <ApiFootballBadge />}
             </p>
             <h2 className="font-display text-4xl md:text-6xl text-white">
               LIVE <span className="text-gradient-pitch">SCORES</span>
@@ -173,9 +170,8 @@ export default function LiveMatchCenter() {
               {lastUpdate && (
                 <span className="text-pitch/70 block text-xs mt-1">
                   Last updated {lastUpdate}
-                  {provider === "api-football" && " · Live API (API-Football)"}
-                  {dataSource === "api" && provider !== "api-football" && " · Live scores"}
-                  {dataSource === "static" && " · Schedule preview — live API unavailable"}
+                  {dataSource === "api" && provider === "worldcup26" && " · worldcup26.ir"}
+                  {dataSource === "static" && " · Schedule preview — live feed unavailable"}
                 </span>
               )}
             </p>
