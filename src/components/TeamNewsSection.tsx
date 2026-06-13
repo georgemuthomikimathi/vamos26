@@ -113,8 +113,8 @@ export default function TeamNewsSection() {
                 </div>
               </div>
               <p className="text-muted text-sm max-w-xl">
-                Match reports, squad updates, and tactical takes — curated headlines plus live RSS
-                from BBC Sport, FIFA, ESPN, and The Guardian.
+                Verified match reports from live scores, plus screened headlines from BBC Sport,
+                FIFA, ESPN, and The Guardian — false results are filtered automatically.
               </p>
               {lastUpdate && (
                 <p className="text-[10px] text-muted/70 mt-2 uppercase tracking-wider">
@@ -173,7 +173,14 @@ export default function TeamNewsSection() {
                     <TeamFlagWithFallback code={item.code} name={item.team} size={28} />
                     <span className="text-xs text-muted shrink-0">{item.date}</span>
                   </div>
-                  <span className="text-[9px] text-muted/80 truncate max-w-[40%]">{item.source}</span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {item.verified && (
+                      <span className="text-[8px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded-full border border-pitch/40 text-pitch bg-pitch/10">
+                        Verified
+                      </span>
+                    )}
+                    <span className="text-[9px] text-muted/80 truncate max-w-[5rem]">{item.source}</span>
+                  </div>
                 </div>
                 <span
                   className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${TAG_COLOR[item.tag]}`}

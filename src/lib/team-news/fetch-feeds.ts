@@ -1,5 +1,9 @@
 import type { TeamNewsItem } from "@/lib/team-news";
-import { TEAM_NEWS } from "@/lib/team-news";
+import { PREVIEW_NEWS } from "@/lib/team-news";
+import { fetchMatchesByCompetition } from "@/lib/scores/fetch-matches";
+import { generateVerifiedMatchReports } from "@/lib/team-news/match-reports";
+import { filterVerifiedNews } from "@/lib/verification/verify-content";
+import { buildMatchFacts } from "@/lib/verification/match-facts";
 
 export type NewsFeedSource = {
   id: string;
@@ -37,6 +41,11 @@ const WC_KEYWORDS = [
   "usa",
   "united states",
   "canada",
+  "czechia",
+  "czech republic",
+  "korea",
+  "south korea",
+  "bosnia",
   "argentina",
   "brazil",
   "england",
@@ -50,12 +59,11 @@ const WC_KEYWORDS = [
   "squad",
   "lineup",
   "transfer",
-  "fabrizio",
-  "roman",
   "tuchel",
   "scaloni",
   "aguirre",
   "pochettino",
+  "marsch",
 ];
 
 type ParsedRssItem = {
@@ -109,7 +117,7 @@ function inferTag(headline: string, summary: string): TeamNewsItem["tag"] {
   const text = `${headline} ${summary}`.toLowerCase();
   if (/injur|doubt|fit|out for|ruled out|muscle|hamstring|knee/.test(text)) return "injury";
   if (/squad|lineup|roster|xi|bench|call-?up/.test(text)) return "squad";
-  if (/tactic|formation|coach|manager|tuchel|scaloni|aguirre|pochettino/.test(text)) {
+  if (/tactic|formation|coach|manager|tuchel|scaloni|aguirre|pochettino|marsch/.test(text)) {
     return "tactics";
   }
   if (/transfer|fabrizio|roman|deal|sign/.test(text)) return "squad";
@@ -123,6 +131,11 @@ function inferTeamCode(headline: string, summary: string): { code: string; team:
     ["usa", "us", "USA"],
     ["united states", "us", "USA"],
     ["canada", "ca", "Canada"],
+    ["czechia", "cz", "Czechia"],
+    ["czech republic", "cz", "Czechia"],
+    ["korea", "kr", "Korea Republic"],
+    ["south korea", "kr", "Korea Republic"],
+    ["bosnia", "ba", "Bosnia & Herzegovina"],
     ["brazil", "br", "Brazil"],
     ["argentina", "ar", "Argentina"],
     ["england", "gb-eng", "England"],
@@ -136,7 +149,6 @@ function inferTeamCode(headline: string, summary: string): { code: string; team:
     ["netherlands", "nl", "Netherlands"],
     ["belgium", "be", "Belgium"],
     ["colombia", "co", "Colombia"],
-    ["korea", "kr", "Korea Republic"],
   ];
 
   for (const [needle, code, team] of teams) {
@@ -150,10 +162,18 @@ function formatFeedDate(pubDate?: string): string {
   if (!pubDate) return "Today";
   const parsed = new Date(pubDate);
   if (Number.isNaN(parsed.getTime())) return "Today";
-  return parsed.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
+  return parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "America/New_York",
+  });
 }
 
-function rssToNewsItem(item: ParsedRssItem, source: NewsFeedSource, index: number): TeamNewsItem | null {
+function rssToNewsItem(
+  item: ParsedRssItem,
+  source: NewsFeedSource,
+  index: number
+): TeamNewsItem | null {
   if (!isRelevant(item.title, item.description)) return null;
 
   const { code, team } = inferTeamCode(item.title, item.description);
@@ -169,6 +189,8 @@ function rssToNewsItem(item: ParsedRssItem, source: NewsFeedSource, index: numbe
     url: item.link,
     source: source.name,
     external: true,
+    verified: false,
+    kind: "rss",
   };
 }
 
@@ -210,21 +232,42 @@ function dedupeNews(items: TeamNewsItem[]): TeamNewsItem[] {
   return out;
 }
 
-/** Merge curated headlines with live RSS — curated items take priority. */
-export async function fetchTeamNews(): Promise<{
+export type FetchTeamNewsResult = {
   items: TeamNewsItem[];
   sources: string[];
   fetchedAt: string;
-}> {
-  const feedResults = await Promise.all(NEWS_FEEDS.map(fetchFeed));
+  verifiedCount: number;
+  rejectedCount: number;
+  matchFactsCount: number;
+};
+
+/** Verified match reports + screened RSS/previews — misinformation filtered out. */
+export async function fetchTeamNews(): Promise<FetchTeamNewsResult> {
+  const [{ matches }, feedResults] = await Promise.all([
+    fetchMatchesByCompetition("world-cup"),
+    Promise.all(NEWS_FEEDS.map(fetchFeed)),
+  ]);
+
+  const verifiedReports = generateVerifiedMatchReports(matches);
+  const facts = buildMatchFacts(matches);
   const rssItems = feedResults.flat();
   const activeSources = NEWS_FEEDS.filter((_, i) => feedResults[i].length > 0).map((s) => s.name);
 
-  const merged = dedupeNews([...TEAM_NEWS, ...rssItems]).slice(0, 24);
+  const candidatePool = dedupeNews([...verifiedReports, ...PREVIEW_NEWS, ...rssItems]);
+  const { items: verifiedItems, rejected } = filterVerifiedNews(candidatePool, matches);
+
+  const sorted = verifiedItems.sort((a, b) => {
+    if (a.verified && !b.verified) return -1;
+    if (!a.verified && b.verified) return 1;
+    return 0;
+  });
 
   return {
-    items: merged,
-    sources: activeSources,
+    items: sorted.slice(0, 24),
+    sources: ["VAMOS26 Verified", ...activeSources],
     fetchedAt: new Date().toISOString(),
+    verifiedCount: sorted.filter((i) => i.verified).length,
+    rejectedCount: rejected.length,
+    matchFactsCount: facts.length,
   };
 }

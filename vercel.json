@@ -3,5 +3,15 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "crons": [
+    {
+      "path": "/api/cron/verify-site",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/verify-site",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }
