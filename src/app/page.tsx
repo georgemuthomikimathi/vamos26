@@ -14,7 +14,7 @@ import AppBottomNav from "@/components/AppBottomNav";
 import StadiumsSection from "@/components/StadiumsSection";
 import StatsLeaders from "@/components/StatsLeaders";
 import WatchlistSection from "@/components/WatchlistSection";
-import UpcomingMatches from "@/components/UpcomingMatches";
+import PastFixturesSection from "@/components/PastFixturesSection";
 import GroupsSection from "@/components/GroupsSection";
 import RoadToFinal from "@/components/RoadToFinal";
 import TrophyBallSection from "@/components/TrophyBallSection";
@@ -54,6 +54,7 @@ export default function Home() {
       </section>
       <DonateSection />
       <LiveMatchCenter />
+      <PastFixturesSection />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <AdUnit slot={AD_SLOT_HOMEPAGE_INLINE} className="max-w-3xl mx-auto" />
       </div>
@@ -62,7 +63,6 @@ export default function Home() {
       <StatsLeaders />
       <WatchlistSection />
       <HowToWatch />
-      <UpcomingMatches />
       <GroupsSection />
       <RoadToFinal />
       <TrophyBallSection />

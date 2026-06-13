@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, ExternalLink, MapPin } from "lucide-react";
+import { ChevronDown, ExternalLink, MapPin, Users } from "lucide-react";
 import type { Match, MatchEvent } from "@/lib/scores/types";
 import { formatScore } from "@/lib/scores/types";
 import { getDisplayEvents } from "@/lib/scores/card-events";
 import { attachLineupsToMatch } from "@/lib/scores/lineups";
-import { getMatchMeta, getCoachInfo } from "@/lib/match-meta";
+import { getMatchMetaForMatch, getCoachInfo } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchEventsTimeline from "@/components/MatchEventsTimeline";
+import MatchLineupPanel from "@/components/MatchLineupPanel";
 import MatchSubsPanel from "@/components/MatchSubsPanel";
 import MatchOfficialsPanel from "@/components/MatchOfficialsPanel";
 import { formatSubstitutionMinute } from "@/lib/timezone";
@@ -32,10 +33,10 @@ function eventIcon(event: MatchEvent): string {
 
 export default function PreviousFixtureCard({
   match,
-  defaultExpanded = true,
+  defaultExpanded = false,
 }: PreviousFixtureCardProps) {
   const enriched = attachLineupsToMatch(match);
-  const meta = getMatchMeta(enriched.id);
+  const meta = getMatchMetaForMatch(enriched);
   const coaches = getCoachInfo(enriched);
   const [expanded, setExpanded] = useState(defaultExpanded);
 
@@ -85,9 +86,14 @@ export default function PreviousFixtureCard({
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex-1 flex items-center gap-2 min-w-0 justify-end">
-            <span className="font-medium truncate text-sm">{enriched.home.name}</span>
-            <TeamFlagWithFallback code={enriched.home.code} name={enriched.home.name} size={28} />
+          <div className="flex-1 flex flex-col items-end gap-0.5 min-w-0">
+            <div className="flex items-center gap-2 justify-end w-full">
+              <span className="font-medium truncate text-sm">{enriched.home.name}</span>
+              <TeamFlagWithFallback code={enriched.home.code} name={enriched.home.name} size={28} />
+            </div>
+            {coaches.homeCoach && (
+              <span className="text-[10px] text-muted/70 truncate max-w-full">{coaches.homeCoach}</span>
+            )}
           </div>
 
           <div className="shrink-0 text-center px-2 min-w-[5rem]">
@@ -95,9 +101,14 @@ export default function PreviousFixtureCard({
             <p className="text-[10px] text-muted uppercase tracking-wider">Full time</p>
           </div>
 
-          <div className="flex-1 flex items-center gap-2 min-w-0">
-            <TeamFlagWithFallback code={enriched.away.code} name={enriched.away.name} size={28} />
-            <span className="font-medium truncate text-sm">{enriched.away.name}</span>
+          <div className="flex-1 flex flex-col items-start gap-0.5 min-w-0">
+            <div className="flex items-center gap-2 w-full">
+              <TeamFlagWithFallback code={enriched.away.code} name={enriched.away.name} size={28} />
+              <span className="font-medium truncate text-sm">{enriched.away.name}</span>
+            </div>
+            {coaches.awayCoach && (
+              <span className="text-[10px] text-muted/70 truncate max-w-full">{coaches.awayCoach}</span>
+            )}
           </div>
         </div>
 
@@ -137,7 +148,7 @@ export default function PreviousFixtureCard({
                     )}
                   </span>
                 ))}
-                {allSubs.map((s, i) => (
+                {allSubs.slice(0, 6).map((s, i) => (
                   <span
                     key={`${s.minute}-${s.playerIn}-${i}`}
                     className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted"
@@ -148,11 +159,17 @@ export default function PreviousFixtureCard({
                     Sub: {s.playerOut} → {s.playerIn}
                   </span>
                 ))}
+                {allSubs.length > 6 && (
+                  <span className="text-[10px] text-muted/60 px-2 py-1">
+                    +{allSubs.length - 6} more subs
+                  </span>
+                )}
               </div>
             )}
 
-            <p className="text-[10px] text-muted/60 text-center">
-              Tap for full timeline · {enriched.venue}
+            <p className="text-[10px] text-muted/60 text-center flex items-center justify-center gap-1">
+              <MapPin size={10} className="text-pitch" />
+              {enriched.venue} · Tap for full squads & match report
             </p>
           </div>
         )}
@@ -167,67 +184,36 @@ export default function PreviousFixtureCard({
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="overflow-hidden"
       >
-        <div className="px-3 md:px-4 pb-4 pt-0 border-t border-white/10 mx-3 md:mx-4 space-y-3">
+        <div className="px-3 md:px-4 pb-4 pt-0 border-t border-white/10 mx-3 md:mx-4 space-y-4">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted pt-3">
             <span>{enriched.date} · {enriched.time} ET</span>
             <span className="flex items-center gap-1 min-w-0">
               <MapPin size={12} className="text-pitch shrink-0" />
-              <span className="truncate">
-                {enriched.venue} · {enriched.city}
+              <span className="truncate font-medium text-white/90">
+                {enriched.venue}
               </span>
+              <span className="text-muted">· {enriched.city}</span>
             </span>
           </div>
 
-          <MatchEventsTimeline match={enriched} expanded />
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-pitch mb-2 flex items-center gap-1.5">
+              <Users size={12} />
+              Full squads · starting XI & bench
+            </p>
+            <MatchLineupPanel match={enriched} />
+          </div>
 
-          {(enriched.homeSubs?.length || enriched.awaySubs?.length) ? (
-            <div className="grid sm:grid-cols-2 gap-3">
-              {enriched.homeSubs && enriched.homeSubs.length > 0 && (
-                <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                  <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
-                    {enriched.home.name} subs
-                  </p>
-                  <ul className="space-y-1 text-xs text-muted">
-                    {enriched.homeSubs.map((s, i) => (
-                      <li key={i}>
-                        <span className="text-gold font-semibold">
-                          {formatSubstitutionMinute(s.minute, s.extraMinute)}
-                        </span>{" "}
-                        Sub: {s.playerOut}
-                        <span className="text-muted/60"> → </span>
-                        <span className="text-pitch">{s.playerIn}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {enriched.awaySubs && enriched.awaySubs.length > 0 && (
-                <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                  <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
-                    {enriched.away.name} subs
-                  </p>
-                  <ul className="space-y-1 text-xs text-muted">
-                    {enriched.awaySubs.map((s, i) => (
-                      <li key={i}>
-                        <span className="text-gold font-semibold">
-                          {formatSubstitutionMinute(s.minute, s.extraMinute)}
-                        </span>{" "}
-                        Sub: {s.playerOut}
-                        <span className="text-muted/60"> → </span>
-                        <span className="text-pitch">{s.playerIn}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          ) : meta ? (
-            <MatchSubsPanel match={enriched} meta={meta} />
-          ) : null}
+          <MatchOfficialsPanel match={enriched} meta={meta} coaches={coaches} />
 
-          {(meta || coaches.homeCoach || coaches.awayCoach) && (
-            <MatchOfficialsPanel match={enriched} meta={meta} coaches={coaches} />
-          )}
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
+              Match timeline
+            </p>
+            <MatchEventsTimeline match={enriched} expanded />
+          </div>
+
+          <MatchSubsPanel match={enriched} meta={meta} />
 
           {enriched.detailUrl && (
             <a
@@ -236,7 +222,7 @@ export default function PreviousFixtureCard({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-pitch hover:text-white transition-colors"
             >
-              Full match report
+              Full match report on FIFA.com
               <ExternalLink size={12} />
             </a>
           )}

@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { id: "news", label: "News" },
   { id: "stats", label: "Stats" },
   { id: "watchlist", label: "Watch" },
-  { id: "fixtures", label: "Fixtures" },
+  { id: "fixtures", label: "Results" },
   { id: "groups", label: "Groups" },
   { id: "roadmap", label: "Road to Final" },
   { id: "trophy", label: "Trophy & Ball" },

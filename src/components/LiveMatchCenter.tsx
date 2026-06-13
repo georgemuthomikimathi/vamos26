@@ -29,9 +29,9 @@ import LiveApiBanner from "@/components/LiveApiBanner";
 import { formatUpdatedET } from "@/lib/timezone";
 
 const TABS: { id: MatchCenterTab; label: string; icon: typeof Radio }[] = [
+  { id: "previous", label: "Previous Fixtures", icon: History },
   { id: "live", label: "Live", icon: Radio },
   { id: "upcoming", label: "Upcoming", icon: CalendarClock },
-  { id: "previous", label: "Previous Fixtures", icon: History },
 ];
 
 export default function LiveMatchCenter() {
@@ -42,7 +42,7 @@ export default function LiveMatchCenter() {
   const [dataSource, setDataSource] = useState<"api" | "static" | "">("");
   const [provider, setProvider] = useState<"worldcup26" | "static" | "">("");
   const [apiError, setApiError] = useState<string | undefined>();
-  const [activeTab, setActiveTab] = useState<MatchCenterTab>("live");
+  const [activeTab, setActiveTab] = useState<MatchCenterTab>("previous");
   const [stageFilter, setStageFilter] = useState<string | null>(null);
   const [justFinishedId, setJustFinishedId] = useState<string | null>(null);
   const prevLiveIdsRef = useRef<Set<string>>(new Set());

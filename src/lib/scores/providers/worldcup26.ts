@@ -196,7 +196,7 @@ function filterRelevantGames(games: Wc26Game[]): Wc26Game[] {
   return games.filter((g) => {
     const status = mapStatus(g);
     if (status === "live" || status === "halftime") return true;
-    if (status === "finished" && isInDateWindow(g.local_date, 7, 0)) return true;
+    if (status === "finished") return true;
     return isInDateWindow(g.local_date, 1, 2);
   });
 }

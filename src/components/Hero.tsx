@@ -1,9 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Calendar, MapPin, Users, Radio, HeartHandshake, Bell } from "lucide-react";
+import { Calendar, MapPin, Users, Radio, HeartHandshake, Bell, History } from "lucide-react";
 import { HOST_NATIONS, TOURNAMENT_STATS, KEY_DATES } from "@/lib/data";
-import CountdownTimer from "@/components/CountdownTimer";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import TournamentImage from "@/components/TournamentImage";
 import { scrollToSection } from "@/lib/scroll";
@@ -13,6 +12,7 @@ type HeroProps = {
 };
 
 const HERO_ACTIONS = [
+  { id: "fixtures", label: "Past Results", icon: History },
   { id: "live", label: "Live Scores", icon: Radio },
   { id: "newsletter", label: "WC26 Alerts", icon: Bell },
   { id: "discover", label: "NYC Guide", icon: MapPin },
@@ -96,7 +96,18 @@ export default function Hero({ onNavigate }: HeroProps) {
             </div>
 
             <div className="mb-8 max-w-md">
-              <CountdownTimer />
+              <button
+                type="button"
+                onClick={() => go("fixtures")}
+                className="w-full bg-gold/10 border border-gold/30 rounded-3xl p-5 text-left hover:bg-gold/15 transition-colors tap-scale focus-ring"
+              >
+                <p className="text-gold uppercase tracking-[0.35em] text-[10px] font-semibold mb-1">
+                  Tournament underway
+                </p>
+                <p className="text-white font-semibold text-sm">
+                  View past fixtures — full squads, goals, subs & officials on tap
+                </p>
+              </button>
             </div>
 
             <div className="flex lg:hidden flex-col items-center gap-2 mb-8 py-2">

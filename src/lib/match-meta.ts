@@ -242,17 +242,162 @@ export const MATCH_META: Record<string, MatchMeta> = {
       { minute: 81, type: "yellow", player: "Orbelín Pineda", team: "home" },
     ],
   },
+  m2: {
+    officials: {
+      referee: "Amin Omar",
+      var: "Hernán Mastrangelo",
+      fourthOfficial: "Wilton Sampaio",
+      assistantReferees: ["Mahmoud Ashour", "Ahmed Ibrahim"],
+    },
+    home: {
+      coach: "Hong Myung-bo",
+      potentialSubs: [
+        "Oh Hyeon-gyu",
+        "Hwang Hee-chan",
+        "Eom Ji-sung",
+        "Jo Hyeon-woo",
+        "Kim Min-jae",
+      ],
+      subsUsed: [
+        { minute: 61, playerIn: "Hwang Hee-chan", playerOut: "Lee Jae-sung" },
+        { minute: 69, playerIn: "Oh Hyeon-gyu", playerOut: "Son Heung-min" },
+        { minute: 69, playerIn: "Eom Ji-sung", playerOut: "Lee Tae-seok" },
+      ],
+      newsHeadline: "Hwang In-beom inspires Korea Republic comeback over Czechia",
+    },
+    away: {
+      coach: "Ivan Hašek",
+      potentialSubs: [
+        "Adam Hložek",
+        "Tomáš Chorý",
+        "Michal Sadílek",
+        "Václav Jemelka",
+        "Matěj Kovář",
+      ],
+      subsUsed: [
+        { minute: 62, playerIn: "Adam Hložek", playerOut: "Jan Kuchta" },
+        { minute: 62, playerIn: "Tomáš Chorý", playerOut: "Lukáš Provod" },
+        { minute: 62, playerIn: "Michal Sadílek", playerOut: "Tomáš Vlček" },
+      ],
+      newsHeadline: "Krejčí opener not enough as Czechia fall to late Korea winner",
+    },
+    events: [
+      {
+        minute: 59,
+        type: "goal",
+        player: "Ladislav Krejčí",
+        team: "away",
+      },
+      {
+        minute: 67,
+        type: "goal",
+        player: "Hwang In-beom",
+        playerSecondary: "Lee Kang-in",
+        team: "home",
+      },
+      {
+        minute: 80,
+        type: "goal",
+        player: "Oh Hyeon-gyu",
+        playerSecondary: "Hwang In-beom",
+        team: "home",
+      },
+    ],
+  },
+  m3: {
+    officials: {
+      referee: "Facundo Tello",
+      var: "Hernán Mastrangelo",
+      fourthOfficial: "Khalid Alturais",
+      assistantReferees: ["Juan Pablo Belatti", "Gabriel Chade"],
+    },
+    home: {
+      coach: "Jesse Marsch",
+      potentialSubs: [
+        "Jacob Shaffelburg",
+        "Promise David",
+        "Ali Ahmed",
+        "Cyle Larin",
+        "Jonathan Osorio",
+        "Dayne St. Clair",
+      ],
+      subsUsed: [
+        { minute: 61, playerIn: "Jacob Shaffelburg", playerOut: "Liam Millar" },
+        { minute: 61, playerIn: "Promise David", playerOut: "Jonathan David" },
+        { minute: 61, playerIn: "Ali Ahmed", playerOut: "Tajon Buchanan" },
+        { minute: 76, playerIn: "Cyle Larin", playerOut: "Tani Oluwaseyi" },
+        { minute: 90, extraMinute: 1, playerIn: "Jonathan Osorio", playerOut: "Stephen Eustáquio" },
+      ],
+      newsHeadline: "Larin super-sub earns Canada a point in Toronto opener",
+    },
+    away: {
+      coach: "Sergej Barbarez",
+      potentialSubs: [
+        "Armin Gigovic",
+        "Samed Bazdar",
+        "Ivan Sunjic",
+        "Kerim Alajbegovic",
+        "Dzenis Burnic",
+        "Edin Džeko",
+      ],
+      subsUsed: [
+        { minute: 61, playerIn: "Armin Gigovic", playerOut: "Ivan Bašić" },
+        { minute: 61, playerIn: "Samed Bazdar", playerOut: "Jovo Lukić" },
+        { minute: 74, playerIn: "Ivan Sunjic", playerOut: "Esmir Bajraktarević" },
+        { minute: 74, playerIn: "Kerim Alajbegovic", playerOut: "Amar Memić" },
+        { minute: 83, playerIn: "Dzenis Burnic", playerOut: "Sead Kolašinac" },
+      ],
+      newsHeadline: "Lukić header gives Bosnia & Herzegovina early lead at BMO Field",
+    },
+    events: [
+      {
+        minute: 21,
+        type: "goal",
+        player: "Jovo Lukić",
+        playerSecondary: "Sead Kolašinac",
+        team: "away",
+      },
+      { minute: 44, type: "yellow", player: "Ermedin Demirović", team: "away" },
+      { minute: 45, extraMinute: 1, type: "yellow", player: "Jovo Lukić", team: "away" },
+      { minute: 53, type: "yellow", player: "Luc De Fougerolles", team: "home" },
+      {
+        minute: 78,
+        type: "goal",
+        player: "Cyle Larin",
+        playerSecondary: "Promise David",
+        team: "home",
+      },
+      { minute: 90, extraMinute: 3, type: "yellow", player: "Nikola Katić", team: "away" },
+    ],
+  },
 };
 
 /** worldcup26.ir game id → static preview meta id */
 const WC26_META_ALIASES: Record<string, string> = {
   "wc26-1": "m1",
+  "wc26-2": "m2",
+  "wc26-3": "m3",
+};
+
+/** Resolve meta when API ids differ from static ids */
+const TEAM_PAIR_META: Record<string, string> = {
+  "mx-za": "m1",
+  "kr-cz": "m2",
+  "ca-ba": "m3",
 };
 
 export function getMatchMeta(matchId: string): MatchMeta | undefined {
   const alias = WC26_META_ALIASES[matchId];
   if (alias) return MATCH_META[alias];
   return MATCH_META[matchId];
+}
+
+export function getMatchMetaForMatch(match: Pick<Match, "id" | "home" | "away">): MatchMeta | undefined {
+  const fromId = getMatchMeta(match.id);
+  if (fromId) return fromId;
+  const pairKey = `${match.home.code}-${match.away.code}`;
+  const metaId = TEAM_PAIR_META[pairKey];
+  return metaId ? MATCH_META[metaId] : undefined;
 }
 
 export type CoachInfo = {
@@ -262,7 +407,7 @@ export type CoachInfo = {
 
 /** Coaches from squads/lineups when manual MATCH_META is absent. */
 export function getCoachInfo(match: Match): CoachInfo {
-  const meta = getMatchMeta(match.id);
+  const meta = getMatchMetaForMatch(match);
   if (meta) {
     return { homeCoach: meta.home.coach, awayCoach: meta.away.coach };
   }

@@ -1,5 +1,5 @@
 import type { Match, MatchEvent, MatchSubstitution } from "@/lib/scores/types";
-import { getMatchMeta } from "@/lib/match-meta";
+import { getMatchMetaForMatch } from "@/lib/match-meta";
 
 function subsFromMeta(
   used:
@@ -37,7 +37,7 @@ function mergeEvents(
 }
 
 export function enrichMatchFromMeta(match: Match): Match {
-  const meta = getMatchMeta(match.id);
+  const meta = getMatchMetaForMatch(match);
   if (!meta) return match;
 
   const homeSubs =

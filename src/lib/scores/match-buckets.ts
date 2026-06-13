@@ -50,9 +50,9 @@ export function getMatchTabCounts(matches: Match[]): Record<MatchCenterTab, numb
 
 export function pickDefaultTab(counts: Record<MatchCenterTab, number>): MatchCenterTab {
   if (counts.live > 0) return "live";
-  if (counts.upcoming > 0) return "upcoming";
   if (counts.previous > 0) return "previous";
-  return "upcoming";
+  if (counts.upcoming > 0) return "upcoming";
+  return "previous";
 }
 
 export function extractStageFilters(matches: Match[]): string[] {
