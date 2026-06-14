@@ -26,6 +26,7 @@ import PreviousFixtureCard from "@/components/PreviousFixtureCard";
 import MatchAlertSettings from "@/components/MatchAlertSettings";
 import LiveMatchHero from "@/components/LiveMatchHero";
 import LiveApiBanner from "@/components/LiveApiBanner";
+import DataProviderBadge from "@/components/DataProviderBadge";
 import { formatUpdatedET } from "@/lib/timezone";
 
 const TABS: { id: MatchCenterTab; label: string; icon: typeof Radio }[] = [
@@ -40,7 +41,7 @@ export default function LiveMatchCenter() {
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [dataSource, setDataSource] = useState<"api" | "static" | "">("");
-  const [provider, setProvider] = useState<"worldcup26" | "static" | "">("");
+  const [provider, setProvider] = useState<"api-football" | "worldcup26" | "static" | "">("");
   const [apiError, setApiError] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<MatchCenterTab>("previous");
   const [stageFilter, setStageFilter] = useState<string | null>(null);
@@ -192,6 +193,7 @@ export default function LiveMatchCenter() {
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               )}
               World Cup 2026
+              <DataProviderBadge provider={provider} className="normal-case tracking-normal" />
             </p>
             <h2 className="font-display text-4xl md:text-6xl text-white">
               LIVE <span className="text-gradient-pitch">SCORES</span>
@@ -201,6 +203,7 @@ export default function LiveMatchCenter() {
               {lastUpdate && (
                 <span className="text-pitch/70 block text-xs mt-1">
                   Last updated {lastUpdate}
+                  {provider === "api-football" && " · API-Football"}
                   {dataSource === "api" && provider === "worldcup26" && " · worldcup26.ir"}
                   {dataSource === "static" && " · Schedule preview — live feed unavailable"}
                 </span>

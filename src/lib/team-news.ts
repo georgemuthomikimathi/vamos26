@@ -25,6 +25,34 @@ export type TeamNewsItem = {
  */
 export const PREVIEW_NEWS: TeamNewsItem[] = [
   {
+    id: "preview-korea-czechia",
+    code: "kr",
+    team: "Korea Republic",
+    headline: "Korea Republic beat Czechia 2–1 in Guadalajara",
+    summary:
+      "Hwang In-beom and Oh Hyeon-gyu completed a comeback after Ladislav Krejčí's opener — Son Heung-min's side take three points in Group A.",
+    date: "Jun 12",
+    tag: "form",
+    url: "https://www.fifa.com/en/matches?search=Korea%20Czechia",
+    source: "FIFA.com",
+    verified: true,
+    kind: "match-report",
+  },
+  {
+    id: "preview-canada-bosnia",
+    code: "ca",
+    team: "Canada",
+    headline: "Canada draw 1–1 with Bosnia & Herzegovina at BMO Field",
+    summary:
+      "Jovo Lukić gave Bosnia an early lead in Toronto before super-sub Cyle Larin equalized for the co-hosts — Marsch's side share the points in Group B.",
+    date: "Jun 12",
+    tag: "form",
+    url: "https://www.fifa.com/en/matches?search=Canada%20Bosnia",
+    source: "FIFA.com",
+    verified: true,
+    kind: "match-report",
+  },
+  {
     id: "preview-usa-paraguay",
     code: "us",
     team: "USA",

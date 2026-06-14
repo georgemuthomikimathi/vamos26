@@ -7,6 +7,7 @@ import type { StatLeader } from "@/lib/stats";
 import { onDataRefresh } from "@/lib/realtime/cascade";
 import { POLL_IDLE_MS, POLL_STATS_LIVE_MS } from "@/lib/realtime/polling";
 import TeamFlagWithFallback from "@/components/TeamFlag";
+import DataProviderBadge from "@/components/DataProviderBadge";
 
 type StatsPayload = {
   updatedAt: string;
@@ -14,7 +15,7 @@ type StatsPayload = {
   scorers: StatLeader[];
   assists: StatLeader[];
   mostCards: StatLeader[];
-  provider?: "worldcup26" | "static";
+  provider?: "api-football" | "worldcup26" | "static";
 };
 
 const POLL_MS = POLL_IDLE_MS;
@@ -172,8 +173,9 @@ export default function StatsLeaders() {
           viewport={{ once: true }}
           className="text-center mb-10"
         >
-          <p className="text-gold uppercase tracking-[0.4em] text-xs font-semibold mb-3">
+          <p className="text-gold uppercase tracking-[0.4em] text-xs font-semibold mb-3 flex items-center justify-center gap-2 flex-wrap">
             Tournament Leaders
+            {stats?.provider && <DataProviderBadge provider={stats.provider} />}
           </p>
           <h2 className="font-display text-5xl md:text-7xl text-white mb-4">
             STATS <span className="text-gradient-gold">BOARD</span>

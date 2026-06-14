@@ -48,7 +48,7 @@ function teamNameForWinner(match: Match): string {
   return h > a ? match.home.name : match.away.name;
 }
 
-/** Verified headlines generated only from finished match scores on worldcup26.ir */
+/** Verified headlines generated from finished match scores (API-Football / worldcup26.ir) */
 export function generateVerifiedMatchReports(matches: Match[]): TeamNewsItem[] {
   const enriched = enrichMatchesFromMeta(matches);
 

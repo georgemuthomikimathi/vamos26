@@ -8,6 +8,7 @@ import { enrichMatchesFromMeta } from "@/lib/scores/enrich-from-meta";
 import { bucketMatches, extractStageFilters, filterByStage } from "@/lib/scores/match-buckets";
 import { onDataRefresh, onMatchFinished } from "@/lib/realtime/cascade";
 import PreviousFixtureCard from "@/components/PreviousFixtureCard";
+import DataProviderBadge from "@/components/DataProviderBadge";
 import { formatUpdatedET } from "@/lib/timezone";
 
 const POLL_MS = 10_000;
@@ -16,6 +17,7 @@ export default function PastFixturesSection() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [provider, setProvider] = useState<"api-football" | "worldcup26" | "static" | "">("");
   const [stageFilter, setStageFilter] = useState<string | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
 
@@ -36,6 +38,7 @@ export default function PastFixturesSection() {
       const data = await res.json();
       setMatches(enrichMatchesFromMeta(data.matches ?? []));
       setLastUpdate(formatUpdatedET(data.updatedAt));
+      if (data.provider) setProvider(data.provider);
     } catch {
       /* silent */
     } finally {
@@ -75,9 +78,10 @@ export default function PastFixturesSection() {
           className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10"
         >
           <div>
-            <p className="text-gold uppercase tracking-[0.4em] text-xs font-semibold mb-3 flex items-center gap-2">
+            <p className="text-gold uppercase tracking-[0.4em] text-xs font-semibold mb-3 flex items-center gap-2 flex-wrap">
               <History size={14} />
               Real-time results
+              <DataProviderBadge provider={provider} />
             </p>
             <h2 className="font-display text-5xl md:text-7xl text-white mb-3">
               PAST <span className="text-gradient-pitch">FIXTURES</span>

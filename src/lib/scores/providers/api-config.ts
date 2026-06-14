@@ -95,11 +95,6 @@ function resolveApiKey(): ResolvedKey {
     }
   }
 
-  for (const { env } of PRIMARY_KEY_VARS) {
-    const value = sanitizeKey(process.env[env] ?? "");
-    if (value) return { key: value };
-  }
-
   return { key: "" };
 }
 
