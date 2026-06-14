@@ -6,6 +6,7 @@ import {
   hasCardEvents,
   TWO_YELLOWS_NOTE,
 } from "@/lib/scores/card-events";
+import { enrichMatchFromMeta } from "@/lib/scores/enrich-from-meta";
 import { formatSubstitutionMinute } from "@/lib/timezone";
 
 function eventIcon(type: MatchEvent["type"], detail?: string): string {
@@ -43,18 +44,19 @@ export default function MatchEventsTimeline({
   expanded = false,
   limit = 4,
 }: MatchEventsTimelineProps) {
-  const rawEvents = match.events ?? [];
+  const enriched = enrichMatchFromMeta(match);
+  const rawEvents = enriched.events ?? [];
   const events = getDisplayEvents(rawEvents);
-  const subs = [...(match.homeSubs ?? []), ...(match.awaySubs ?? [])];
+  const subs = [...(enriched.homeSubs ?? []), ...(enriched.awaySubs ?? [])];
   const showCardNote = hasCardEvents(rawEvents);
 
   if (events.length === 0 && subs.length === 0) {
-    if (match.status === "live" || match.status === "halftime") {
+    if (enriched.status === "live" || enriched.status === "halftime") {
       return (
         <p className="text-center text-xs text-muted">Waiting for match events…</p>
       );
     }
-    if (match.status === "finished") {
+    if (enriched.status === "finished") {
       return (
         <p className="text-center text-xs text-muted py-2">
           Goal scorers shown in scoreline — full event log updating.
@@ -68,15 +70,15 @@ export default function MatchEventsTimeline({
 
   return (
     <div className={`space-y-2 ${expanded ? "" : "mt-2"}`}>
-      {expanded && (match.homeSubs?.length || match.awaySubs?.length) ? (
+      {expanded && (enriched.homeSubs?.length || enriched.awaySubs?.length) ? (
         <div className="grid sm:grid-cols-2 gap-3 mb-4">
-          {match.homeSubs && match.homeSubs.length > 0 && (
+          {enriched.homeSubs && enriched.homeSubs.length > 0 && (
             <div className="bg-white/5 rounded-xl p-3 border border-white/10">
               <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
-                {match.home.name} subs
+                {enriched.home.name} subs
               </p>
               <ul className="space-y-1 text-xs text-muted">
-                {match.homeSubs.map((s, i) => (
+                {enriched.homeSubs.map((s, i) => (
                   <li key={i}>
                     <span className="text-gold font-semibold">
                       {formatSubstitutionMinute(s.minute, s.extraMinute)}
@@ -89,13 +91,13 @@ export default function MatchEventsTimeline({
               </ul>
             </div>
           )}
-          {match.awaySubs && match.awaySubs.length > 0 && (
+          {enriched.awaySubs && enriched.awaySubs.length > 0 && (
             <div className="bg-white/5 rounded-xl p-3 border border-white/10">
               <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
-                {match.away.name} subs
+                {enriched.away.name} subs
               </p>
               <ul className="space-y-1 text-xs text-muted">
-                {match.awaySubs.map((s, i) => (
+                {enriched.awaySubs.map((s, i) => (
                   <li key={i}>
                     <span className="text-gold font-semibold">
                       {formatSubstitutionMinute(s.minute, s.extraMinute)}

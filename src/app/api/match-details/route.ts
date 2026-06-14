@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enrichMatchFromMeta } from "@/lib/scores/enrich-from-meta";
 import { fetchMatchesByCompetition } from "@/lib/scores/fetch-matches";
 import { enrichMatchFromApi } from "@/lib/scores/providers/fixture-enrichment";
 
@@ -23,8 +24,8 @@ export async function GET(request: NextRequest) {
     (match.status === "live" ||
       match.status === "halftime" ||
       match.status === "finished")
-      ? await enrichMatchFromApi(match)
-      : match;
+      ? enrichMatchFromMeta(await enrichMatchFromApi(match))
+      : enrichMatchFromMeta(match);
 
   return NextResponse.json({
     id: enriched.id,

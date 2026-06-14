@@ -62,12 +62,31 @@ const TEAM_CODES: Record<string, string> = {
   Iraq: "iq",
   "Cabo Verde": "cv",
   "Cape Verde": "cv",
+  Curaçao: "cw",
+  Curacao: "cw",
+  "Curacao (Curaçao)": "cw",
 };
 
 export function teamNameToCode(name: string): string {
   const direct = TEAM_CODES[name];
   if (direct) return direct;
-  const slug = name
+
+  const normalized = name
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .trim();
+  const normalizedDirect = TEAM_CODES[normalized];
+  if (normalizedDirect) return normalizedDirect;
+
+  for (const [key, code] of Object.entries(TEAM_CODES)) {
+    const keyNorm = key
+      .normalize("NFD")
+      .replace(/\p{M}/gu, "")
+      .toLowerCase();
+    if (keyNorm === normalized.toLowerCase()) return code;
+  }
+
+  const slug = normalized
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");

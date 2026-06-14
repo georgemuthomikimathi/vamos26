@@ -15,10 +15,26 @@ type RawEvent = {
   detail: string;
 };
 
+function normalizeTeamName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim();
+}
+
 function teamSide(match: Match, teamName: string): "home" | "away" {
-  if (teamName === match.home.name) return "home";
-  if (teamName === match.away.name) return "away";
-  if (teamName.toLowerCase().includes(match.home.name.toLowerCase().slice(0, 4))) {
+  const raw = teamName ?? "";
+  if (raw === match.home.name) return "home";
+  if (raw === match.away.name) return "away";
+
+  const norm = normalizeTeamName(raw);
+  const homeNorm = normalizeTeamName(match.home.name);
+  const awayNorm = normalizeTeamName(match.away.name);
+  if (norm === homeNorm || norm.includes(homeNorm.slice(0, 4))) return "home";
+  if (norm === awayNorm || norm.includes(awayNorm.slice(0, 4))) return "away";
+
+  if (raw.toLowerCase().includes(match.home.name.toLowerCase().slice(0, 4))) {
     return "home";
   }
   return "away";
@@ -74,10 +90,11 @@ export function parseApiFootballEvents(
     const player = e.player?.name ?? "Unknown";
     const secondary = e.assist?.name;
     const side = teamSide(match, e.team?.name ?? "");
-    const type = e.type ?? "";
+    const type = (e.type ?? "").trim();
     const detail = e.detail ?? "";
+    const typeLower = type.toLowerCase();
 
-    if (type === "subst") {
+    if (typeLower === "subst") {
       const sub: MatchSubstitution = {
         minute,
         extraMinute,
@@ -98,7 +115,7 @@ export function parseApiFootballEvents(
       continue;
     }
 
-    if (type === "Goal") {
+    if (typeLower === "goal") {
       const isPenalty = /penalty/i.test(detail);
       const isMissed = /missed/i.test(detail);
       events.push({
@@ -113,7 +130,7 @@ export function parseApiFootballEvents(
       continue;
     }
 
-    if (type === "Card") {
+    if (typeLower === "card") {
       events.push(parseCardEvent(minute, extraMinute, player, side, detail));
     }
   }

@@ -8,6 +8,7 @@ import { getMatchMetaForMatch, getCoachInfo } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchClock from "@/components/MatchClock";
 import MatchEventsTimeline from "@/components/MatchEventsTimeline";
+import MatchEventChips from "@/components/MatchEventChips";
 import MatchLineupPanel from "@/components/MatchLineupPanel";
 import MatchSubsPanel from "@/components/MatchSubsPanel";
 import MatchOfficialsPanel from "@/components/MatchOfficialsPanel";
@@ -67,6 +68,8 @@ export default function LiveMatchHero({ match, onKickoff }: LiveMatchHeroProps) 
           <MatchLineupPanel match={enriched} />
         </div>
       )}
+
+      <MatchEventChips match={enriched} />
 
       <MatchEventsTimeline match={enriched} expanded />
 

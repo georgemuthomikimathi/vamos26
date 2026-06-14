@@ -19,6 +19,7 @@ import MatchSubsPanel from "@/components/MatchSubsPanel";
 import MatchLineupPanel from "@/components/MatchLineupPanel";
 import MatchClock from "@/components/MatchClock";
 import MatchEventsTimeline from "@/components/MatchEventsTimeline";
+import MatchEventChips from "@/components/MatchEventChips";
 
 function StatusBadge({ match }: { match: Match }) {
   const [now, setNow] = useState(() => Date.now());
@@ -228,7 +229,11 @@ export default function MatchCard({
           </div>
         </div>
 
-        {isLive && !expanded && <MatchEventsTimeline match={enriched} limit={3} />}
+        {(isLive || isFinished) && <MatchEventChips match={enriched} />}
+
+        {isLive && !expanded && enriched.events?.length ? (
+          <MatchEventsTimeline match={enriched} limit={4} />
+        ) : null}
 
         {!expanded && hasDetails && !isLive && (
           <p className="text-[10px] text-pitch font-semibold text-center mt-2">

@@ -44,6 +44,11 @@ const FLAG_COLORS: Record<string, string> = {
   sn: "bg-green-600",
   jp: "bg-red-600",
   ci: "bg-orange-600",
+  cw: "bg-blue-600",
+};
+
+const CODE_ALIASES: Record<string, string> = {
+  curacao: "cw",
 };
 
 export default function TeamFlagWithFallback({
@@ -54,7 +59,8 @@ export default function TeamFlagWithFallback({
 }: TeamFlagProps) {
   const [failed, setFailed] = useState(false);
   const px = SIZES[size];
-  const fallbackColor = FLAG_COLORS[code] ?? "bg-slate-600";
+  const flagCode = CODE_ALIASES[code] ?? code;
+  const fallbackColor = FLAG_COLORS[flagCode] ?? FLAG_COLORS[code] ?? "bg-slate-600";
 
   if (failed) {
     return (
@@ -71,7 +77,7 @@ export default function TeamFlagWithFallback({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`/flags/1x1/${code}.svg`}
+      src={`/flags/1x1/${flagCode}.svg`}
       alt={`${name} flag`}
       width={px}
       height={px}
