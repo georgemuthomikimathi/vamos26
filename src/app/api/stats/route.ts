@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCompetition, isLiveCompetition } from "@/lib/competitions";
 import { fetchMatchesByCompetition } from "@/lib/scores/fetch-matches";
+import { enrichMatches } from "@/lib/scores/providers/fixture-enrichment";
 import { compileTournamentStats } from "@/lib/stats/compile-tournament-stats";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,18 @@ export async function GET(request: NextRequest) {
 
   const competition = getCompetition(competitionParam)!;
   const { matches, provider } = await fetchMatchesByCompetition(competitionParam);
-  const compiled = compileTournamentStats(matches);
+
+  const statEligible = matches.filter(
+    (m) =>
+      m.status === "finished" ||
+      m.status === "live" ||
+      m.status === "halftime"
+  );
+  const enrichedStat = await enrichMatches(statEligible);
+  const enrichedMap = new Map(enrichedStat.map((m) => [m.id, m]));
+  const merged = matches.map((m) => enrichedMap.get(m.id) ?? m);
+
+  const compiled = compileTournamentStats(merged);
 
   return NextResponse.json({
     updatedAt: compiled.updatedAt,
@@ -26,7 +38,11 @@ export async function GET(request: NextRequest) {
     matchesPlayed: compiled.matchesPlayed,
     scorers: compiled.topScorers,
     assists: compiled.topAssists,
-    mostCards: compiled.mostCards,
+    yellowCards: compiled.mostYellowCards,
+    redCards: compiled.mostRedCards,
+    penalties: compiled.topPenalties,
+    substitutions: compiled.mostSubstitutions,
+    summary: compiled.summary,
     provider,
   });
 }

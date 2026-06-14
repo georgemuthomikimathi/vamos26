@@ -1,13 +1,29 @@
 import type { Match } from "@/lib/scores/types";
 import { getDisplayEvents } from "@/lib/scores/card-events";
+import { enrichMatchFromMeta } from "@/lib/scores/enrich-from-meta";
 import { NATIONAL_SQUADS } from "@/lib/squads";
 import type { StatLeader } from "@/lib/stats";
+
+export type TournamentStatsSummary = {
+  totalGoals: number;
+  totalAssists: number;
+  totalYellow: number;
+  totalRed: number;
+  totalPenalties: number;
+  totalSubstitutions: number;
+  finishedMatches: number;
+  liveMatches: number;
+};
 
 export type CompiledTournamentStats = {
   matchesPlayed: number;
   topScorers: StatLeader[];
   topAssists: StatLeader[];
-  mostCards: StatLeader[];
+  mostYellowCards: StatLeader[];
+  mostRedCards: StatLeader[];
+  topPenalties: StatLeader[];
+  mostSubstitutions: StatLeader[];
+  summary: TournamentStatsSummary;
   updatedAt: string;
 };
 
@@ -44,6 +60,7 @@ function bump(
   teamName: string,
   delta: number
 ): void {
+  if (!name || name === "—" || name === "Unknown") return;
   const key = playerKey(name, teamCode);
   const existing = map.get(key);
   if (existing) {
@@ -61,7 +78,7 @@ function bump(
 
 function toLeaders(
   map: Map<string, PlayerAccumulator>,
-  limit = 6,
+  limit = 8,
   minValue = 1
 ): StatLeader[] {
   return [...map.values()]
@@ -82,17 +99,38 @@ function emptyLeaders(): StatLeader[] {
   return [{ rank: 1, name: "—", country: "—", code: "un", club: "—", value: 0 }];
 }
 
-/** Aggregate scorers, assists, and cards from all finished World Cup matches. */
+function isStatMatch(match: Match): boolean {
+  return (
+    match.competition === "world-cup" &&
+    (match.status === "finished" ||
+      match.status === "live" ||
+      match.status === "halftime")
+  );
+}
+
+/** Aggregate scorers, assists, cards, pens & subs from API-enriched matches. */
 export function compileTournamentStats(matches: Match[]): CompiledTournamentStats {
-  const finished = matches.filter(
-    (m) => m.status === "finished" && m.competition === "world-cup"
+  const statMatches = matches.filter(isStatMatch).map(enrichMatchFromMeta);
+  const finished = statMatches.filter((m) => m.status === "finished");
+  const live = statMatches.filter(
+    (m) => m.status === "live" || m.status === "halftime"
   );
 
   const scorers = new Map<string, PlayerAccumulator>();
   const assists = new Map<string, PlayerAccumulator>();
-  const cards = new Map<string, PlayerAccumulator>();
+  const yellowCards = new Map<string, PlayerAccumulator>();
+  const redCards = new Map<string, PlayerAccumulator>();
+  const penalties = new Map<string, PlayerAccumulator>();
+  const subsUsed = new Map<string, PlayerAccumulator>();
 
-  for (const match of finished) {
+  let totalGoals = 0;
+  let totalAssists = 0;
+  let totalYellow = 0;
+  let totalRed = 0;
+  let totalPenalties = 0;
+  let totalSubstitutions = 0;
+
+  for (const match of statMatches) {
     const events = getDisplayEvents(match.events ?? []);
 
     for (const event of events) {
@@ -100,30 +138,63 @@ export function compileTournamentStats(matches: Match[]): CompiledTournamentStat
 
       if (event.type === "goal" || event.type === "penalty") {
         bump(scorers, event.player, team.code, team.name, 1);
+        totalGoals += 1;
+        if (event.type === "penalty") {
+          bump(penalties, event.player, team.code, team.name, 1);
+          totalPenalties += 1;
+        }
         if (event.playerSecondary) {
           bump(assists, event.playerSecondary, team.code, team.name, 1);
+          totalAssists += 1;
         }
       }
 
       if (event.type === "yellow") {
-        bump(cards, event.player, team.code, team.name, 1);
+        bump(yellowCards, event.player, team.code, team.name, 1);
+        totalYellow += 1;
       }
 
       if (event.type === "red") {
-        bump(cards, event.player, team.code, team.name, 1);
+        bump(redCards, event.player, team.code, team.name, 1);
+        totalRed += 1;
       }
+    }
+
+    for (const sub of match.homeSubs ?? []) {
+      bump(subsUsed, sub.playerIn, match.home.code, match.home.name, 1);
+      totalSubstitutions += 1;
+    }
+    for (const sub of match.awaySubs ?? []) {
+      bump(subsUsed, sub.playerIn, match.away.code, match.away.name, 1);
+      totalSubstitutions += 1;
     }
   }
 
   const topScorers = toLeaders(scorers);
   const topAssists = toLeaders(assists);
-  const mostCards = toLeaders(cards);
+  const mostYellowCards = toLeaders(yellowCards);
+  const mostRedCards = toLeaders(redCards);
+  const topPenalties = toLeaders(penalties);
+  const mostSubstitutions = toLeaders(subsUsed);
 
   return {
     matchesPlayed: finished.length,
     topScorers: topScorers.length > 0 ? topScorers : emptyLeaders(),
     topAssists: topAssists.length > 0 ? topAssists : emptyLeaders(),
-    mostCards: mostCards.length > 0 ? mostCards : emptyLeaders(),
+    mostYellowCards: mostYellowCards.length > 0 ? mostYellowCards : emptyLeaders(),
+    mostRedCards: mostRedCards.length > 0 ? mostRedCards : emptyLeaders(),
+    topPenalties: topPenalties.length > 0 ? topPenalties : emptyLeaders(),
+    mostSubstitutions: mostSubstitutions.length > 0 ? mostSubstitutions : emptyLeaders(),
+    summary: {
+      totalGoals,
+      totalAssists,
+      totalYellow,
+      totalRed,
+      totalPenalties,
+      totalSubstitutions,
+      finishedMatches: finished.length,
+      liveMatches: live.length,
+    },
     updatedAt: new Date().toISOString(),
   };
 }
