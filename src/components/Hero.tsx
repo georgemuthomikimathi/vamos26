@@ -2,10 +2,11 @@
 
 import { motion } from "framer-motion";
 import { Calendar, MapPin, Users, Radio, HeartHandshake, Bell, History } from "lucide-react";
-import { HOST_NATIONS, TOURNAMENT_STATS, KEY_DATES } from "@/lib/data";
+import { HOST_NATIONS, TOURNAMENT_STATS } from "@/lib/data";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import TournamentImage from "@/components/TournamentImage";
 import { scrollToSection } from "@/lib/scroll";
+import { useTournamentContext } from "@/hooks/useTournamentContext";
 
 type HeroProps = {
   onNavigate?: (id: string) => void;
@@ -20,10 +21,15 @@ const HERO_ACTIONS = [
 ] as const;
 
 export default function Hero({ onNavigate }: HeroProps) {
+  const ctx = useTournamentContext();
+
   const go = (id: string) => {
     onNavigate?.(id);
     scrollToSection(id);
   };
+
+  const badgeLive = ctx.liveToday.length > 0;
+
   return (
     <section
       id="home"
@@ -41,13 +47,31 @@ export default function Hero({ onNavigate }: HeroProps) {
             transition={{ duration: 0.8 }}
           >
             <div className="host-stripe h-1.5 w-32 rounded-full mb-6" />
-            <div className="inline-flex items-center gap-2 bg-pitch/20 border border-pitch/40 rounded-full px-4 py-1.5 mb-4">
+            <div
+              className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-4 border ${
+                badgeLive
+                  ? "bg-red-500/15 border-red-500/40"
+                  : "bg-pitch/20 border-pitch/40"
+              }`}
+            >
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pitch opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-pitch" />
+                <span
+                  className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                    badgeLive ? "animate-ping bg-red-500" : "animate-ping bg-pitch"
+                  }`}
+                />
+                <span
+                  className={`relative inline-flex rounded-full h-2 w-2 ${
+                    badgeLive ? "bg-red-500" : "bg-pitch"
+                  }`}
+                />
               </span>
-              <span className="text-pitch uppercase tracking-[0.25em] text-[10px] font-bold">
-                Live · USA vs Paraguay 9PM ET
+              <span
+                className={`uppercase tracking-[0.25em] text-[10px] font-bold ${
+                  badgeLive ? "text-red-300" : "text-pitch"
+                }`}
+              >
+                {ctx.badge}
               </span>
             </div>
             <p className="text-pitch uppercase tracking-[0.4em] text-xs font-semibold mb-4">
@@ -61,9 +85,7 @@ export default function Hero({ onNavigate }: HeroProps) {
               <span className="text-gradient-gold">2026</span>
             </h1>
             <p className="text-lg md:text-xl text-muted max-w-lg mb-8 leading-relaxed">
-              Day 2 of the tournament. Korea Republic and Canada have played — tonight USA
-              open Group D vs Paraguay at SoFi Stadium (9PM ET). Every goal, lineup, and
-              knockout moment from Mexico City to MetLife.
+              {ctx.lead}
             </p>
 
             <div className="flex flex-wrap gap-4 mb-8">
@@ -98,15 +120,13 @@ export default function Hero({ onNavigate }: HeroProps) {
             <div className="mb-8 max-w-md">
               <button
                 type="button"
-                onClick={() => go("fixtures")}
+                onClick={() => go(ctx.liveToday.length > 0 ? "live" : "fixtures")}
                 className="w-full bg-gold/10 border border-gold/30 rounded-3xl p-5 text-left hover:bg-gold/15 transition-colors tap-scale focus-ring"
               >
                 <p className="text-gold uppercase tracking-[0.35em] text-[10px] font-semibold mb-1">
-                  Tournament underway
+                  {ctx.highlightTitle}
                 </p>
-                <p className="text-white font-semibold text-sm">
-                  View past fixtures — full squads, goals, subs & officials on tap
-                </p>
+                <p className="text-white font-semibold text-sm">{ctx.highlightBody}</p>
               </button>
             </div>
 
@@ -116,24 +136,14 @@ export default function Hero({ onNavigate }: HeroProps) {
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 className="tournament-stage"
               >
-                <TournamentImage
-                  type="trophy"
-                  width={200}
-                  height={300}
-                  priority
-                />
+                <TournamentImage type="trophy" width={200} height={300} priority />
               </motion.div>
               <motion.div
                 animate={{ rotate: [0, 360] }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                 className="tournament-stage -mt-6"
               >
-                <TournamentImage
-                  type="trionda"
-                  width={160}
-                  height={160}
-                  priority
-                />
+                <TournamentImage type="trionda" width={160} height={160} priority />
               </motion.div>
             </div>
 
@@ -163,24 +173,14 @@ export default function Hero({ onNavigate }: HeroProps) {
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               className="tournament-stage z-10"
             >
-              <TournamentImage
-                type="trophy"
-                width={360}
-                height={500}
-                priority
-              />
+              <TournamentImage type="trophy" width={360} height={500} priority />
             </motion.div>
             <motion.div
               animate={{ rotate: [0, 360] }}
               transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
               className="tournament-stage -mt-8 z-20"
             >
-              <TournamentImage
-                type="trionda"
-                width={200}
-                height={200}
-                priority
-              />
+              <TournamentImage type="trionda" width={200} height={200} priority />
             </motion.div>
           </motion.div>
         </div>
@@ -211,17 +211,19 @@ export default function Hero({ onNavigate }: HeroProps) {
           transition={{ delay: 0.6 }}
           className="mt-16 grid sm:grid-cols-2 lg:grid-cols-5 gap-3"
         >
-          {KEY_DATES.map((item, i) => (
+          {ctx.keyDates.map((item, i) => (
             <div
-              key={item.date}
+              key={`${item.date}-${item.event}`}
               className={`bg-card/50 border border-white/10 rounded-2xl p-4 hover:border-pitch/30 transition-all ${
-                i === KEY_DATES.length - 1
+                i === ctx.keyDates.length - 1
                   ? "sm:col-span-2 lg:col-span-1 border-gold/30 bg-gold/5"
                   : ""
               }`}
             >
               <div
-                className={`font-display text-2xl ${i === KEY_DATES.length - 1 ? "text-gold" : "text-pitch"}`}
+                className={`font-display text-2xl ${
+                  i === ctx.keyDates.length - 1 ? "text-gold" : "text-pitch"
+                }`}
               >
                 {item.date}
               </div>
