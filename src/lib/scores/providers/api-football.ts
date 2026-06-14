@@ -79,6 +79,19 @@ function normalizeFixture(f: ApiFixture, competition: CompetitionId): Match {
   };
 }
 
+/** Fetch a single fixture by API-Football id (avoids reloading the full schedule). */
+export async function fetchApiFootballFixtureById(
+  fixtureId: string | number,
+  competition: CompetitionId = "world-cup"
+): Promise<Match | null> {
+  const { data, error } = await apiFootballFetch<ApiFixture[]>(
+    `/fixtures?id=${fixtureId}`,
+    {}
+  );
+  if (error || !data?.[0]) return null;
+  return normalizeFixture(data[0], competition);
+}
+
 function sortMatches(matches: Match[]): Match[] {
   const order = { live: 0, halftime: 1, scheduled: 2, finished: 3 };
   return [...matches].sort((a, b) => {

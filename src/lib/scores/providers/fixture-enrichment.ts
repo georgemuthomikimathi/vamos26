@@ -138,12 +138,37 @@ export function parseApiFootballEvents(
   return { events, homeSubs, awaySubs };
 }
 
+function isRetryableFetchError(error?: string): boolean {
+  if (!error) return true;
+  return /http_429|rate limit|too many requests|fetch_failed/i.test(error);
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function fetchFixtureEventsRaw(fixtureId: string, live: boolean): Promise<RawEvent[]> {
-  const { data } = await apiFootballFetch<RawEvent[]>(
-    `/fixtures/events?fixture=${fixtureId}`,
-    live ? {} : { revalidate: 60 }
-  );
-  return data ?? [];
+  const attempts = live ? 2 : 4;
+  const baseDelayMs = 400;
+
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const useCache = !live && attempt === 0;
+    const { data, error } = await apiFootballFetch<RawEvent[]>(
+      `/fixtures/events?fixture=${fixtureId}`,
+      useCache ? { revalidate: 120 } : {}
+    );
+
+    if (data?.length) return data;
+
+    if (attempt < attempts - 1 && isRetryableFetchError(error)) {
+      await sleep(baseDelayMs * (attempt + 1));
+      continue;
+    }
+
+    return data ?? [];
+  }
+
+  return [];
 }
 
 export async function enrichMatchFromApi(match: Match): Promise<Match> {
@@ -151,12 +176,21 @@ export async function enrichMatchFromApi(match: Match): Promise<Match> {
   if (!fixtureId) return match;
 
   const live = match.status === "live" || match.status === "halftime";
+  const totalGoals = (match.score.home ?? 0) + (match.score.away ?? 0);
 
-  const [rawEvents, lineups] = await Promise.all([
-    fetchFixtureEventsRaw(fixtureId, live),
-    fetchFixtureLineups(match),
-  ]);
+  let rawEvents = await fetchFixtureEventsRaw(fixtureId, live);
 
+  if (
+    !rawEvents.length &&
+    !live &&
+    match.status === "finished" &&
+    totalGoals > 0
+  ) {
+    await sleep(600);
+    rawEvents = await fetchFixtureEventsRaw(fixtureId, true);
+  }
+
+  const lineups = await fetchFixtureLineups(match);
   const { events, homeSubs, awaySubs } = parseApiFootballEvents(rawEvents, match);
 
   return {
@@ -181,15 +215,41 @@ function shouldEnrichMatch(match: Match): boolean {
   return isKickoffSoon(match);
 }
 
+function finishedWithMissingEvents(match: Match): boolean {
+  if (match.status !== "finished" || !match.id.startsWith("af-")) return false;
+  const goals = (match.score.home ?? 0) + (match.score.away ?? 0);
+  if (goals === 0) return false;
+  return !(match.events?.length);
+}
+
+async function enrichMatchBatch(
+  batch: Match[],
+  concurrency: number
+): Promise<Map<string, Match>> {
+  if (batch.length === 0) return new Map();
+  const enriched = await mapWithConcurrency(batch, concurrency, enrichMatchFromApi);
+  return new Map(enriched.map((m) => [m.id, m]));
+}
+
+function applyEnrichment(matches: Match[], map: Map<string, Match>): Match[] {
+  return matches.map((m) => map.get(m.id) ?? m);
+}
+
 export async function enrichMatches(matches: Match[]): Promise<Match[]> {
   const needsEnrichment = matches.filter(shouldEnrichMatch);
-
   if (needsEnrichment.length === 0) return matches;
 
-  const enriched = await mapWithConcurrency(needsEnrichment, 8, enrichMatchFromApi);
-  const map = new Map(enriched.map((m) => [m.id, m]));
+  let map = await enrichMatchBatch(needsEnrichment, 4);
+  let result = applyEnrichment(matches, map);
 
-  return matches.map((m) => map.get(m.id) ?? m);
+  const missingEvents = result.filter(finishedWithMissingEvents);
+  if (missingEvents.length > 0) {
+    await sleep(900);
+    const retryMap = await enrichMatchBatch(missingEvents, 2);
+    result = applyEnrichment(result, retryMap);
+  }
+
+  return result;
 }
 
 function isKickoffSoon(match: Match): boolean {
