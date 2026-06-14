@@ -6,6 +6,7 @@ import { isApiFootballConfigured } from "@/lib/scores/providers/api-config";
 import { fetchApiFootballFixtures } from "@/lib/scores/providers/api-football";
 import { fetchWorldCup26Fixtures } from "@/lib/scores/providers/worldcup26";
 import { enrichMatchesFromMeta } from "@/lib/scores/enrich-from-meta";
+import { backfillEventsFromWorldCup26 } from "@/lib/scores/backfill-wc26-events";
 import { enrichMatches } from "@/lib/scores/providers/fixture-enrichment";
 
 const STATIC: Record<CompetitionId, Match[]> = {
@@ -74,7 +75,9 @@ export async function fetchMatchesByCompetition(
       const forceWorldCup26 = shouldFallbackToWorldCup26(error);
 
       if (matches && matches.length > 0 && !forceWorldCup26) {
-        const enriched = await enrichMatches(matches);
+        const enriched = await backfillEventsFromWorldCup26(
+          await enrichMatches(matches, { skipLineups: true })
+        );
         return {
           matches: finalizeMatches(enriched),
           source: "api",
@@ -139,7 +142,9 @@ export async function fetchMatchesByCompetition(
   const { matches, error } = await fetchApiFootballFixtures(competition);
 
   if (matches && matches.length > 0) {
-    const enriched = await enrichMatches(matches);
+    const enriched = await backfillEventsFromWorldCup26(
+      await enrichMatches(matches, { skipLineups: true })
+    );
     return {
       matches: finalizeMatches(enriched),
       source: "api",

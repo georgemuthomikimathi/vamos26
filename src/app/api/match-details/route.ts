@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enrichMatchFromMeta } from "@/lib/scores/enrich-from-meta";
+import { backfillEventsFromWorldCup26 } from "@/lib/scores/backfill-wc26-events";
 import { fetchMatchesByCompetition } from "@/lib/scores/fetch-matches";
 import { fetchApiFootballFixtureById } from "@/lib/scores/providers/api-football";
 import { fixtureIdFromMatchId } from "@/lib/scores/providers/api-football-fetch";
@@ -32,13 +33,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "match not found" }, { status: 404 });
   }
 
-  const enriched =
+  const enrichedBase =
     match.id.startsWith("af-") &&
     (match.status === "live" ||
       match.status === "halftime" ||
       match.status === "finished")
       ? enrichMatchFromMeta(await enrichMatchFromApi(match))
       : enrichMatchFromMeta(match);
+
+  const [enriched] = await backfillEventsFromWorldCup26([enrichedBase]);
 
   return NextResponse.json({
     id: enriched.id,

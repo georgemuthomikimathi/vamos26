@@ -124,12 +124,20 @@ function parseScorers(raw: string | undefined, team: "home" | "away"): MatchEven
 
   const events: MatchEvent[] = [];
   for (const part of normalized) {
-    const match = part.match(/^(.+?)\s+(\d+)'/);
+    const match = part.match(/^(.+?)\s+(\d+)(?:\+(\d+))?'/);
     if (!match) continue;
     const player = match[1].trim();
     const minute = Number.parseInt(match[2], 10);
+    const extraMinute = match[3] ? Number.parseInt(match[3], 10) : undefined;
     if (!player || Number.isNaN(minute)) continue;
-    events.push({ minute, type: "goal", player, team });
+    const isPenalty = /\(p\)/i.test(part);
+    events.push({
+      minute,
+      extraMinute,
+      type: isPenalty ? "penalty" : "goal",
+      player,
+      team,
+    });
   }
 
   return events;
