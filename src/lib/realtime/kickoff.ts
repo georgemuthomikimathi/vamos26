@@ -1,11 +1,17 @@
 import type { Match, MatchStatus } from "@/lib/scores/types";
 
+/** True for matches from a live data provider (not static preview ids like m1). */
+export function isApiSourcedMatch(match: Match): boolean {
+  return match.id.startsWith("af-") || match.id.startsWith("wc26-");
+}
+
 /**
- * Client-side hint: scheduled matches past kickoff display as live until the API updates.
- * Keeps countdown → LIVE transition instant between polls.
+ * Client-side hint: scheduled API fixtures past kickoff display as live until the API updates.
+ * Skips static preview matches (m1, m2…) so the site does not stick on opening kickoff at 0:00.
  */
 export function applyKickoffHints(matches: Match[], now = Date.now()): Match[] {
   return matches.map((match) => {
+    if (!isApiSourcedMatch(match)) return match;
     if (match.status !== "scheduled" || !match.kickoffAt) return match;
 
     const kickoffMs = new Date(match.kickoffAt).getTime();

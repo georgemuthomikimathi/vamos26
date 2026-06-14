@@ -15,7 +15,7 @@ import {
   pickDefaultTab,
   type MatchCenterTab,
 } from "@/lib/scores/match-buckets";
-import { applyKickoffHints, nextKickoffMs } from "@/lib/realtime/kickoff";
+import { applyKickoffHints, isApiSourcedMatch, nextKickoffMs } from "@/lib/realtime/kickoff";
 import {
   dispatchDataRefresh,
   dispatchMatchFinished,
@@ -50,7 +50,10 @@ export default function LiveMatchCenter() {
   const userPickedTabRef = useRef(false);
   const kickoffTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const displayMatches = useMemo(() => applyKickoffHints(matches), [matches]);
+  const displayMatches = useMemo(() => {
+    if (provider === "static" || dataSource === "static") return matches;
+    return applyKickoffHints(matches);
+  }, [matches, provider, dataSource]);
   const tabCounts = useMemo(() => getMatchTabCounts(displayMatches), [displayMatches]);
   const buckets = useMemo(() => bucketMatches(displayMatches), [displayMatches]);
   const pollMs = useMemo(() => pickLivePollInterval(displayMatches), [displayMatches]);
@@ -140,19 +143,28 @@ export default function LiveMatchCenter() {
 
   const featuredMatch = useMemo(() => {
     if (activeTab !== "live") return null;
-    const live = displayMatches.find((m) => m.status === "live" || m.status === "halftime");
+    if (provider === "static" || dataSource === "static") return null;
+
+    const live = displayMatches.find(
+      (m) =>
+        isApiSourcedMatch(m) &&
+        (m.status === "live" || m.status === "halftime")
+    );
     if (live) return live;
     const soon = displayMatches.find((m) => {
-      if (!m.kickoffAt || m.status !== "scheduled") return false;
+      if (!isApiSourcedMatch(m) || !m.kickoffAt || m.status !== "scheduled") return false;
       const diff = new Date(m.kickoffAt).getTime() - Date.now();
       return diff > -30 * 60_000 && diff < 6 * 60 * 60_000;
     });
     if (soon) return soon;
     const withLineups = displayMatches.find(
-      (m) => m.status === "scheduled" && (m.homeLineup || m.awayLineup)
+      (m) =>
+        isApiSourcedMatch(m) &&
+        m.status === "scheduled" &&
+        (m.homeLineup || m.awayLineup)
     );
     return withLineups ?? null;
-  }, [displayMatches, activeTab]);
+  }, [displayMatches, activeTab, provider, dataSource]);
 
   const listMatches = useMemo(() => {
     if (activeTab === "live") {

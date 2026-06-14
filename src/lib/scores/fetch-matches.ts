@@ -4,7 +4,7 @@ import { LIVE_MATCHES } from "@/lib/live";
 import { attachLineupsToMatches } from "@/lib/scores/lineups";
 import { isApiFootballConfigured } from "@/lib/scores/providers/api-config";
 import { fetchApiFootballFixtures } from "@/lib/scores/providers/api-football";
-import { fetchWorldCup26Fixtures } from "@/lib/scores/providers/worldcup26";
+import { fetchWorldCup26Fixtures, fetchWorldCup26AllGroupMatches } from "@/lib/scores/providers/worldcup26";
 import { enrichMatchesFromMeta } from "@/lib/scores/enrich-from-meta";
 import { backfillEventsFromWorldCup26 } from "@/lib/scores/backfill-wc26-events";
 import { enrichMatches } from "@/lib/scores/providers/fixture-enrichment";
@@ -56,6 +56,16 @@ function finalizeMatches(matches: Match[]): Match[] {
   return enrichMatchesFromMeta(attachLineupsToMatches(matches));
 }
 
+async function loadWorldCup26Matches(): Promise<{ matches: Match[] | null; error?: string }> {
+  const recent = await fetchWorldCup26Fixtures("world-cup");
+  if (recent.matches?.length) return recent;
+
+  const all = await fetchWorldCup26AllGroupMatches("world-cup");
+  if (all.matches?.length) return all;
+
+  return { matches: null, error: recent.error ?? all.error ?? "no_games" };
+}
+
 export async function fetchMatchesByCompetition(
   competition: CompetitionId
 ): Promise<{
@@ -89,8 +99,7 @@ export async function fetchMatchesByCompetition(
       apiFootballError = "no_key";
     }
 
-    const { matches: wc26Matches, error: wc26Error } =
-      await fetchWorldCup26Fixtures(competition);
+    const { matches: wc26Matches, error: wc26Error } = await loadWorldCup26Matches();
     if (wc26Matches && wc26Matches.length > 0) {
       const fallbackReason = shouldFallbackToWorldCup26(apiFootballError)
         ? "static_plan_fallback"

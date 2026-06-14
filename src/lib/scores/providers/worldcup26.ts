@@ -218,7 +218,7 @@ async function fetchJson<T>(path: string): Promise<{ data: T | null; error?: str
         Accept: "application/json",
         "User-Agent": "vamos26-live/1.0",
       },
-      signal: AbortSignal.timeout(12_000),
+      signal: AbortSignal.timeout(20_000),
     });
     if (!res.ok) return { data: null, error: `http_${res.status}` };
     const data = (await res.json()) as T;
