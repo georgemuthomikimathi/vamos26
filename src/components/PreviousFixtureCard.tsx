@@ -5,8 +5,8 @@ import { ChevronDown, ExternalLink, MapPin, Users } from "lucide-react";
 import type { Match, MatchEvent } from "@/lib/scores/types";
 import { formatScore } from "@/lib/scores/types";
 import { getDisplayEvents } from "@/lib/scores/card-events";
-import { attachLineupsToMatch } from "@/lib/scores/lineups";
 import { getMatchMetaForMatch, getCoachInfo } from "@/lib/match-meta";
+import { useMatchDetails } from "@/hooks/useMatchDetails";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchEventsTimeline from "@/components/MatchEventsTimeline";
 import MatchLineupPanel from "@/components/MatchLineupPanel";
@@ -34,14 +34,15 @@ export default function PreviousFixtureCard({
   match,
   defaultExpanded = false,
 }: PreviousFixtureCardProps) {
-  const enriched = attachLineupsToMatch(match);
-  const meta = getMatchMetaForMatch(enriched);
-  const coaches = getCoachInfo(enriched);
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   useEffect(() => {
     if (defaultExpanded) setExpanded(true);
   }, [defaultExpanded]);
+
+  const enriched = useMatchDetails(match, expanded);
+  const meta = getMatchMetaForMatch(enriched);
+  const coaches = getCoachInfo(enriched);
 
   const displayEvents = getDisplayEvents(enriched.events ?? []);
   const goals = displayEvents.filter(

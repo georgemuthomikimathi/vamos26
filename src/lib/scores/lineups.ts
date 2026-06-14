@@ -19,10 +19,6 @@ function squadToLineup(squad: NationalSquad): MatchLineup {
   };
 }
 
-function hasApiLineup(match: Match): boolean {
-  return match.id.startsWith("af-") && Boolean(match.homeLineup || match.awayLineup);
-}
-
 /** Full squads publish 30 minutes before kickoff (or once live/finished). */
 export function shouldRevealSquads(match: Match, now = Date.now()): boolean {
   if (match.status === "live" || match.status === "halftime" || match.status === "finished") {
@@ -32,27 +28,17 @@ export function shouldRevealSquads(match: Match, now = Date.now()): boolean {
 }
 
 export function attachLineupsToMatch(match: Match, now = Date.now()): Match {
-  if (match.homeLineup && match.awayLineup) return match;
-
   if (!shouldRevealSquads(match, now)) return match;
-
-  if (hasApiLineup(match)) {
-    return {
-      ...match,
-      homeLineup: match.homeLineup,
-      awayLineup: match.awayLineup,
-    };
-  }
 
   const homeSquad = getSquad(match.home.code);
   const awaySquad = getSquad(match.away.code);
 
-  if (!homeSquad && !awaySquad) return match;
-
   return {
     ...match,
-    homeLineup: match.homeLineup ?? (homeSquad ? squadToLineup(homeSquad) : undefined),
-    awayLineup: match.awayLineup ?? (awaySquad ? squadToLineup(awaySquad) : undefined),
+    homeLineup:
+      match.homeLineup ?? (homeSquad ? squadToLineup(homeSquad) : undefined),
+    awayLineup:
+      match.awayLineup ?? (awaySquad ? squadToLineup(awaySquad) : undefined),
   };
 }
 

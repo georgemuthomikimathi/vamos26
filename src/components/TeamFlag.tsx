@@ -30,6 +30,20 @@ const FLAG_COLORS: Record<string, string> = {
   pt: "bg-green-700",
   "gb-eng": "bg-blue-800",
   "gb-sct": "bg-blue-700",
+  kr: "bg-red-700",
+  cz: "bg-blue-800",
+  ba: "bg-blue-600",
+  za: "bg-green-700",
+  py: "bg-red-700",
+  ma: "bg-red-600",
+  hr: "bg-red-700",
+  nl: "bg-orange-600",
+  be: "bg-yellow-600",
+  au: "bg-yellow-500",
+  tr: "bg-red-700",
+  sn: "bg-green-600",
+  jp: "bg-red-600",
+  ci: "bg-orange-600",
 };
 
 export default function TeamFlagWithFallback({

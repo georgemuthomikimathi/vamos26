@@ -32,6 +32,26 @@ export const NEWS_FEEDS: NewsFeedSource[] = [
     name: "The Guardian",
     url: "https://www.theguardian.com/football/rss",
   },
+  {
+    id: "skysports-football",
+    name: "Sky Sports",
+    url: "https://feeds.skysports.com/rss/12040",
+  },
+  {
+    id: "cbs-soccer",
+    name: "CBS Sports",
+    url: "https://www.cbssports.com/rss/headlines/soccer/",
+  },
+  {
+    id: "reuters-sports",
+    name: "Reuters",
+    url: "https://www.reutersagency.com/feed/?taxonomy=best-topics&post_type=best",
+  },
+  {
+    id: "goal-worldcup",
+    name: "Goal.com",
+    url: "https://www.goal.com/feeds/en/news",
+  },
 ];
 
 const WC_KEYWORDS = [
@@ -55,6 +75,13 @@ const WC_KEYWORDS = [
   "morocco",
   "south africa",
   "paraguay",
+  "australia",
+  "turkey",
+  "türkiye",
+  "pulisic",
+  "son heung",
+  "vinicius",
+  "bellingham",
   "injury",
   "squad",
   "lineup",
@@ -145,6 +172,14 @@ function inferTeamCode(headline: string, summary: string): { code: string; team:
     ["morocco", "ma", "Morocco"],
     ["south africa", "za", "South Africa"],
     ["paraguay", "py", "Paraguay"],
+    ["australia", "au", "Australia"],
+    ["türkiye", "tr", "Türkiye"],
+    ["turkey", "tr", "Türkiye"],
+    ["senegal", "sn", "Senegal"],
+    ["japan", "jp", "Japan"],
+    ["italy", "it", "Italy"],
+    ["portugal", "pt", "Portugal"],
+    ["switzerland", "ch", "Switzerland"],
     ["croatia", "hr", "Croatia"],
     ["netherlands", "nl", "Netherlands"],
     ["belgium", "be", "Belgium"],
@@ -212,7 +247,7 @@ async function fetchFeed(source: NewsFeedSource): Promise<TeamNewsItem[]> {
     return parsed
       .map((item, i) => rssToNewsItem(item, source, i))
       .filter((item): item is TeamNewsItem => item != null)
-      .slice(0, 8);
+      .slice(0, 10);
   } catch {
     return [];
   }
@@ -263,7 +298,7 @@ export async function fetchTeamNews(): Promise<FetchTeamNewsResult> {
   });
 
   return {
-    items: sorted.slice(0, 24),
+    items: sorted.slice(0, 32),
     sources: ["VAMOS26 Verified", ...activeSources],
     fetchedAt: new Date().toISOString(),
     verifiedCount: sorted.filter((i) => i.verified).length,

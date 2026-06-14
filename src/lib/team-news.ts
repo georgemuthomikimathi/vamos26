@@ -25,6 +25,20 @@ export type TeamNewsItem = {
  */
 export const PREVIEW_NEWS: TeamNewsItem[] = [
   {
+    id: "preview-mexico-south-africa",
+    code: "mx",
+    team: "Mexico",
+    headline: "Mexico beat South Africa 2–0 in Azteca opener",
+    summary:
+      "El Tri deliver a statement win in front of 80,000 at Estadio Azteca — Lozano and Jiménez combine for the decisive goals on opening night.",
+    date: "Jun 11",
+    tag: "form",
+    url: "https://www.fifa.com/en/matches?search=Mexico%20South%20Africa",
+    source: "FIFA.com",
+    verified: true,
+    kind: "match-report",
+  },
+  {
     id: "preview-korea-czechia",
     code: "kr",
     team: "Korea Republic",

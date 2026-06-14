@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { GROUPS } from "@/lib/data";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import EditorialPreview from "@/components/EditorialPreview";
+import GroupStandingsMini from "@/components/GroupStandingsMini";
 
 export default function GroupsSection() {
   return (
@@ -29,6 +30,8 @@ export default function GroupsSection() {
         </motion.div>
 
         <EditorialPreview />
+
+        <GroupStandingsMini />
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {GROUPS.map((group, gi) => (

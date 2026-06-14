@@ -7,23 +7,23 @@ import { Newspaper } from "lucide-react";
 const GROUP_STORYLINES = [
   {
     letter: "A",
-    title: "Korea Republic beat Czechia 2–1",
-    body: "Hwang In-beom and Oh Hyeon-gyu completed a comeback in Guadalajara after Ladislav Krejčí's opener. Mexico lead the group after beating South Africa 2–0 in the opener.",
+    title: "Mexico lead after Korea Republic win",
+    body: "El Tri opened with a 2–0 win over South Africa at the Azteca. Korea Republic beat Czechia 2–1 in Guadalajara — Group A is wide open.",
   },
   {
     letter: "B",
     title: "Canada draw 1–1 with Bosnia",
-    body: "Jovo Lukić gave Bosnia & Herzegovina an early lead at BMO Field before super-sub Cyle Larin equalized for the co-hosts. Both sides take a point from the Toronto opener.",
+    body: "Jovo Lukić gave Bosnia an early lead at BMO Field before Cyle Larin equalized for the co-hosts. Both sides take a point from the Toronto opener.",
   },
   {
     letter: "D",
-    title: "USA host Paraguay tonight",
-    body: "The big one tonight: USA vs Paraguay at SoFi Stadium, 9PM ET. Pochettino's hosts need a statement win in Group D before Australia and Türkiye arrive.",
+    title: "USA vs Paraguay at SoFi",
+    body: "Pochettino's hosts need a statement win in Group D. Pulisic and Adams anchor a 4-3-3 before Australia and Türkiye arrive.",
   },
   {
     letter: "C",
     title: "Brazil vs Morocco at MetLife",
-    body: "Seleção face the Atlas Lions in East Rutherford — a sell-out and the first World Cup match in the NY/NJ corridor. Regragui's compact block meets Vinícius Jr's pace.",
+    body: "Seleção face the Atlas Lions in East Rutherford — a sell-out and the first World Cup match in the NY/NJ corridor.",
   },
 ];
 
@@ -39,7 +39,7 @@ export default function EditorialPreview() {
         <Newspaper size={22} className="text-gold" />
         <div>
           <p className="text-gold uppercase tracking-[0.3em] text-xs font-semibold">
-            June 12 · Match Day 2
+            Match Day 2 · Live from API-Football
           </p>
           <h3 className="font-display text-3xl md:text-4xl text-white">
             STORYLINES TO WATCH

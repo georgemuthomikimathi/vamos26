@@ -3,7 +3,7 @@
 import { ExternalLink } from "lucide-react";
 import type { Match } from "@/lib/scores/types";
 import { formatScore } from "@/lib/scores/types";
-import { attachLineupsToMatch } from "@/lib/scores/lineups";
+import { useMatchDetails } from "@/hooks/useMatchDetails";
 import { getMatchMetaForMatch, getCoachInfo } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchClock from "@/components/MatchClock";
@@ -18,7 +18,7 @@ type LiveMatchHeroProps = {
 };
 
 export default function LiveMatchHero({ match, onKickoff }: LiveMatchHeroProps) {
-  const enriched = attachLineupsToMatch(match);
+  const enriched = useMatchDetails(match, true);
   const score = formatScore(enriched.score);
   const meta = getMatchMetaForMatch(enriched);
   const coaches = getCoachInfo(enriched);
@@ -59,7 +59,7 @@ export default function LiveMatchHero({ match, onKickoff }: LiveMatchHeroProps) 
         </div>
       </div>
 
-      {(enriched.homeLineup || enriched.awayLineup) && (
+      {(enriched.homeLineup || enriched.awayLineup || enriched.id.startsWith("af-")) && (
         <div className="mb-6 pt-6 border-t border-white/10">
           <p className="text-[10px] uppercase tracking-[0.3em] text-pitch font-semibold mb-3 text-center">
             Starting XI & bench
