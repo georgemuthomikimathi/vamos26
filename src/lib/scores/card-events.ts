@@ -1,4 +1,4 @@
-import type { Match, MatchEvent } from "@/lib/scores/types";
+import type { MatchEvent } from "@/lib/scores/types";
 
 export const TWO_YELLOWS_NOTE = "N:B Two yellow cards = red";
 
@@ -7,8 +7,19 @@ export type TeamCardCounts = {
   red: number;
 };
 
+function normalizePlayerName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .trim()
+    .toLowerCase();
+}
+
+/** Match abbreviated API names (e.g. "T. Mokoena") to full names ("Teboho Mokoena"). */
 function playerKey(event: MatchEvent): string {
-  return `${event.team}:${event.player.trim().toLowerCase()}`;
+  const parts = normalizePlayerName(event.player).split(/\s+/).filter(Boolean);
+  const lastName = parts[parts.length - 1] ?? normalizePlayerName(event.player);
+  return `${event.team}:${lastName}`;
 }
 
 function eventSortKey(event: MatchEvent): number {
@@ -31,6 +42,10 @@ function sortEventsChronologically(events: MatchEvent[]): MatchEvent[] {
   return [...events].sort((a, b) => eventSortKey(a) - eventSortKey(b));
 }
 
+function isSecondYellowDetail(detail?: string): boolean {
+  return Boolean(detail && /second\s+yellow/i.test(detail));
+}
+
 /**
  * Converts a player's second yellow into a red card for display.
  * Events must be processed in chronological order (sorted first).
@@ -42,7 +57,10 @@ export function consolidateCardEvents(events: MatchEvent[]): MatchEvent[] {
   return sortEventsChronologically(events).map((event) => {
     if (event.type === "red") {
       sentOff.add(playerKey(event));
-      return event;
+      return {
+        ...event,
+        detail: isSecondYellowDetail(event.detail) ? "Second yellow" : event.detail,
+      };
     }
 
     if (event.type !== "yellow") return event;

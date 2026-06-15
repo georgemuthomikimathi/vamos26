@@ -20,20 +20,112 @@ function formatMinute(minute: number, extraMinute?: number): string {
 }
 
 function TeamCardBadges({ counts }: { counts: TeamCardCounts }) {
-  if (counts.yellow === 0 && counts.red === 0) return null;
+  if (counts.yellow === 0 && counts.red === 0) {
+    return <span className="text-[9px] text-muted/40 tabular-nums">—</span>;
+  }
   return (
     <span className="inline-flex items-center gap-1 text-[9px] text-muted/80 tabular-nums">
-      {counts.yellow > 0 && (
-        <span>
-          🟨{counts.yellow}
-        </span>
-      )}
-      {counts.red > 0 && (
-        <span>
-          🟥{counts.red}
-        </span>
-      )}
+      {counts.yellow > 0 && <span>🟨{counts.yellow}</span>}
+      {counts.red > 0 && <span>🟥{counts.red}</span>}
     </span>
+  );
+}
+
+function EventChip({
+  event,
+  code,
+}: {
+  event: MatchEvent;
+  code: string;
+}) {
+  return (
+    <span className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted inline-flex items-center gap-1">
+      <span className="text-gold font-semibold tabular-nums">
+        {formatMinute(event.minute, event.extraMinute)}
+      </span>
+      <span>
+        {eventIcon(event)} {event.player}
+      </span>
+      {(event.type === "goal" || event.type === "penalty") && event.playerSecondary && (
+        <span className="text-muted/60">({event.playerSecondary})</span>
+      )}
+      {event.detail === "Second yellow" && (
+        <span className="text-muted/50">(2nd yellow)</span>
+      )}
+      <span className="text-muted/50">({code})</span>
+    </span>
+  );
+}
+
+function TeamEventColumn({
+  side,
+  code,
+  goals,
+  cards,
+  cardCounts,
+  align,
+}: {
+  side: "home" | "away";
+  code: string;
+  goals: MatchEvent[];
+  cards: MatchEvent[];
+  cardCounts: TeamCardCounts;
+  align: "left" | "right";
+}) {
+  const teamGoals = goals.filter((e) => e.team === side);
+  const teamCards = cards.filter((e) => e.team === side);
+  const items = [...teamGoals, ...teamCards].sort(
+    (a, b) => eventSortKey(a) - eventSortKey(b)
+  );
+
+  return (
+    <div
+      className={`flex flex-col gap-1.5 min-w-0 flex-1 ${
+        align === "right" ? "items-end text-right" : "items-start text-left"
+      }`}
+    >
+      <div
+        className={`flex items-center gap-1.5 w-full ${
+          align === "right" ? "justify-end" : "justify-start"
+        }`}
+      >
+        <span className="text-[9px] uppercase tracking-wider text-muted/50 font-semibold truncate">
+          {code}
+        </span>
+        <TeamCardBadges counts={cardCounts} />
+      </div>
+      {items.length === 0 ? (
+        <span className="text-[10px] text-muted/40">—</span>
+      ) : (
+        <div
+          className={`flex flex-col gap-1 w-full ${
+            align === "right" ? "items-end" : "items-start"
+          }`}
+        >
+          {items.map((event, i) => (
+            <EventChip
+              key={`${side}-${event.type}-${event.minute}-${event.player}-${i}`}
+              event={event}
+              code={code}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function eventSortKey(event: MatchEvent): number {
+  const typeOrder: Record<string, number> = {
+    goal: 0,
+    penalty: 0,
+    yellow: 1,
+    red: 2,
+  };
+  return (
+    event.minute * 100_000 +
+    (event.extraMinute ?? 0) * 1_000 +
+    (typeOrder[event.type] ?? 9)
   );
 }
 
@@ -53,6 +145,8 @@ export default function FixtureGoalCardSummary({
 }: FixtureGoalCardSummaryProps) {
   const goals = getGoalEvents(match.events);
   const cards = getCardEvents(match.events);
+  const homeCode = match.home.code.toUpperCase();
+  const awayCode = match.away.code.toUpperCase();
 
   if (goals.length === 0 && cards.length === 0) {
     return (
@@ -62,64 +156,31 @@ export default function FixtureGoalCardSummary({
     );
   }
 
-  const chipClass =
-    "text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted";
-
   return (
     <div className={`space-y-2 ${className}`}>
-      <div className="flex items-center justify-between gap-2 px-1">
-        <TeamCardBadges counts={homeCards} />
-        <span className="text-[9px] uppercase tracking-wider text-muted/50">
-          Cards
-        </span>
-        <TeamCardBadges counts={awayCards} />
+      <div className="flex items-start gap-3">
+        <TeamEventColumn
+          side="home"
+          code={homeCode}
+          goals={goals}
+          cards={cards}
+          cardCounts={homeCards}
+          align="left"
+        />
+        <div className="shrink-0 pt-0.5">
+          <span className="text-[9px] uppercase tracking-wider text-muted/40 font-semibold">
+            Goals & cards
+          </span>
+        </div>
+        <TeamEventColumn
+          side="away"
+          code={awayCode}
+          goals={goals}
+          cards={cards}
+          cardCounts={awayCards}
+          align="right"
+        />
       </div>
-
-      {goals.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 justify-center">
-          {goals.map((g, i) => (
-            <span key={`g-${g.minute}-${g.player}-${i}`} className={chipClass}>
-              <span className="text-gold font-semibold">
-                {formatMinute(g.minute, g.extraMinute)}
-              </span>{" "}
-              {eventIcon(g)} {g.player}
-              {g.playerSecondary && (
-                <span className="text-muted/60"> ({g.playerSecondary})</span>
-              )}
-              <span className="text-muted/50 ml-1">
-                (
-                {g.team === "home"
-                  ? match.home.code.toUpperCase()
-                  : match.away.code.toUpperCase()}
-                )
-              </span>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {cards.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 justify-center">
-          {cards.map((c, i) => (
-            <span key={`c-${c.minute}-${c.player}-${c.type}-${i}`} className={chipClass}>
-              <span className="text-gold font-semibold">
-                {formatMinute(c.minute, c.extraMinute)}
-              </span>{" "}
-              {eventIcon(c)} {c.player}
-              {c.detail === "Second yellow" && (
-                <span className="text-muted/50"> (2nd yellow)</span>
-              )}
-              <span className="text-muted/50 ml-1">
-                (
-                {c.team === "home"
-                  ? match.home.code.toUpperCase()
-                  : match.away.code.toUpperCase()}
-                )
-              </span>
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

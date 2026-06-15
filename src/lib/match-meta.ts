@@ -239,6 +239,7 @@ export const MATCH_META: Record<string, MatchMeta> = {
         team: "home",
       },
       { minute: 67, type: "yellow", player: "Teboho Mokoena", team: "away" },
+      { minute: 67, type: "yellow", player: "Orbelín Pineda", team: "home" },
       { minute: 81, type: "yellow", player: "Orbelín Pineda", team: "home" },
     ],
   },
