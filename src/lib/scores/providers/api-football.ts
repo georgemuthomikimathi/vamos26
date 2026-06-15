@@ -130,17 +130,6 @@ function filterCompetitionFixtures(
   return fixtures.filter((f) => isWorldCupFixture(f, leagueId));
 }
 
-function datesAroundToday(): string[] {
-  const dates = new Set<string>();
-  const now = new Date();
-  for (let offset = -1; offset <= 2; offset++) {
-    const d = new Date(now);
-    d.setUTCDate(d.getUTCDate() + offset);
-    dates.add(d.toISOString().slice(0, 10));
-  }
-  return [...dates];
-}
-
 async function apiFetchRaw(path: string): Promise<{ fixtures: ApiFixture[]; error?: string }> {
   const { data, error } = await apiFootballFetch<ApiFixture[]>(path);
   if (error) return { fixtures: [], error };
@@ -231,38 +220,47 @@ export async function fetchApiFootballFixtures(
   }
 
   const { leagueId, season } = leagueParams(competition);
-  const dates = datesAroundToday();
+  const today = new Date().toISOString().slice(0, 10);
 
-  const queries =
+  const paths =
     competition === "world-cup"
       ? [
-          `/fixtures?league=${leagueId}&season=${season}`,
-          `/fixtures?league=${leagueId}&season=${season}&status=NS-1H-HT-2H-ET-P-LIVE`,
           "/fixtures?live=all",
-          ...dates.map((d) => `/fixtures?date=${d}&league=${leagueId}`),
+          `/fixtures?date=${today}&league=${leagueId}`,
+          `/fixtures?league=${leagueId}&season=${season}&status=NS-1H-HT-2H-ET-P-LIVE`,
+          `/fixtures?league=${leagueId}&season=${season}`,
         ]
       : [
-          `/fixtures?league=${leagueId}&season=${season}`,
-          `/fixtures?league=${leagueId}&season=${season}&status=NS-1H-HT-2H-ET-P-LIVE`,
           "/fixtures?live=all",
-          ...dates.map((d) => `/fixtures?date=${d}&league=${leagueId}`),
-          ...dates.map((d) => `/fixtures?date=${d}`),
+          `/fixtures?date=${today}&league=${leagueId}`,
+          `/fixtures?league=${leagueId}&season=${season}&status=NS-1H-HT-2H-ET-P-LIVE`,
+          `/fixtures?league=${leagueId}&season=${season}`,
         ];
 
-  const results = await Promise.all(queries.map((path) => apiFetchRaw(path)));
+  let merged: ApiFixture[] = [];
+  let lastError: string | undefined;
 
-  const errors = results.map((r) => r.error).filter(Boolean) as string[];
-  const merged = dedupeFixtures(results.flatMap((r) => r.fixtures));
+  for (const path of paths) {
+    const { fixtures, error } = await apiFetchRaw(path);
+    if (error) lastError = error;
+    if (fixtures.length > 0) {
+      merged = dedupeFixtures([...merged, ...fixtures]);
+    }
+    if (merged.length >= 20) break;
+  }
+
   const scoped = filterCompetitionFixtures(merged, competition, leagueId);
 
   if (scoped.length === 0) {
     return {
       matches: null,
-      error: errors[0] ?? "no_fixtures",
+      error: lastError ?? "no_fixtures",
     };
   }
 
-  return { matches: sortMatches(scoped.map((f) => normalizeFixture(f, competition))) };
+  return {
+    matches: sortMatches(scoped.map((f) => normalizeFixture(f, competition))),
+  };
 }
 
 export async function fetchApiFootballLive(): Promise<Match[] | null> {

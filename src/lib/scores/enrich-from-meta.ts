@@ -37,6 +37,9 @@ function mergeEvents(
 }
 
 export function enrichMatchFromMeta(match: Match): Match {
+  // API-Football fixtures are authoritative — do not blend static preview meta.
+  if (match.id.startsWith("af-")) return match;
+
   const meta = getMatchMetaForMatch(match);
   if (!meta) return match;
 
