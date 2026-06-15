@@ -20,7 +20,8 @@ import {
   dispatchDataRefresh,
   dispatchMatchFinished,
 } from "@/lib/realtime/cascade";
-import { pickLivePollInterval } from "@/lib/realtime/polling";
+import { pickLivePollInterval, POLL_EVENT_BURST_MS } from "@/lib/realtime/polling";
+import { liveScoreFingerprint } from "@/lib/realtime/live-fingerprint";
 import MatchCard from "@/components/MatchCard";
 import PreviousFixtureCard from "@/components/PreviousFixtureCard";
 import MatchAlertSettings from "@/components/MatchAlertSettings";
@@ -49,6 +50,8 @@ export default function LiveMatchCenter() {
   const prevLiveIdsRef = useRef<Set<string>>(new Set());
   const userPickedTabRef = useRef(false);
   const kickoffTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scoreFpRef = useRef("");
+  const [burstUntil, setBurstUntil] = useState(0);
 
   const displayMatches = useMemo(() => {
     if (provider === "static" || dataSource === "static") return matches;
@@ -56,7 +59,10 @@ export default function LiveMatchCenter() {
   }, [matches, provider, dataSource]);
   const tabCounts = useMemo(() => getMatchTabCounts(displayMatches), [displayMatches]);
   const buckets = useMemo(() => bucketMatches(displayMatches), [displayMatches]);
-  const pollMs = useMemo(() => pickLivePollInterval(displayMatches), [displayMatches]);
+  const pollMs = useMemo(() => {
+    if (Date.now() < burstUntil) return POLL_EVENT_BURST_MS;
+    return pickLivePollInterval(displayMatches);
+  }, [displayMatches, burstUntil]);
 
   const fetchLive = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
@@ -64,13 +70,28 @@ export default function LiveMatchCenter() {
       const res = await fetch("/api/live?competition=world-cup", { cache: "no-store" });
       const data = await res.json();
       const nextMatches = enrichMatchesFromMeta(data.matches ?? []);
+      const nextFp = liveScoreFingerprint(nextMatches);
+      if (
+        scoreFpRef.current &&
+        nextFp &&
+        nextFp !== scoreFpRef.current &&
+        data.provider === "api-football"
+      ) {
+        setBurstUntil(Date.now() + 30_000);
+        dispatchDataRefresh("score-change");
+      }
+      scoreFpRef.current = nextFp;
       setMatches(nextMatches);
       setLiveCount(data.liveCount ?? getLiveCount(nextMatches));
       if (data.source === "api" || data.source === "static") {
         setDataSource(data.source);
       }
       if (data.provider) {
-        setProvider(data.provider);
+        setProvider((prev) =>
+          prev === "api-football" && data.provider === "worldcup26"
+            ? prev
+            : data.provider
+        );
       }
       setApiError(data.apiError);
       setLastUpdate(formatUpdatedET(data.updatedAt));

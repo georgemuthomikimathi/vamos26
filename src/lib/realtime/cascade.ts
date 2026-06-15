@@ -13,7 +13,9 @@ export function dispatchMatchFinished(detail: MatchFinishedDetail): void {
   window.dispatchEvent(new CustomEvent(MATCH_FINISHED_EVENT, { detail }));
 }
 
-export function dispatchDataRefresh(reason: "match-finished" | "manual" | "kickoff"): void {
+export function dispatchDataRefresh(
+  reason: "match-finished" | "manual" | "kickoff" | "score-change"
+): void {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent(DATA_REFRESH_EVENT, { detail: { reason } }));
 }

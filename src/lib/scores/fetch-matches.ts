@@ -87,7 +87,11 @@ async function loadWorldCup26Matches(): Promise<{ matches: Match[] | null; error
   return { matches: null, error: recent.error ?? all.error ?? "no_games" };
 }
 
-async function finalizeApiFootballMatches(matches: Match[]): Promise<Match[]> {
+async function finalizeApiFootballMatches(
+  matches: Match[],
+  enrichEvents: boolean
+): Promise<Match[]> {
+  if (!enrichEvents) return finalizeMatches(matches);
   const enriched = await enrichMatches(matches, { skipLineups: true });
   return finalizeMatches(enriched);
 }
@@ -103,7 +107,7 @@ async function fetchApiFootballWithRetry(
     result = await fetchApiFootballFixtures(competition);
     if (result.matches?.length) return result;
 
-    const cached = getCachedApiFootballFixtures();
+    const cached = getCachedApiFootballFixtures({ allowStale: true });
     if (cached?.length) {
       return { matches: cached, error: result.error, fromCache: true };
     }
@@ -112,9 +116,14 @@ async function fetchApiFootballWithRetry(
   return result;
 }
 
+function staleApiCache(): Match[] | null {
+  return getCachedApiFootballFixtures({ allowStale: true });
+}
+
 async function returnApiFootball(
   matches: Match[],
   reason: FetchReason,
+  enrichEvents: boolean,
   apiFootballError?: string
 ): Promise<{
   matches: Match[];
@@ -124,7 +133,7 @@ async function returnApiFootball(
   apiFootballError?: string;
 }> {
   setCachedApiFootballFixtures(matches);
-  const finalized = await finalizeApiFootballMatches(matches);
+  const finalized = await finalizeApiFootballMatches(matches, enrichEvents);
   return {
     matches: finalized,
     source: "api",
@@ -134,8 +143,14 @@ async function returnApiFootball(
   };
 }
 
+export type FetchMatchesOptions = {
+  /** Per-fixture events API — off for live scoreboard polling. */
+  enrichEvents?: boolean;
+};
+
 export async function fetchMatchesByCompetition(
-  competition: CompetitionId
+  competition: CompetitionId,
+  options: FetchMatchesOptions = {}
 ): Promise<{
   matches: Match[];
   source: "api" | "static";
@@ -144,6 +159,7 @@ export async function fetchMatchesByCompetition(
   apiError?: string;
   apiFootballError?: string;
 }> {
+  const enrichEvents = options.enrichEvents ?? false;
   let apiFootballError: string | undefined;
 
   if (competition === "world-cup") {
@@ -155,14 +171,16 @@ export async function fetchMatchesByCompetition(
         return returnApiFootball(
           matches,
           fromCache ? "api_football_cached" : "api_football",
+          enrichEvents,
           error
         );
       }
 
-      if (!shouldPreferWorldCup26Only(error)) {
-        const cached = getCachedApiFootballFixtures();
+      // Never flip to worldcup26.ir on rate limits — keep last API snapshot.
+      if (isApiFootballRateLimitError(error) || !shouldPreferWorldCup26Only(error)) {
+        const cached = staleApiCache();
         if (cached?.length) {
-          return returnApiFootball(cached, "api_football_cached", error);
+          return returnApiFootball(cached, "api_football_cached", enrichEvents, error);
         }
       }
     } else {
@@ -182,9 +200,7 @@ export async function fetchMatchesByCompetition(
         apiFootballError,
         apiError: isApiFootballPlanError(apiFootballError)
           ? "API-Football free plan cannot access WC 2026 — using worldcup26.ir instead."
-          : isApiFootballRateLimitError(apiFootballError)
-            ? "API-Football rate limit hit — using worldcup26.ir until quota resets."
-            : isApiFootballAuthError(apiFootballError)
+          : isApiFootballAuthError(apiFootballError)
               ? "API-Football auth failed — using worldcup26.ir. Fix API_FOOTBALL_KEY in Vercel."
               : undefined,
       };
@@ -221,7 +237,7 @@ export async function fetchMatchesByCompetition(
   const { matches, error } = await fetchApiFootballWithRetry(competition);
 
   if (matches && matches.length > 0) {
-    return returnApiFootball(matches, "api_football", error);
+    return returnApiFootball(matches, "api_football", enrichEvents, error);
   }
 
   return {

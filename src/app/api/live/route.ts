@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   const competition = getCompetition(competitionParam)!;
   const { matches, source, provider, reason, apiError } =
-    await fetchMatchesByCompetition(competitionParam);
+    await fetchMatchesByCompetition(competitionParam, { enrichEvents: false });
 
   return NextResponse.json({
     updatedAt: new Date().toISOString(),

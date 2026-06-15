@@ -17,7 +17,9 @@ export async function GET(request: NextRequest) {
   }
 
   const competition = getCompetition(competitionParam)!;
-  const { matches, provider } = await fetchMatchesByCompetition(competitionParam);
+  const { matches, provider } = await fetchMatchesByCompetition(competitionParam, {
+    enrichEvents: true,
+  });
 
   const statEligible = matches.filter(
     (m) =>
