@@ -115,16 +115,17 @@ function teamName(game: Wc26Game, side: "home" | "away"): string {
 function parseScorers(raw: string | undefined, team: "home" | "away"): MatchEvent[] {
   if (!raw || raw === "null") return [];
 
-  const normalized = raw
-    .replace(/[{}]/g, "")
-    .replace(/[""''`]/g, "")
+  const parts = raw
+    .replace(/^\{|\}$/g, "")
     .split(",")
-    .map((part) => part.trim())
+    .map((part) => part.trim().replace(/^["']|["']$/g, ""))
     .filter(Boolean);
 
   const events: MatchEvent[] = [];
-  for (const part of normalized) {
-    const match = part.match(/^(.+?)\s+(\d+)(?:\+(\d+))?'/);
+  for (const part of parts) {
+    const match = part.match(
+      /^(.+?)\s+(\d+)['']?(?:\+(\d+))?['']?(?:\((?:OG|p)\))?$/i,
+    );
     if (!match) continue;
     const player = match[1].trim();
     const minute = Number.parseInt(match[2], 10);

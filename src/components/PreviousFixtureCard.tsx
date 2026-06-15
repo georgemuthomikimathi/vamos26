@@ -113,20 +113,6 @@ export default function PreviousFixtureCard({
           </div>
         </div>
 
-        <div className="mt-3">
-          {showEvents ? (
-            <FixtureGoalCardSummary
-              match={enriched}
-              homeCards={homeCards}
-              awayCards={awayCards}
-            />
-          ) : (
-            <p className="text-[10px] text-muted/60 text-center">
-              Final score · scorers & cards update when available
-            </p>
-          )}
-        </div>
-
         {!expanded && (
           <div className="mt-3 space-y-2">
             <p className="text-[10px] text-muted/60 text-center flex items-center justify-center gap-1">
@@ -168,6 +154,14 @@ export default function PreviousFixtureCard({
             </div>
 
             <MatchOfficialsPanel match={enriched} meta={meta} coaches={coaches} />
+
+            {showEvents && (
+              <FixtureGoalCardSummary
+                match={enriched}
+                homeCards={homeCards}
+                awayCards={awayCards}
+              />
+            )}
 
             <MatchSubsPanel match={enriched} meta={meta} />
 
