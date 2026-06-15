@@ -3,7 +3,10 @@
 import type { Match, MatchEvent } from "@/lib/scores/types";
 import {
   getCardEvents,
+  getDisplayEvents,
   getGoalEvents,
+  hasCardEvents,
+  TWO_YELLOWS_NOTE,
   type TeamCardCounts,
 } from "@/lib/scores/card-events";
 import { formatSubstitutionMinute } from "@/lib/timezone";
@@ -12,11 +15,56 @@ function eventIcon(event: MatchEvent): string {
   if (event.type === "goal" || event.type === "penalty") return "⚽";
   if (event.type === "red") return "🟥";
   if (event.type === "yellow") return "🟨";
+  if (event.type === "subst") return "↔";
   return "•";
 }
 
 function formatMinute(minute: number, extraMinute?: number): string {
   return formatSubstitutionMinute(minute, extraMinute);
+}
+
+function eventSortKey(event: MatchEvent): number {
+  const typeOrder: Record<string, number> = {
+    goal: 0,
+    penalty: 0,
+    yellow: 1,
+    red: 2,
+    subst: 3,
+  };
+  return (
+    event.minute * 100_000 +
+    (event.extraMinute ?? 0) * 1_000 +
+    (typeOrder[event.type] ?? 9)
+  );
+}
+
+function subsToEvents(
+  match: Match
+): MatchEvent[] {
+  const out: MatchEvent[] = [];
+  for (const sub of match.homeSubs ?? []) {
+    out.push({
+      minute: sub.minute,
+      extraMinute: sub.extraMinute,
+      type: "subst",
+      player: sub.playerIn,
+      playerSecondary: sub.playerOut,
+      team: "home",
+      detail: "Sub",
+    });
+  }
+  for (const sub of match.awaySubs ?? []) {
+    out.push({
+      minute: sub.minute,
+      extraMinute: sub.extraMinute,
+      type: "subst",
+      player: sub.playerIn,
+      playerSecondary: sub.playerOut,
+      team: "away",
+      detail: "Sub",
+    });
+  }
+  return out;
 }
 
 function TeamCardBadges({ counts }: { counts: TeamCardCounts }) {
@@ -39,20 +87,28 @@ function EventChip({
   code: string;
 }) {
   return (
-    <span className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted inline-flex items-center gap-1">
-      <span className="text-gold font-semibold tabular-nums">
+    <span className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted inline-flex items-center gap-1 max-w-full">
+      <span className="text-gold font-semibold tabular-nums shrink-0">
         {formatMinute(event.minute, event.extraMinute)}
       </span>
-      <span>
-        {eventIcon(event)} {event.player}
+      <span className="truncate">
+        {eventIcon(event)}{" "}
+        {event.type === "subst" ? (
+          <>
+            {event.player}
+            <span className="text-muted/50"> ← {event.playerSecondary}</span>
+          </>
+        ) : (
+          event.player
+        )}
       </span>
       {(event.type === "goal" || event.type === "penalty") && event.playerSecondary && (
-        <span className="text-muted/60">({event.playerSecondary})</span>
+        <span className="text-muted/60 shrink-0">({event.playerSecondary})</span>
       )}
       {event.detail === "Second yellow" && (
-        <span className="text-muted/50">(2nd yellow)</span>
+        <span className="text-muted/50 shrink-0">(2nd yellow)</span>
       )}
-      <span className="text-muted/50">({code})</span>
+      <span className="text-muted/50 shrink-0">({code})</span>
     </span>
   );
 }
@@ -60,23 +116,19 @@ function EventChip({
 function TeamEventColumn({
   side,
   code,
-  goals,
-  cards,
+  items,
   cardCounts,
   align,
 }: {
   side: "home" | "away";
   code: string;
-  goals: MatchEvent[];
-  cards: MatchEvent[];
+  items: MatchEvent[];
   cardCounts: TeamCardCounts;
   align: "left" | "right";
 }) {
-  const teamGoals = goals.filter((e) => e.team === side);
-  const teamCards = cards.filter((e) => e.team === side);
-  const items = [...teamGoals, ...teamCards].sort(
-    (a, b) => eventSortKey(a) - eventSortKey(b)
-  );
+  const teamItems = items
+    .filter((e) => e.team === side)
+    .sort((a, b) => eventSortKey(a) - eventSortKey(b));
 
   return (
     <div
@@ -94,7 +146,7 @@ function TeamEventColumn({
         </span>
         <TeamCardBadges counts={cardCounts} />
       </div>
-      {items.length === 0 ? (
+      {teamItems.length === 0 ? (
         <span className="text-[10px] text-muted/40">—</span>
       ) : (
         <div
@@ -102,7 +154,7 @@ function TeamEventColumn({
             align === "right" ? "items-end" : "items-start"
           }`}
         >
-          {items.map((event, i) => (
+          {teamItems.map((event, i) => (
             <EventChip
               key={`${side}-${event.type}-${event.minute}-${event.player}-${i}`}
               event={event}
@@ -115,20 +167,6 @@ function TeamEventColumn({
   );
 }
 
-function eventSortKey(event: MatchEvent): number {
-  const typeOrder: Record<string, number> = {
-    goal: 0,
-    penalty: 0,
-    yellow: 1,
-    red: 2,
-  };
-  return (
-    event.minute * 100_000 +
-    (event.extraMinute ?? 0) * 1_000 +
-    (typeOrder[event.type] ?? 9)
-  );
-}
-
 type FixtureGoalCardSummaryProps = {
   match: Match;
   homeCards: TeamCardCounts;
@@ -136,22 +174,29 @@ type FixtureGoalCardSummaryProps = {
   className?: string;
 };
 
-/** Uniform goals + cards strip for finished matches (no subs). */
+/** Uniform goals, cards & subs strip for every finished fixture. */
 export default function FixtureGoalCardSummary({
   match,
   homeCards,
   awayCards,
   className = "",
 }: FixtureGoalCardSummaryProps) {
-  const goals = getGoalEvents(match.events);
-  const cards = getCardEvents(match.events);
+  const displayEvents = getDisplayEvents(match.events ?? []);
+  const goals = getGoalEvents(displayEvents);
+  const cards = getCardEvents(displayEvents);
+  const subs = subsToEvents(match);
+  const timeline = [...goals, ...cards, ...subs].sort(
+    (a, b) => eventSortKey(a) - eventSortKey(b)
+  );
+
   const homeCode = match.home.code.toUpperCase();
   const awayCode = match.away.code.toUpperCase();
+  const showCardNote = hasCardEvents(match.events);
 
-  if (goals.length === 0 && cards.length === 0) {
+  if (timeline.length === 0) {
     return (
       <p className={`text-[10px] text-muted/60 text-center ${className}`}>
-        No goal or card events recorded
+        No match events recorded
       </p>
     );
   }
@@ -162,25 +207,29 @@ export default function FixtureGoalCardSummary({
         <TeamEventColumn
           side="home"
           code={homeCode}
-          goals={goals}
-          cards={cards}
+          items={timeline}
           cardCounts={homeCards}
           align="left"
         />
-        <div className="shrink-0 pt-0.5">
-          <span className="text-[9px] uppercase tracking-wider text-muted/40 font-semibold">
-            Goals & cards
+        <div className="shrink-0 pt-0.5 text-center">
+          <span className="text-[9px] uppercase tracking-wider text-muted/40 font-semibold block">
+            Match
+          </span>
+          <span className="text-[9px] uppercase tracking-wider text-muted/40 font-semibold block">
+            events
           </span>
         </div>
         <TeamEventColumn
           side="away"
           code={awayCode}
-          goals={goals}
-          cards={cards}
+          items={timeline}
           cardCounts={awayCards}
           align="right"
         />
       </div>
+      {showCardNote && (
+        <p className="text-[9px] text-muted/50 text-center">{TWO_YELLOWS_NOTE}</p>
+      )}
     </div>
   );
 }

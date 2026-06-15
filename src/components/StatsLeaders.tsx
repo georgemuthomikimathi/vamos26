@@ -2,25 +2,71 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Target, Star } from "lucide-react";
+import {
+  Target,
+  Star,
+  HandHelping,
+  Shield,
+  Square,
+  Repeat,
+  Trophy,
+  Calendar,
+} from "lucide-react";
 import type { StatLeader } from "@/lib/stats";
 import type { MatchMvp } from "@/lib/scores/match-mvp";
+import type { MatchStatHighlight, TournamentStatsSummary } from "@/lib/stats/compile-tournament-stats";
+import { STATS_LEADER_LIMIT } from "@/lib/stats/compile-tournament-stats";
 import { onDataRefresh } from "@/lib/realtime/cascade";
 import { POLL_STATS_MS } from "@/lib/realtime/polling";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import DataProviderBadge from "@/components/DataProviderBadge";
 
+type StatsTab =
+  | "scorers"
+  | "assists"
+  | "cleanSheets"
+  | "yellowCards"
+  | "redCards"
+  | "penalties"
+  | "substitutions"
+  | "byMatch";
+
 type StatsPayload = {
   updatedAt: string;
   matchesPlayed: number;
   scorers: StatLeader[];
+  assists: StatLeader[];
+  cleanSheets: StatLeader[];
+  yellowCards: StatLeader[];
+  redCards: StatLeader[];
+  penalties: StatLeader[];
+  substitutions: StatLeader[];
+  matchHighlights: MatchStatHighlight[];
   manOfTheMatch?: MatchMvp | null;
-  provider?: "api-football" | "static";
+  summary?: TournamentStatsSummary;
+  provider?: "worldcup26" | "api-football" | "hybrid" | "static";
 };
 
-function ScorerRow({ player }: { player: StatLeader }) {
+const TABS: { id: StatsTab; label: string; icon: typeof Target; valueLabel: string }[] = [
+  { id: "scorers", label: "Scorers", icon: Target, valueLabel: "goals" },
+  { id: "assists", label: "Assists", icon: HandHelping, valueLabel: "assists" },
+  { id: "cleanSheets", label: "Clean sheets", icon: Shield, valueLabel: "CS" },
+  { id: "yellowCards", label: "Yellows", icon: Square, valueLabel: "🟨" },
+  { id: "redCards", label: "Reds", icon: Square, valueLabel: "🟥" },
+  { id: "penalties", label: "Penalties", icon: Target, valueLabel: "pens" },
+  { id: "substitutions", label: "Subs", icon: Repeat, valueLabel: "subs" },
+  { id: "byMatch", label: "By match", icon: Calendar, valueLabel: "" },
+];
+
+function LeaderRow({
+  player,
+  valueLabel,
+}: {
+  player: StatLeader;
+  valueLabel: string;
+}) {
   return (
-    <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+    <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 active:scale-[0.99] transition-all cursor-default min-h-[44px]">
       <span
         className={`font-display text-xl w-7 text-center shrink-0 ${
           player.rank === 1 ? "text-gold" : "text-muted"
@@ -31,18 +77,67 @@ function ScorerRow({ player }: { player: StatLeader }) {
       <TeamFlagWithFallback code={player.code} name={player.country} size={32} />
       <div className="flex-1 min-w-0">
         <div className="font-semibold text-sm truncate">{player.name}</div>
-        <div className="text-[10px] text-muted truncate">{player.club}</div>
+        <div className="text-[10px] text-muted truncate">
+          {player.club}
+          {player.detail ? ` · ${player.detail}` : ""}
+        </div>
       </div>
       <div className="text-right shrink-0">
         <div className="font-display text-xl text-pitch">{player.value}</div>
-        <div className="text-[9px] text-muted uppercase">goals</div>
+        {valueLabel && (
+          <div className="text-[9px] text-muted uppercase">{valueLabel}</div>
+        )}
       </div>
+    </div>
+  );
+}
+
+function SummaryChip({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-center min-w-[4.5rem]">
+      <div className="font-display text-2xl text-white tabular-nums">{value}</div>
+      <div className="text-[9px] uppercase tracking-wider text-muted">{label}</div>
+    </div>
+  );
+}
+
+function MatchHighlightRow({ match }: { match: MatchStatHighlight }) {
+  return (
+    <div className="p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-[0.99] transition-all">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-white truncate">{match.label}</p>
+          <p className="text-[10px] text-muted truncate">
+            {match.stage} · {match.date}
+          </p>
+        </div>
+        <span className="text-[10px] text-muted shrink-0 tabular-nums">
+          🟨{match.cards.yellow} 🟥{match.cards.red}
+        </span>
+      </div>
+      {match.scorers.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {match.scorers.map((s) => (
+            <span
+              key={`${s.name}-${s.teamCode}`}
+              className="inline-flex items-center gap-1 text-[10px] bg-pitch/10 border border-pitch/20 rounded-full px-2 py-0.5 text-pitch"
+            >
+              <TeamFlagWithFallback code={s.teamCode} name={s.teamName} size={16} />
+              {s.name}
+              {s.goals > 1 && <span className="font-bold">×{s.goals}</span>}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[10px] text-muted">0–0 · no goals</p>
+      )}
     </div>
   );
 }
 
 export default function StatsLeaders() {
   const [stats, setStats] = useState<StatsPayload | null>(null);
+  const [tab, setTab] = useState<StatsTab>("scorers");
 
   const loadStats = async () => {
     try {
@@ -64,8 +159,36 @@ export default function StatsLeaders() {
     return onDataRefresh(() => void loadStats());
   }, []);
 
-  const scorers = stats?.scorers ?? [];
+  const activeTab = TABS.find((t) => t.id === tab)!;
+  const summary = stats?.summary;
+
+  const leadersForTab = (): StatLeader[] => {
+    if (!stats) return [];
+    switch (tab) {
+      case "scorers":
+        return stats.scorers ?? [];
+      case "assists":
+        return stats.assists ?? [];
+      case "cleanSheets":
+        return stats.cleanSheets ?? [];
+      case "yellowCards":
+        return stats.yellowCards ?? [];
+      case "redCards":
+        return stats.redCards ?? [];
+      case "penalties":
+        return stats.penalties ?? [];
+      case "substitutions":
+        return stats.substitutions ?? [];
+      default:
+        return [];
+    }
+  };
+
+  const leaders = leadersForTab().slice(0, STATS_LEADER_LIMIT);
   const motm = stats?.manOfTheMatch;
+  const hasLeaderData = tab === "byMatch"
+    ? (stats?.matchHighlights?.length ?? 0) > 0
+    : leaders.some((p) => p.value > 0);
 
   return (
     <section id="stats" className="section-anchor relative py-24 bg-navy-light">
@@ -74,37 +197,85 @@ export default function StatsLeaders() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-10"
+          className="mb-8"
         >
           <p className="text-gold uppercase tracking-[0.4em] text-xs font-semibold mb-3 flex items-center gap-2 flex-wrap">
             Tournament stats
             {stats?.provider && <DataProviderBadge provider={stats.provider} />}
           </p>
           <h2 className="font-display text-5xl md:text-7xl text-white mb-3">
-            GOALS & <span className="text-gradient-pitch">MOTM</span>
+            LEADER<span className="text-gradient-pitch">BOARDS</span>
           </h2>
           <p className="text-muted text-sm max-w-2xl">
-            Top scorers and man of the match from API-Football. Updates when matches finish.
+            Tallied after each full-time result from worldcup26.ir — top {STATS_LEADER_LIMIT}{" "}
+            in every category.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-card border border-white/10 rounded-3xl p-5 md:p-6">
+        {summary && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            <SummaryChip label="Matches" value={summary.finishedMatches} />
+            <SummaryChip label="Goals" value={summary.totalGoals} />
+            <SummaryChip label="Assists" value={summary.totalAssists} />
+            <SummaryChip label="Yellows" value={summary.totalYellow} />
+            <SummaryChip label="Reds" value={summary.totalRed} />
+            <SummaryChip label="Clean sheets" value={summary.totalCleanSheets} />
+            <SummaryChip label="Subs" value={summary.totalSubstitutions} />
+          </div>
+        )}
+
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-6 scrollbar-hide -mx-1 px-1">
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className={`shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium border transition-all tap-scale focus-ring min-h-[44px] ${
+                tab === id
+                  ? "bg-pitch/15 border-pitch/40 text-pitch"
+                  : "border-white/10 text-muted hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <Icon size={14} />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 bg-card border border-white/10 rounded-3xl p-5 md:p-6">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gold to-orange-600 flex items-center justify-center">
-                <Target size={18} className="text-white" />
+                <Trophy size={18} className="text-white" />
               </div>
-              <h3 className="font-display text-2xl text-white">Goal scorers</h3>
+              <h3 className="font-display text-2xl text-white">{activeTab.label}</h3>
             </div>
-            {scorers.some((p) => p.value > 0) ? (
-              <div className="space-y-2">
-                {scorers.slice(0, 8).map((p) => (
-                  <ScorerRow key={`${p.rank}-${p.name}`} player={p} />
+
+            {tab === "byMatch" ? (
+              stats?.matchHighlights?.length ? (
+                <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
+                  {stats.matchHighlights.map((m) => (
+                    <MatchHighlightRow key={m.matchId} match={m} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted text-center py-8">
+                  Per-match tallies appear as results come in.
+                </p>
+              )
+            ) : hasLeaderData ? (
+              <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
+                {leaders.map((p) => (
+                  <LeaderRow
+                    key={`${tab}-${p.rank}-${p.name}`}
+                    player={p}
+                    valueLabel={activeTab.valueLabel}
+                  />
                 ))}
               </div>
             ) : (
               <p className="text-sm text-muted text-center py-8">
-                Scorers appear as matches finish.
+                {activeTab.label} update after each match finishes.
               </p>
             )}
           </div>

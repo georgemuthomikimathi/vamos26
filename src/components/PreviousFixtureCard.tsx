@@ -28,7 +28,7 @@ export default function PreviousFixtureCard({
     if (defaultExpanded) setExpanded(true);
   }, [defaultExpanded]);
 
-  const enriched = useMatchDetails(match, expanded);
+  const enriched = useMatchDetails(match, expanded || match.status === "finished");
   const meta = getMatchMetaForMatch(enriched);
   const coaches = getCoachInfo(enriched);
   const homeCards = countCardsByTeam(enriched.events, "home");
@@ -39,10 +39,10 @@ export default function PreviousFixtureCard({
 
   return (
     <article
-      className={`bg-card border rounded-xl transition-all ${
+      className={`bg-card border rounded-xl transition-all tap-scale ${
         expanded
           ? "border-pitch/30 shadow-md shadow-pitch/5"
-          : "border-white/10 hover:border-pitch/20"
+          : "border-white/10 hover:border-pitch/20 hover:bg-white/[0.02]"
       }`}
     >
       <div
@@ -56,7 +56,8 @@ export default function PreviousFixtureCard({
           }
         }}
         aria-expanded={expanded}
-        className="w-full text-left focus-ring rounded-xl p-3 md:p-4 cursor-pointer"
+        aria-label={`${enriched.home.name} vs ${enriched.away.name}, full time ${scoreDisplay}. Tap for squads and details.`}
+        className="w-full text-left focus-ring rounded-xl p-3 md:p-4 cursor-pointer min-h-[44px]"
       >
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -123,9 +124,9 @@ export default function PreviousFixtureCard({
               <MapPin size={10} className="text-pitch" />
               {enriched.venue}
             </p>
-            <p className="text-[10px] text-pitch font-semibold text-center flex items-center justify-center gap-1">
-              View squads & full match details
-              <ChevronDown size={12} />
+            <p className="text-[10px] text-pitch font-semibold text-center flex items-center justify-center gap-1 py-1">
+              Tap for squads & match details
+              <ChevronDown size={12} className={expanded ? "rotate-180" : ""} />
             </p>
           </div>
         )}

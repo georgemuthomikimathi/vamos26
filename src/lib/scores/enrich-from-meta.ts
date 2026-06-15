@@ -18,14 +18,22 @@ function eventKey(event: MatchEvent): string {
   return `${event.minute}-${event.extraMinute ?? 0}-${event.type}-${event.team}-${event.player}`;
 }
 
+function eventSortKey(a: MatchEvent, b: MatchEvent): number {
+  const minuteDiff = a.minute - b.minute;
+  if (minuteDiff !== 0) return minuteDiff;
+  const extraDiff = (a.extraMinute ?? 0) - (b.extraMinute ?? 0);
+  if (extraDiff !== 0) return extraDiff;
+  return a.type.localeCompare(b.type);
+}
+
 function mergeEvents(
-  apiEvents: MatchEvent[] | undefined,
-  metaEvents: MatchEvent[] | undefined
+  primary: MatchEvent[] | undefined,
+  supplemental: MatchEvent[] | undefined
 ): MatchEvent[] | undefined {
   const seen = new Set<string>();
   const combined: MatchEvent[] = [];
 
-  for (const event of [...(apiEvents ?? []), ...(metaEvents ?? [])]) {
+  for (const event of [...(primary ?? []), ...(supplemental ?? [])]) {
     const key = eventKey(event);
     if (seen.has(key)) continue;
     seen.add(key);
@@ -33,13 +41,10 @@ function mergeEvents(
   }
 
   if (combined.length === 0) return undefined;
-  return combined.sort((a, b) => a.minute - b.minute || a.type.localeCompare(b.type));
+  return combined.sort(eventSortKey);
 }
 
 export function enrichMatchFromMeta(match: Match): Match {
-  // API-Football fixtures are authoritative — do not blend static preview meta.
-  if (match.id.startsWith("af-")) return match;
-
   const meta = getMatchMetaForMatch(match);
   if (!meta) return match;
 
