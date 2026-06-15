@@ -1,20 +1,45 @@
-import type { MatchEvent } from "@/lib/scores/types";
+import type { Match, MatchEvent } from "@/lib/scores/types";
 
 export const TWO_YELLOWS_NOTE = "N:B Two yellow cards = red";
+
+export type TeamCardCounts = {
+  yellow: number;
+  red: number;
+};
 
 function playerKey(event: MatchEvent): string {
   return `${event.team}:${event.player.trim().toLowerCase()}`;
 }
 
+function eventSortKey(event: MatchEvent): number {
+  const typeOrder: Record<string, number> = {
+    yellow: 0,
+    red: 1,
+    goal: 2,
+    penalty: 2,
+    penalty_missed: 2,
+    subst: 3,
+  };
+  return (
+    event.minute * 100_000 +
+    (event.extraMinute ?? 0) * 1_000 +
+    (typeOrder[event.type] ?? 9)
+  );
+}
+
+function sortEventsChronologically(events: MatchEvent[]): MatchEvent[] {
+  return [...events].sort((a, b) => eventSortKey(a) - eventSortKey(b));
+}
+
 /**
  * Converts a player's second yellow into a red card for display.
- * First yellow stays yellow; subsequent yellows for the same player render as red (second yellow).
+ * Events must be processed in chronological order (sorted first).
  */
 export function consolidateCardEvents(events: MatchEvent[]): MatchEvent[] {
   const yellowCount = new Map<string, number>();
   const sentOff = new Set<string>();
 
-  return events.map((event) => {
+  return sortEventsChronologically(events).map((event) => {
     if (event.type === "red") {
       sentOff.add(playerKey(event));
       return event;
@@ -46,6 +71,31 @@ export function getDisplayEvents(events: MatchEvent[] | undefined): MatchEvent[]
   return consolidateCardEvents(events);
 }
 
+/** Goals and penalties only — for previous fixture summaries. */
+export function getGoalEvents(events: MatchEvent[] | undefined): MatchEvent[] {
+  return getDisplayEvents(events).filter(
+    (e) => e.type === "goal" || e.type === "penalty"
+  );
+}
+
+/** Yellow and red cards only — for previous fixture summaries. */
+export function getCardEvents(events: MatchEvent[] | undefined): MatchEvent[] {
+  return getDisplayEvents(events).filter(
+    (e) => e.type === "yellow" || e.type === "red"
+  );
+}
+
+export function countCardsByTeam(
+  events: MatchEvent[] | undefined,
+  team: "home" | "away"
+): TeamCardCounts {
+  const cards = getCardEvents(events).filter((e) => e.team === team);
+  return {
+    yellow: cards.filter((e) => e.type === "yellow").length,
+    red: cards.filter((e) => e.type === "red").length,
+  };
+}
+
 export function hasCardEvents(events: MatchEvent[] | undefined): boolean {
-  return (events ?? []).some((e) => e.type === "yellow" || e.type === "red");
+  return getCardEvents(events).length > 0;
 }

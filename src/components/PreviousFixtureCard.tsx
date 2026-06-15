@@ -2,33 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { ChevronDown, ExternalLink, MapPin, Users } from "lucide-react";
-import type { Match, MatchEvent } from "@/lib/scores/types";
+import type { Match } from "@/lib/scores/types";
 import { formatScore } from "@/lib/scores/types";
-import { getDisplayEvents } from "@/lib/scores/card-events";
+import { countCardsByTeam } from "@/lib/scores/card-events";
 import { getMatchMetaForMatch, getCoachInfo } from "@/lib/match-meta";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
 import TeamFlagWithFallback from "@/components/TeamFlag";
-import MatchEventsTimeline from "@/components/MatchEventsTimeline";
+import FixtureGoalCardSummary from "@/components/FixtureGoalCardSummary";
 import MatchLineupPanel from "@/components/MatchLineupPanel";
 import MatchSubsPanel from "@/components/MatchSubsPanel";
 import MatchOfficialsPanel from "@/components/MatchOfficialsPanel";
-import { formatSubstitutionMinute } from "@/lib/timezone";
-
-function formatGoalMinute(minute: number, extraMinute?: number): string {
-  return formatSubstitutionMinute(minute, extraMinute);
-}
-
 type PreviousFixtureCardProps = {
   match: Match;
   defaultExpanded?: boolean;
 };
-
-function eventIcon(event: MatchEvent): string {
-  if (event.type === "goal" || event.type === "penalty") return "⚽";
-  if (event.type === "red") return "🟥";
-  if (event.type === "yellow") return "🟨";
-  return "•";
-}
 
 export default function PreviousFixtureCard({
   match,
@@ -40,21 +27,11 @@ export default function PreviousFixtureCard({
     if (defaultExpanded) setExpanded(true);
   }, [defaultExpanded]);
 
-  const enriched = useMatchDetails(match, expanded);
+  const enriched = useMatchDetails(match, true);
   const meta = getMatchMetaForMatch(enriched);
   const coaches = getCoachInfo(enriched);
-
-  const displayEvents = getDisplayEvents(enriched.events ?? []);
-  const goals = displayEvents.filter(
-    (e) => e.type === "goal" || e.type === "penalty"
-  );
-  const cards = displayEvents.filter(
-    (e) => e.type === "red" || e.type === "yellow"
-  );
-  const allSubs = [
-    ...(enriched.homeSubs ?? []).map((s) => ({ ...s, side: enriched.home.name })),
-    ...(enriched.awaySubs ?? []).map((s) => ({ ...s, side: enriched.away.name })),
-  ];
+  const homeCards = countCardsByTeam(enriched.events, "home");
+  const awayCards = countCardsByTeam(enriched.events, "away");
   const scoreDisplay = formatScore(enriched.score);
 
   const toggle = () => setExpanded((v) => !v);
@@ -85,7 +62,9 @@ export default function PreviousFixtureCard({
             <span className="bg-white/10 text-muted border border-white/10 rounded px-2 py-0.5 text-[10px] font-bold uppercase">
               FT
             </span>
-            <span className="text-[10px] text-muted truncate">{enriched.date} · {enriched.time}</span>
+            <span className="text-[10px] text-muted truncate">
+              {enriched.date} · {enriched.time}
+            </span>
           </div>
           <div className="flex items-center gap-1 min-w-0">
             <span className="text-[10px] text-muted uppercase tracking-wider truncate max-w-[8rem] sm:max-w-none text-right">
@@ -105,7 +84,9 @@ export default function PreviousFixtureCard({
               <TeamFlagWithFallback code={enriched.home.code} name={enriched.home.name} size={28} />
             </div>
             {coaches.homeCoach && (
-              <span className="text-[10px] text-muted/70 truncate max-w-full">{coaches.homeCoach}</span>
+              <span className="text-[10px] text-muted/70 truncate max-w-full">
+                {coaches.homeCoach}
+              </span>
             )}
           </div>
 
@@ -120,72 +101,29 @@ export default function PreviousFixtureCard({
               <span className="font-medium truncate text-sm">{enriched.away.name}</span>
             </div>
             {coaches.awayCoach && (
-              <span className="text-[10px] text-muted/70 truncate max-w-full">{coaches.awayCoach}</span>
+              <span className="text-[10px] text-muted/70 truncate max-w-full">
+                {coaches.awayCoach}
+              </span>
             )}
           </div>
         </div>
 
+        <div className="mt-3">
+          <FixtureGoalCardSummary
+            match={enriched}
+            homeCards={homeCards}
+            awayCards={awayCards}
+          />
+        </div>
+
         {!expanded && (
           <div className="mt-3 space-y-2">
-            {goals.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 justify-center">
-                {goals.map((g, i) => (
-                  <span
-                    key={`${g.minute}-${g.player}-${i}`}
-                    className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted"
-                  >
-                    <span className="text-gold font-semibold">{formatGoalMinute(g.minute, g.extraMinute)}</span>{" "}
-                    {eventIcon(g)} {g.player}
-                    {g.playerSecondary && (
-                      <span className="text-muted/60"> ({g.playerSecondary})</span>
-                    )}
-                    <span className="text-muted/50 ml-1">
-                      ({g.team === "home" ? enriched.home.code.toUpperCase() : enriched.away.code.toUpperCase()})
-                    </span>
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {(cards.length > 0 || allSubs.length > 0) && (
-              <div className="flex flex-wrap gap-1.5 justify-center">
-                {cards.map((c, i) => (
-                  <span
-                    key={`${c.minute}-${c.player}-${i}`}
-                    className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted"
-                  >
-                    <span className="text-gold font-semibold">{formatGoalMinute(c.minute, c.extraMinute)}</span>{" "}
-                    {eventIcon(c)} {c.player}
-                    {c.detail === "Second yellow" && (
-                      <span className="text-muted/50"> (2nd yellow)</span>
-                    )}
-                  </span>
-                ))}
-                {allSubs.slice(0, 6).map((s, i) => (
-                  <span
-                    key={`${s.minute}-${s.playerIn}-${i}`}
-                    className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2 py-1 text-muted"
-                  >
-                    <span className="text-gold font-semibold">
-                      {formatSubstitutionMinute(s.minute, s.extraMinute)}
-                    </span>{" "}
-                    Sub: {s.playerOut} → {s.playerIn}
-                  </span>
-                ))}
-                {allSubs.length > 6 && (
-                  <span className="text-[10px] text-muted/60 px-2 py-1">
-                    +{allSubs.length - 6} more subs
-                  </span>
-                )}
-              </div>
-            )}
-
             <p className="text-[10px] text-muted/60 text-center flex items-center justify-center gap-1">
               <MapPin size={10} className="text-pitch" />
               {enriched.venue}
             </p>
             <p className="text-[10px] text-pitch font-semibold text-center flex items-center justify-center gap-1">
-              View match events & squads
+              View squads & full match details
               <ChevronDown size={12} />
             </p>
           </div>
@@ -200,12 +138,12 @@ export default function PreviousFixtureCard({
         <div className="overflow-hidden">
           <div className="px-3 md:px-4 pb-4 pt-0 border-t border-white/10 mx-3 md:mx-4 space-y-4">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted pt-3">
-              <span>{enriched.date} · {enriched.time} ET</span>
+              <span>
+                {enriched.date} · {enriched.time} ET
+              </span>
               <span className="flex items-center gap-1 min-w-0">
                 <MapPin size={12} className="text-pitch shrink-0" />
-                <span className="truncate font-medium text-white/90">
-                  {enriched.venue}
-                </span>
+                <span className="truncate font-medium text-white/90">{enriched.venue}</span>
                 <span className="text-muted">· {enriched.city}</span>
               </span>
             </div>
@@ -219,13 +157,6 @@ export default function PreviousFixtureCard({
             </div>
 
             <MatchOfficialsPanel match={enriched} meta={meta} coaches={coaches} />
-
-            <div>
-              <p className="text-[10px] uppercase tracking-wider text-pitch mb-2">
-                Match timeline
-              </p>
-              <MatchEventsTimeline match={enriched} expanded />
-            </div>
 
             <MatchSubsPanel match={enriched} meta={meta} />
 
