@@ -1,4 +1,4 @@
-type DataProvider = "api-football" | "static" | "fallback" | "";
+type DataProvider = "api-football" | "worldcup26" | "hybrid" | "static" | "fallback" | "";
 
 type DataProviderBadgeProps = {
   provider?: DataProvider;

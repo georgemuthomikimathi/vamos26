@@ -1,15 +1,19 @@
 type LiveApiBannerProps = {
   source?: "api" | "static" | "";
-  provider?: "api-football" | "static" | "";
+  provider?: "api-football" | "worldcup26" | "hybrid" | "static" | "";
   apiError?: string;
 };
 
 export default function LiveApiBanner({ source, provider, apiError }: LiveApiBannerProps) {
+  if (source === "api" && (provider === "hybrid" || provider === "worldcup26") && !apiError) {
+    return null;
+  }
+
   if (source === "api" && provider === "api-football" && !apiError) {
     return null;
   }
 
-  if (source === "api" && provider === "api-football" && apiError) {
+  if (source === "api" && apiError) {
     return (
       <p className="mb-4 text-center text-xs text-gold/90 bg-gold/10 border border-gold/20 rounded-xl px-4 py-2">
         {apiError}

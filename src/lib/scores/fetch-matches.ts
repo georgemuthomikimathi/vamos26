@@ -2,6 +2,7 @@ import type { CompetitionId, Match } from "@/lib/scores/types";
 import { FRIENDLY_MATCHES } from "@/lib/friendlies";
 import { LIVE_MATCHES } from "@/lib/live";
 import { attachLineupsToMatches } from "@/lib/scores/lineups";
+import { mergeIrWithApiLive } from "@/lib/scores/merge-hybrid-matches";
 import { isApiFootballConfigured } from "@/lib/scores/providers/api-config";
 import { fetchApiFootballFixtures } from "@/lib/scores/providers/api-football";
 import {
@@ -14,6 +15,10 @@ import {
   getApiQuotaBlockReason,
   isApiQuotaBlocked,
 } from "@/lib/scores/providers/api-football-quota";
+import {
+  fetchWorldCup26AllMatches,
+  fetchWorldCup26Fixtures,
+} from "@/lib/scores/providers/worldcup26";
 import { enrichMatchesFromMeta } from "@/lib/scores/enrich-from-meta";
 
 const STATIC: Record<CompetitionId, Match[]> = {
@@ -23,11 +28,13 @@ const STATIC: Record<CompetitionId, Match[]> = {
   "serie-a": [],
 };
 
-export type ScoreProvider = "api-football" | "static";
+export type ScoreProvider = "api-football" | "worldcup26" | "hybrid" | "static";
 
 export type FetchReason =
   | "api_football"
   | "api_football_cached"
+  | "worldcup26"
+  | "hybrid_ir_api"
   | "static_no_key"
   | "static_api_empty"
   | "static_api_error";
@@ -54,6 +61,16 @@ export function isApiFootballAuthError(error?: string): boolean {
 
 function finalizeMatches(matches: Match[]): Match[] {
   return enrichMatchesFromMeta(attachLineupsToMatches(matches));
+}
+
+async function loadWorldCup26Matches(): Promise<{ matches: Match[] | null; error?: string }> {
+  const all = await fetchWorldCup26AllMatches("world-cup");
+  if (all.matches?.length) return all;
+
+  const recent = await fetchWorldCup26Fixtures("world-cup");
+  if (recent.matches?.length) return recent;
+
+  return { matches: null, error: all.error ?? recent.error ?? "no_games" };
 }
 
 async function fetchApiFootballWithCache(
@@ -86,10 +103,27 @@ async function fetchApiFootballWithCache(
   return result;
 }
 
-async function returnApiFootball(
-  matches: Match[],
-  reason: FetchReason,
-  apiFootballError?: string
+function apiLiveOnly(matches: Match[] | null | undefined): Match[] {
+  if (!matches?.length) return [];
+  return matches.filter((m) => m.status === "live" || m.status === "halftime");
+}
+
+function hybridApiError(hasLiveFromApi: boolean, apiError?: string): string | undefined {
+  if (hasLiveFromApi || !apiError) return undefined;
+  if (isApiFootballRateLimitError(apiError)) {
+    return "Live clock unavailable (API quota) — recent scores from worldcup26.ir.";
+  }
+  if (isApiFootballAuthError(apiError)) {
+    return "Live clock unavailable — fix API_FOOTBALL_KEY. Recent scores from worldcup26.ir.";
+  }
+  return undefined;
+}
+
+async function returnHybridWorldCup(
+  irMatches: Match[],
+  apiMatches: Match[] | null,
+  apiFootballError?: string,
+  fromCache?: boolean
 ): Promise<{
   matches: Match[];
   source: "api";
@@ -98,16 +132,26 @@ async function returnApiFootball(
   apiFootballError?: string;
   apiError?: string;
 }> {
-  setCachedApiFootballFixtures(matches);
+  const liveOverlay = apiLiveOnly(apiMatches);
+  const merged = mergeIrWithApiLive(irMatches, liveOverlay);
+
+  if (apiMatches?.length) {
+    setCachedApiFootballFixtures(apiMatches);
+  }
+
+  const hasLiveFromApi = liveOverlay.length > 0;
+
   return {
-    matches: finalizeMatches(matches),
+    matches: finalizeMatches(merged),
     source: "api",
-    provider: "api-football",
-    reason,
+    provider: hasLiveFromApi ? "hybrid" : "worldcup26",
+    reason: hasLiveFromApi
+      ? fromCache
+        ? "api_football_cached"
+        : "hybrid_ir_api"
+      : "worldcup26",
     apiFootballError,
-    apiError: isApiFootballRateLimitError(apiFootballError)
-      ? "Daily API quota reached — showing cached scores until reset (00:00 UTC)."
-      : undefined,
+    apiError: hybridApiError(hasLiveFromApi, apiFootballError),
   };
 }
 
@@ -127,41 +171,59 @@ export async function fetchMatchesByCompetition(
   apiFootballError?: string;
 }> {
   if (competition === "world-cup") {
-    if (!isApiFootballConfigured()) {
-      return {
-        matches: finalizeMatches(STATIC[competition] ?? []),
-        source: "static",
-        provider: "static",
-        reason: "static_no_key",
-        apiError:
-          "Add API_FOOTBALL_KEY in Vercel → Settings → Environment Variables, then redeploy.",
-      };
+    const [irResult, apiResult] = await Promise.all([
+      loadWorldCup26Matches(),
+      isApiFootballConfigured()
+        ? fetchApiFootballWithCache(competition)
+        : Promise.resolve({
+            matches: null as Match[] | null,
+            error: "no_key" as string | undefined,
+            fromCache: false as boolean | undefined,
+          }),
+    ]);
+
+    if (irResult.matches?.length) {
+      return returnHybridWorldCup(
+        irResult.matches,
+        apiResult.matches,
+        apiResult.error,
+        apiResult.fromCache
+      );
     }
 
-    const { matches, error, fromCache } = await fetchApiFootballWithCache(competition);
-
-    if (matches && matches.length > 0) {
-      return returnApiFootball(
-        matches,
-        fromCache ? "api_football_cached" : "api_football",
-        error
-      );
+    if (apiResult.matches?.length) {
+      setCachedApiFootballFixtures(apiResult.matches);
+      return {
+        matches: finalizeMatches(apiResult.matches),
+        source: "api",
+        provider: "api-football",
+        reason: apiResult.fromCache ? "api_football_cached" : "api_football",
+        apiFootballError: apiResult.error,
+      };
     }
 
     const stale = getCachedApiFootballFixtures({ allowStale: true });
     if (stale?.length) {
-      return returnApiFootball(stale, "api_football_cached", error);
+      return {
+        matches: finalizeMatches(stale),
+        source: "api",
+        provider: "api-football",
+        reason: "api_football_cached",
+        apiFootballError: apiResult.error ?? irResult.error,
+        apiError: hybridApiError(false, apiResult.error ?? irResult.error),
+      };
     }
 
     return {
       matches: finalizeMatches(STATIC[competition] ?? []),
       source: "static",
       provider: "static",
-      reason: error === "no_key" ? "static_no_key" : "static_api_empty",
-      apiFootballError: error,
+      reason: "static_api_empty",
+      apiFootballError: apiResult.error,
       apiError:
-        error ??
-        "API-Football returned no fixtures. Check your plan includes World Cup 2026.",
+        irResult.error ??
+        apiResult.error ??
+        "No fixtures from worldcup26.ir or API-Football.",
     };
   }
 
@@ -179,11 +241,17 @@ export async function fetchMatchesByCompetition(
   const { matches, error, fromCache } = await fetchApiFootballWithCache(competition);
 
   if (matches && matches.length > 0) {
-    return returnApiFootball(
-      matches,
-      fromCache ? "api_football_cached" : "api_football",
-      error
-    );
+    setCachedApiFootballFixtures(matches);
+    return {
+      matches: finalizeMatches(matches),
+      source: "api",
+      provider: "api-football",
+      reason: fromCache ? "api_football_cached" : "api_football",
+      apiFootballError: error,
+      apiError: isApiFootballRateLimitError(error)
+        ? "Daily API quota reached — showing cached scores until reset (00:00 UTC)."
+        : undefined,
+    };
   }
 
   return {

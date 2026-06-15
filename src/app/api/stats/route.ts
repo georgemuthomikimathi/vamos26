@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCompetition, isLiveCompetition } from "@/lib/competitions";
-import { fetchApiFootballSeasonFixtures } from "@/lib/scores/providers/api-football";
+import { fetchWorldCup26AllMatches } from "@/lib/scores/providers/worldcup26";
 import { attachLineupsToMatches } from "@/lib/scores/lineups";
 import { enrichMatchesFromMeta } from "@/lib/scores/enrich-from-meta";
 import { pickLatestMatchMvp } from "@/lib/scores/match-mvp";
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   }
 
   const competition = getCompetition(competitionParam)!;
-  const { matches } = await fetchApiFootballSeasonFixtures(competitionParam);
+  const { matches } = await fetchWorldCup26AllMatches(competitionParam);
   const finalized = enrichMatchesFromMeta(attachLineupsToMatches(matches ?? []));
 
   const statEligible = finalized.filter(
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     scorers: compiled.topScorers,
     manOfTheMatch,
     summary: compiled.summary,
-    provider: matches?.length ? "api-football" : "static",
+    provider: matches?.length ? "worldcup26" : "static",
   };
 
   statsCache = { body, storedAt: Date.now() };

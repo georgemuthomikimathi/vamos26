@@ -283,6 +283,33 @@ export async function fetchWorldCup26AllGroupMatches(
   };
 }
 
+/** Full tournament schedule — group + knockout — for scoreboard merge and stats. */
+export async function fetchWorldCup26AllMatches(
+  competition: CompetitionId
+): Promise<{ matches: Match[] | null; error?: string }> {
+  if (competition !== "world-cup") {
+    return { matches: null, error: "not_world_cup" };
+  }
+
+  const [gamesResult, stadiums] = await Promise.all([
+    fetchJson<GamesResponse>("/get/games"),
+    loadStadiums(),
+  ]);
+
+  if (gamesResult.error || !gamesResult.data?.games?.length) {
+    return {
+      matches: null,
+      error: gamesResult.error ?? "no_games",
+    };
+  }
+
+  return {
+    matches: sortMatches(
+      gamesResult.data.games.map((g) => normalizeGame(g, competition, stadiums))
+    ),
+  };
+}
+
 export async function fetchWorldCup26Fixtures(
   competition: CompetitionId
 ): Promise<{ matches: Match[] | null; error?: string }> {

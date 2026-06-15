@@ -41,7 +41,7 @@ export default function LiveMatchCenter() {
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [dataSource, setDataSource] = useState<"api" | "static" | "">("");
-  const [provider, setProvider] = useState<"api-football" | "static" | "">("");
+  const [provider, setProvider] = useState<"api-football" | "worldcup26" | "hybrid" | "static" | "">("");
   const [apiError, setApiError] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<MatchCenterTab>("previous");
   const [stageFilter, setStageFilter] = useState<string | null>(null);
@@ -74,8 +74,8 @@ export default function LiveMatchCenter() {
       if (data.source === "api" || data.source === "static") {
         setDataSource(data.source);
       }
-      if (data.provider === "api-football") {
-        setProvider("api-football");
+      if (data.provider === "api-football" || data.provider === "hybrid" || data.provider === "worldcup26") {
+        setProvider(data.provider);
       } else if (data.provider === "static") {
         setProvider("static");
       }

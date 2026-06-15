@@ -8,6 +8,7 @@ import {
 } from "@/lib/scores/fetch-matches";
 import { getLiveCount } from "@/lib/scores/types";
 import { checkApiFootballEnv } from "@/lib/scores/providers/api-config";
+import { probeWorldCup26 } from "@/lib/scores/providers/worldcup26";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,15 +16,19 @@ export const revalidate = 0;
 export async function GET() {
   const envCheck = checkApiFootballEnv();
   const probe = await probeApiFootball();
+  const wc26Probe = await probeWorldCup26();
   const { matches, source, provider, reason, apiError, apiFootballError } =
     await fetchMatchesByCompetition("world-cup");
 
   const apiFootballPlanBlocked = isApiFootballPlanError(apiFootballError);
   const apiFootballRateLimited = isApiFootballRateLimitError(apiFootballError);
   const apiFootballAuthFailed = isApiFootballAuthError(apiFootballError);
+  const irOk = wc26Probe.gameCount > 0 && !wc26Probe.error;
 
   return NextResponse.json({
-    ok: source === "api" && provider === "api-football",
+    ok:
+      source === "api" &&
+      (provider === "hybrid" || provider === "worldcup26" || provider === "api-football"),
     source,
     provider,
     reason,
@@ -52,8 +57,15 @@ export async function GET() {
         }
       : null,
     probe,
+    worldcup26: wc26Probe,
     fix:
-      provider === "api-football"
+      provider === "hybrid"
+        ? "Recent scores from worldcup26.ir · live clock from API-Football"
+        : provider === "worldcup26"
+          ? irOk
+            ? "Scores from worldcup26.ir — API live clock unavailable"
+            : "worldcup26.ir unreachable"
+          : provider === "api-football"
         ? apiFootballRateLimited
           ? "Rate limited — serving cached API data. Upgrade API-Football plan for more requests/minute."
           : "API-Football connected"
