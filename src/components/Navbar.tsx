@@ -11,7 +11,6 @@ const NAV_ITEMS = [
   { id: "live", label: "Live" },
   { id: "news", label: "News" },
   { id: "stats", label: "Stats" },
-  { id: "watchlist", label: "Watch" },
   { id: "fixtures", label: "Results" },
   { id: "groups", label: "Groups" },
   { id: "roadmap", label: "Road to Final" },

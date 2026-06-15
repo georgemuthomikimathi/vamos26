@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import type { Match, MatchEvent } from "@/lib/scores/types";
 import { attachLineupsToMatch } from "@/lib/scores/lineups";
 import { enrichMatchFromMeta } from "@/lib/scores/enrich-from-meta";
-import { POLL_LIVE_MS } from "@/lib/realtime/polling";
 
 function shouldFetchDetails(match: Match): boolean {
   if (!match.id.startsWith("af-")) return false;
@@ -19,10 +18,7 @@ function needsEventBackfill(match: Match): boolean {
   if (!match.id.startsWith("af-") || match.status !== "finished") return false;
   const goals = (match.score.home ?? 0) + (match.score.away ?? 0);
   if (goals === 0) return false;
-  const hasEvents = (match.events?.length ?? 0) > 0;
-  const hasSubs =
-    (match.homeSubs?.length ?? 0) + (match.awaySubs?.length ?? 0) > 0;
-  return !hasEvents && !hasSubs;
+  return !(match.events?.length);
 }
 
 function pickEvents(
@@ -46,22 +42,13 @@ function mergeDetails(
       events: pickEvents(match, details?.events),
       homeLineup: details?.homeLineup ?? match.homeLineup,
       awayLineup: details?.awayLineup ?? match.awayLineup,
-      homeSubs:
-        details?.homeSubs?.length
-          ? details.homeSubs
-          : match.homeSubs?.length
-            ? match.homeSubs
-            : details?.homeSubs,
-      awaySubs:
-        details?.awaySubs?.length
-          ? details.awaySubs
-          : match.awaySubs?.length
-            ? match.awaySubs
-            : details?.awaySubs,
+      homeSubs: details?.homeSubs?.length ? details.homeSubs : match.homeSubs,
+      awaySubs: details?.awaySubs?.length ? details.awaySubs : match.awaySubs,
     })
   );
 }
 
+/** Load goals/events once — live list polling handles score updates. */
 export function useMatchDetails(match: Match, enabled: boolean): Match {
   const shouldLoad = enabled || needsEventBackfill(match);
   const [enriched, setEnriched] = useState(() =>
@@ -95,22 +82,13 @@ export function useMatchDetails(match: Match, enabled: boolean): Match {
   }, [match]);
 
   useEffect(() => {
-    setEnriched(enrichMatchFromMeta(attachLineupsToMatch(match)));
+    setEnriched(mergeDetails(match, { events: match.events }));
   }, [match]);
 
   useEffect(() => {
     if (!shouldLoad) return;
     void fetchDetails();
   }, [shouldLoad, fetchDetails]);
-
-  useEffect(() => {
-    if (!shouldLoad) return;
-    const isLive = match.status === "live" || match.status === "halftime";
-    if (!isLive || !match.id.startsWith("af-")) return;
-
-    const interval = setInterval(() => void fetchDetails(), POLL_LIVE_MS);
-    return () => clearInterval(interval);
-  }, [shouldLoad, fetchDetails, match.status, match.id]);
 
   return enriched;
 }

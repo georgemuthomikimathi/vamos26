@@ -3,6 +3,11 @@ import {
   getApiFootballAuthMode,
   type ApiFootballAuthMode,
 } from "@/lib/scores/providers/api-config";
+import {
+  blockApiQuota,
+  isApiQuotaBlocked,
+  isDailyQuotaError,
+} from "@/lib/scores/providers/api-football-quota";
 
 export const API_FOOTBALL_BASE = "https://v3.football.api-sports.io";
 
@@ -32,6 +37,10 @@ export async function apiFootballFetch<T>(
   path: string,
   options: ApiFetchOptions = {}
 ): Promise<{ data: T | null; error?: string; authMode?: ApiFootballAuthMode }> {
+  if (isApiQuotaBlocked()) {
+    return { data: null, error: "quota_blocked" };
+  }
+
   const key = getApiFootballKey();
   if (!key) return { data: null, error: "no_key" };
 
@@ -59,6 +68,7 @@ export async function apiFootballFetch<T>(
       }
       if (!res.ok) {
         lastError = `http_${res.status}`;
+        if (res.status === 429) blockApiQuota("http_429");
         continue;
       }
 
@@ -70,6 +80,7 @@ export async function apiFootballFetch<T>(
       if (payload.errors && Object.keys(payload.errors).length > 0) {
         const err = JSON.stringify(payload.errors);
         lastError = err;
+        if (isDailyQuotaError(err)) blockApiQuota(err);
         if (isMissingKeyError(err)) continue;
         return { data: null, error: err, authMode: mode };
       }

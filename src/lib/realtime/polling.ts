@@ -1,10 +1,9 @@
 /** Shared polling intervals for live tournament data (milliseconds). */
-export const POLL_LIVE_MS = 10_000;
-export const POLL_EVENT_BURST_MS = 3_000;
-export const POLL_KICKOFF_MS = 3_000;
-export const POLL_IDLE_MS = 30_000;
-export const POLL_STATS_LIVE_MS = 10_000;
-export const POLL_NEWS_MS = 60_000;
+export const POLL_LIVE_MS = 120_000;
+export const POLL_KICKOFF_MS = 60_000;
+export const POLL_IDLE_MS = 300_000;
+export const POLL_STATS_MS = 600_000;
+export const POLL_NEWS_MS = 600_000;
 
 export const SQUAD_REVEAL_MS = 30 * 60_000;
 export const KICKOFF_BOOST_WINDOW_MS = 2 * 60_000;

@@ -27,7 +27,7 @@ export default function PreviousFixtureCard({
     if (defaultExpanded) setExpanded(true);
   }, [defaultExpanded]);
 
-  const enriched = useMatchDetails(match, true);
+  const enriched = useMatchDetails(match, expanded);
   const meta = getMatchMetaForMatch(enriched);
   const coaches = getCoachInfo(enriched);
   const homeCards = countCardsByTeam(enriched.events, "home");

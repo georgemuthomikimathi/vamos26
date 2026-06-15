@@ -7,13 +7,12 @@ import { GROUPS } from "@/lib/data";
 import { KNOCKOUT_ROUNDS, buildBracketMatches } from "@/lib/bracket";
 import type { GroupStandings } from "@/lib/standings/compile-group-standings";
 import { onDataRefresh } from "@/lib/realtime/cascade";
-import { POLL_IDLE_MS, POLL_LIVE_MS } from "@/lib/realtime/polling";
+import { POLL_IDLE_MS } from "@/lib/realtime/polling";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import DataProviderBadge from "@/components/DataProviderBadge";
 import { formatUpdatedET } from "@/lib/timezone";
 
 const POLL_IDLE = POLL_IDLE_MS;
-const POLL_LIVE = POLL_LIVE_MS;
 
 function buildEmptyStandings(): GroupStandings[] {
   return GROUPS.map((group) => ({
@@ -235,11 +234,9 @@ function ConnectorArrow() {
 export default function RoadToFinal() {
   const [standings, setStandings] = useState<GroupStandings[]>(buildEmptyStandings);
   const [matchesPlayed, setMatchesPlayed] = useState(0);
-  const [dataSource, setDataSource] = useState<"api-football" | "worldcup26" | "fallback">("fallback");
+  const [dataSource, setDataSource] = useState<"api-football" | "fallback">("fallback");
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-
-  const [pollMs, setPollMs] = useState(POLL_IDLE);
 
   const fetchStandings = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
@@ -249,7 +246,6 @@ export default function RoadToFinal() {
       if (data.groups?.length) {
         setStandings(data.groups);
         setMatchesPlayed(data.matchesPlayed ?? 0);
-        if ((data.matchesPlayed ?? 0) > 0) setPollMs(POLL_LIVE);
         setLastUpdate(formatUpdatedET(data.updatedAt));
         if (data.source) setDataSource(data.source);
       }
@@ -262,9 +258,9 @@ export default function RoadToFinal() {
 
   useEffect(() => {
     void fetchStandings();
-    const interval = setInterval(() => void fetchStandings(), pollMs);
+    const interval = setInterval(() => void fetchStandings(), POLL_IDLE);
     return () => clearInterval(interval);
-  }, [fetchStandings, pollMs]);
+  }, [fetchStandings]);
 
   useEffect(() => {
     return onDataRefresh((reason) => {

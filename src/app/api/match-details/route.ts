@@ -1,23 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enrichMatchFromMeta } from "@/lib/scores/enrich-from-meta";
-import { fetchMatchesByCompetition } from "@/lib/scores/fetch-matches";
-import { fetchApiFootballFixtureById } from "@/lib/scores/providers/api-football";
-import { fixtureIdFromMatchId } from "@/lib/scores/providers/api-football-fetch";
-import { enrichMatchFromApi } from "@/lib/scores/providers/fixture-enrichment";
+import { findCachedMatch } from "@/lib/scores/providers/api-football-fixture-cache";
+import { enrichMatchEventsFromApi } from "@/lib/scores/providers/fixture-enrichment";
 import type { Match } from "@/lib/scores/types";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-async function resolveMatch(id: string): Promise<Match | undefined> {
-  const fixtureId = id.startsWith("af-") ? fixtureIdFromMatchId(id) : null;
-  if (fixtureId) {
-    const direct = await fetchApiFootballFixtureById(fixtureId);
-    if (direct) return direct;
-  }
+const detailsCache = new Map<
+  string,
+  { details: Record<string, unknown>; storedAt: number }
+>();
+const DETAILS_TTL_MS = 15 * 60_000;
 
-  const { matches } = await fetchMatchesByCompetition("world-cup");
-  return matches.find((m) => m.id === id);
+function resolveMatch(id: string): Match | undefined {
+  return findCachedMatch(id);
 }
 
 export async function GET(request: NextRequest) {
@@ -26,29 +23,39 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "id query required" }, { status: 400 });
   }
 
-  const match = await resolveMatch(id);
+  const cached = detailsCache.get(id);
+  if (cached && Date.now() - cached.storedAt < DETAILS_TTL_MS) {
+    return NextResponse.json({
+      id,
+      updatedAt: new Date().toISOString(),
+      details: cached.details,
+      cached: true,
+    });
+  }
+
+  const match = resolveMatch(id);
 
   if (!match) {
     return NextResponse.json({ error: "match not found" }, { status: 404 });
   }
 
-  const enriched =
+  const isApiMatch =
     match.id.startsWith("af-") &&
     (match.status === "live" ||
       match.status === "halftime" ||
-      match.status === "finished")
-      ? enrichMatchFromMeta(await enrichMatchFromApi(match))
-      : enrichMatchFromMeta(match);
+      match.status === "finished");
+
+  const enriched = isApiMatch
+    ? enrichMatchFromMeta(await enrichMatchEventsFromApi(match))
+    : enrichMatchFromMeta(match);
+
+  const details = { events: enriched.events };
+
+  detailsCache.set(id, { details, storedAt: Date.now() });
 
   return NextResponse.json({
     id: enriched.id,
     updatedAt: new Date().toISOString(),
-    details: {
-      events: enriched.events,
-      homeLineup: enriched.homeLineup,
-      awayLineup: enriched.awayLineup,
-      homeSubs: enriched.homeSubs,
-      awaySubs: enriched.awaySubs,
-    },
+    details,
   });
 }

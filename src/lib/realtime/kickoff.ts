@@ -1,13 +1,45 @@
 import type { Match, MatchStatus } from "@/lib/scores/types";
 
-/** True for matches from a live data provider (not static preview ids like m1). */
+/** True for API-Football fixtures only. */
 export function isApiSourcedMatch(match: Match): boolean {
-  return match.id.startsWith("af-") || match.id.startsWith("wc26-");
+  return match.id.startsWith("af-");
+}
+
+/** Keep live minute from jumping backward when a poll omits elapsed time. */
+export function stabilizeLiveMatch(prev: Match | undefined, next: Match): Match {
+  if (!prev || prev.id !== next.id) return next;
+  const liveish =
+    next.status === "live" ||
+    next.status === "halftime" ||
+    prev.status === "live" ||
+    prev.status === "halftime";
+  if (!liveish) return next;
+
+  const prevMin = prev.minute;
+  const nextMin = next.minute;
+
+  if (nextMin == null || nextMin === 0) {
+    if (prevMin != null && prevMin > 0) {
+      return { ...next, minute: prevMin, extraMinute: next.extraMinute ?? prev.extraMinute };
+    }
+    return next;
+  }
+
+  if (prevMin != null && nextMin < prevMin && prevMin > 5 && next.status !== "halftime") {
+    return { ...next, minute: prevMin, extraMinute: prev.extraMinute ?? next.extraMinute };
+  }
+
+  return next;
+}
+
+export function mergeStableMatches(prev: Match[], next: Match[]): Match[] {
+  const prevById = new Map(prev.map((m) => [m.id, m]));
+  return next.map((m) => stabilizeLiveMatch(prevById.get(m.id), m));
 }
 
 /**
  * Client-side hint: scheduled API fixtures past kickoff display as live until the API updates.
- * Skips static preview matches (m1, m2…) so the site does not stick on opening kickoff at 0:00.
+ * Does not fabricate a minute — clock waits for API elapsed time.
  */
 export function applyKickoffHints(matches: Match[], now = Date.now()): Match[] {
   return matches.map((match) => {
@@ -27,7 +59,6 @@ export function applyKickoffHints(matches: Match[], now = Date.now()): Match[] {
       ...match,
       status: hintedStatus,
       statusShort: "LIVE",
-      minute: match.minute ?? 0,
       score,
     };
   });

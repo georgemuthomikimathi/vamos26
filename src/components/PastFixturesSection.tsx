@@ -11,13 +11,13 @@ import PreviousFixtureCard from "@/components/PreviousFixtureCard";
 import DataProviderBadge from "@/components/DataProviderBadge";
 import { formatUpdatedET } from "@/lib/timezone";
 
-const POLL_MS = 10_000;
+const POLL_MS = 300_000;
 
 export default function PastFixturesSection() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [provider, setProvider] = useState<"api-football" | "worldcup26" | "static" | "">("");
+  const [provider, setProvider] = useState<"api-football" | "static" | "">("");
   const [stageFilter, setStageFilter] = useState<string | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
 
@@ -87,8 +87,7 @@ export default function PastFixturesSection() {
               PAST <span className="text-gradient-pitch">FIXTURES</span>
             </h2>
             <p className="text-muted max-w-2xl text-sm">
-              Tap any match for full squads, coaches, officials, goals, cards & every sub.
-              Updates every 10s after full time.
+              Tap any match for full squads, coaches, goals & cards. Updates after full time.
               {lastUpdate && (
                 <span className="block text-xs text-pitch/70 mt-1">Last updated {lastUpdate}</span>
               )}

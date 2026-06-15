@@ -15,13 +15,12 @@ import {
   pickDefaultTab,
   type MatchCenterTab,
 } from "@/lib/scores/match-buckets";
-import { applyKickoffHints, isApiSourcedMatch, nextKickoffMs } from "@/lib/realtime/kickoff";
+import { applyKickoffHints, isApiSourcedMatch, mergeStableMatches, nextKickoffMs } from "@/lib/realtime/kickoff";
 import {
   dispatchDataRefresh,
   dispatchMatchFinished,
 } from "@/lib/realtime/cascade";
-import { pickLivePollInterval, POLL_EVENT_BURST_MS } from "@/lib/realtime/polling";
-import { liveScoreFingerprint } from "@/lib/realtime/live-fingerprint";
+import { pickLivePollInterval } from "@/lib/realtime/polling";
 import MatchCard from "@/components/MatchCard";
 import PreviousFixtureCard from "@/components/PreviousFixtureCard";
 import MatchAlertSettings from "@/components/MatchAlertSettings";
@@ -42,7 +41,7 @@ export default function LiveMatchCenter() {
   const [lastUpdate, setLastUpdate] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [dataSource, setDataSource] = useState<"api" | "static" | "">("");
-  const [provider, setProvider] = useState<"api-football" | "worldcup26" | "static" | "">("");
+  const [provider, setProvider] = useState<"api-football" | "static" | "">("");
   const [apiError, setApiError] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<MatchCenterTab>("previous");
   const [stageFilter, setStageFilter] = useState<string | null>(null);
@@ -50,8 +49,6 @@ export default function LiveMatchCenter() {
   const prevLiveIdsRef = useRef<Set<string>>(new Set());
   const userPickedTabRef = useRef(false);
   const kickoffTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const scoreFpRef = useRef("");
-  const [burstUntil, setBurstUntil] = useState(0);
 
   const displayMatches = useMemo(() => {
     if (provider === "static" || dataSource === "static") return matches;
@@ -59,39 +56,28 @@ export default function LiveMatchCenter() {
   }, [matches, provider, dataSource]);
   const tabCounts = useMemo(() => getMatchTabCounts(displayMatches), [displayMatches]);
   const buckets = useMemo(() => bucketMatches(displayMatches), [displayMatches]);
-  const pollMs = useMemo(() => {
-    if (Date.now() < burstUntil) return POLL_EVENT_BURST_MS;
-    return pickLivePollInterval(displayMatches);
-  }, [displayMatches, burstUntil]);
+  const pollMs = useMemo(() => pickLivePollInterval(displayMatches), [displayMatches]);
 
   const fetchLive = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
     try {
       const res = await fetch("/api/live?competition=world-cup", { cache: "no-store" });
       const data = await res.json();
-      const nextMatches = enrichMatchesFromMeta(data.matches ?? []);
-      const nextFp = liveScoreFingerprint(nextMatches);
-      if (
-        scoreFpRef.current &&
-        nextFp &&
-        nextFp !== scoreFpRef.current &&
-        data.provider === "api-football"
-      ) {
-        setBurstUntil(Date.now() + 30_000);
-        dispatchDataRefresh("score-change");
-      }
-      scoreFpRef.current = nextFp;
-      setMatches(nextMatches);
-      setLiveCount(data.liveCount ?? getLiveCount(nextMatches));
+      setMatches((prev) =>
+        mergeStableMatches(prev, enrichMatchesFromMeta(data.matches ?? []))
+      );
+      const merged = mergeStableMatches(
+        [],
+        enrichMatchesFromMeta(data.matches ?? [])
+      );
+      setLiveCount(data.liveCount ?? getLiveCount(merged));
       if (data.source === "api" || data.source === "static") {
         setDataSource(data.source);
       }
-      if (data.provider) {
-        setProvider((prev) =>
-          prev === "api-football" && data.provider === "worldcup26"
-            ? prev
-            : data.provider
-        );
+      if (data.provider === "api-football") {
+        setProvider("api-football");
+      } else if (data.provider === "static") {
+        setProvider("static");
       }
       setApiError(data.apiError);
       setLastUpdate(formatUpdatedET(data.updatedAt));
@@ -208,7 +194,7 @@ export default function LiveMatchCenter() {
     if (tab !== "previous") setStageFilter(null);
   };
 
-  const pollLabel = pollMs <= 5_000 ? "5" : pollMs <= 10_000 ? "10" : "30";
+  const pollLabel = pollMs <= 70_000 ? "60" : pollMs <= 150_000 ? "120" : "300";
 
   return (
     <section id="live" className="section-anchor relative py-20 md:py-24 bg-navy overflow-hidden">
@@ -232,12 +218,11 @@ export default function LiveMatchCenter() {
               LIVE <span className="text-gradient-pitch">SCORES</span>
             </h2>
             <p className="text-muted mt-2 max-w-xl text-sm">
-              Live clock (to the second), goals, cards & subs — refreshes every {pollLabel}s.
+              Live clock, goals & cards — refreshes every {pollLabel}s.
               {lastUpdate && (
                 <span className="text-pitch/70 block text-xs mt-1">
                   Last updated {lastUpdate}
                   {provider === "api-football" && " · API-Football"}
-                  {dataSource === "api" && provider === "worldcup26" && " · worldcup26.ir"}
                   {dataSource === "static" && " · Schedule preview — live feed unavailable"}
                 </span>
               )}

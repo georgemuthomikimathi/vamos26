@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Match } from "@/lib/scores/types";
-import { formatLiveClock, liveClockSyncKey } from "@/lib/scores/types";
+import { formatLiveClock } from "@/lib/scores/types";
 import { DISPLAY_TZ_LABEL } from "@/lib/timezone";
 
 type MatchClockProps = {
@@ -26,7 +26,8 @@ function formatCountdown(ms: number): string {
 export default function MatchClock({ match, size = "sm", onKickoff }: MatchClockProps) {
   const [now, setNow] = useState(() => Date.now());
   const syncAtRef = useRef(Date.now());
-  const syncKeyRef = useRef(liveClockSyncKey(match));
+  const anchorMinuteRef = useRef<number | null>(null);
+  const anchorExtraRef = useRef<number | undefined>(undefined);
   const kickoffFiredRef = useRef(false);
 
   useEffect(() => {
@@ -35,12 +36,28 @@ export default function MatchClock({ match, size = "sm", onKickoff }: MatchClock
   }, []);
 
   useEffect(() => {
-    const key = liveClockSyncKey(match);
-    if (key !== syncKeyRef.current) {
-      syncKeyRef.current = key;
+    const nextMin = match.minute;
+    const prevMin = anchorMinuteRef.current;
+
+    if (match.status === "halftime" || match.status === "finished") {
+      anchorMinuteRef.current = nextMin ?? null;
+      anchorExtraRef.current = match.extraMinute;
+      syncAtRef.current = Date.now();
+      return;
+    }
+
+    if (nextMin == null) return;
+
+    if (
+      prevMin == null ||
+      nextMin > prevMin ||
+      (nextMin === prevMin && match.extraMinute !== anchorExtraRef.current)
+    ) {
+      anchorMinuteRef.current = nextMin;
+      anchorExtraRef.current = match.extraMinute;
       syncAtRef.current = Date.now();
     }
-  }, [match]);
+  }, [match.minute, match.extraMinute, match.status, match.id]);
 
   const isLive = match.status === "live" || match.status === "halftime";
   const kickoffMs = match.kickoffAt ? new Date(match.kickoffAt).getTime() : null;
@@ -61,7 +78,11 @@ export default function MatchClock({ match, size = "sm", onKickoff }: MatchClock
   }, [match.status, onKickoff, untilKickoff]);
 
   const lg = size === "lg";
-  const liveClock = formatLiveClock(match, syncAtRef.current, now);
+  const clockMatch =
+    anchorMinuteRef.current != null
+      ? { ...match, minute: anchorMinuteRef.current, extraMinute: anchorExtraRef.current }
+      : match;
+  const liveClock = formatLiveClock(clockMatch, syncAtRef.current, now);
 
   if (showCountdown) {
     return (
@@ -98,9 +119,9 @@ export default function MatchClock({ match, size = "sm", onKickoff }: MatchClock
           )}
         </p>
         <p className={`font-display text-white tabular-nums ${lg ? "text-5xl" : "text-xl"}`}>
-          {liveClock}
+          {match.minute != null ? liveClock : "LIVE"}
         </p>
-        {match.statusShort && match.status !== "halftime" && (
+        {match.statusShort && match.status !== "halftime" && match.minute != null && (
           <p className={`text-muted ${lg ? "text-xs" : "text-[10px]"}`}>
             {match.statusShort === "1H" ? "1st half" : match.statusShort === "2H" ? "2nd half" : match.statusShort}
           </p>

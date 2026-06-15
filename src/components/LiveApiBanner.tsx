@@ -1,56 +1,32 @@
-"use client";
-
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
-
 type LiveApiBannerProps = {
-  source: "api" | "static" | "";
-  provider?: "api-football" | "worldcup26" | "static" | "";
+  source?: "api" | "static" | "";
+  provider?: "api-football" | "static" | "";
   apiError?: string;
 };
 
 export default function LiveApiBanner({ source, provider, apiError }: LiveApiBannerProps) {
-  if (source === "api" && provider === "api-football") {
+  if (source === "api" && provider === "api-football" && !apiError) {
+    return null;
+  }
+
+  if (source === "api" && provider === "api-football" && apiError) {
     return (
-      <div
-        role="status"
-        className="mb-3 flex items-center gap-2 text-[11px] text-pitch/70"
-      >
-        <CheckCircle2 className="text-pitch shrink-0" size={13} />
-        <span>
-          Live data · <span className="text-pitch font-semibold">API-Football</span>
-        </span>
+      <p className="mb-4 text-center text-xs text-gold/90 bg-gold/10 border border-gold/20 rounded-xl px-4 py-2">
+        {apiError}
+      </p>
+    );
+  }
+
+  if (source === "static" || provider === "static") {
+    return (
+      <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-200">
+        <p className="font-semibold">Live feed unavailable</p>
+        <p className="text-xs text-amber-200/80 mt-1">
+          {apiError ?? "Check API_FOOTBALL_KEY in Vercel and redeploy."}
+        </p>
       </div>
     );
   }
 
-  if (source === "api" && provider === "worldcup26") {
-    return (
-      <div
-        role="status"
-        className="mb-3 flex items-center gap-2 text-[11px] text-gold/70"
-      >
-        <CheckCircle2 className="text-gold shrink-0" size={13} />
-        <span>Live data · worldcup26.ir</span>
-      </div>
-    );
-  }
-
-  if (source === "api") return null;
-
-  return (
-    <div
-      role="alert"
-      className="mb-4 rounded-xl border border-gold/40 bg-gold/10 px-3 py-2.5"
-    >
-      <div className="flex gap-2 items-start">
-        <AlertTriangle className="text-gold shrink-0 mt-0.5" size={16} />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-white">Live feed unavailable</p>
-          <p className="text-xs text-muted mt-0.5">
-            {apiError ?? "Showing preview schedule — check API key in Vercel and redeploy."}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }

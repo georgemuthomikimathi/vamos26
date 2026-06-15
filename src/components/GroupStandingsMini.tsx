@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import type { GroupStandings } from "@/lib/standings/compile-group-standings";
 import { onDataRefresh } from "@/lib/realtime/cascade";
-import { POLL_IDLE_MS, POLL_STATS_LIVE_MS } from "@/lib/realtime/polling";
+import { POLL_IDLE_MS } from "@/lib/realtime/polling";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import DataProviderBadge from "@/components/DataProviderBadge";
 import { formatUpdatedET } from "@/lib/timezone";
@@ -12,9 +12,8 @@ import { formatUpdatedET } from "@/lib/timezone";
 export default function GroupStandingsMini() {
   const [groups, setGroups] = useState<GroupStandings[]>([]);
   const [matchesPlayed, setMatchesPlayed] = useState(0);
-  const [provider, setProvider] = useState<"api-football" | "worldcup26" | "fallback">("fallback");
+  const [provider, setProvider] = useState<"api-football" | "fallback">("fallback");
   const [lastUpdate, setLastUpdate] = useState("");
-  const [pollMs, setPollMs] = useState(POLL_IDLE_MS);
 
   const fetchStandings = useCallback(async () => {
     try {
@@ -23,7 +22,6 @@ export default function GroupStandingsMini() {
       if (data.groups?.length) {
         setGroups(data.groups);
         setMatchesPlayed(data.matchesPlayed ?? 0);
-        if ((data.matchesPlayed ?? 0) > 0) setPollMs(POLL_STATS_LIVE_MS);
         setLastUpdate(formatUpdatedET(data.updatedAt));
         if (data.source) setProvider(data.source);
       }
@@ -34,9 +32,9 @@ export default function GroupStandingsMini() {
 
   useEffect(() => {
     void fetchStandings();
-    const interval = setInterval(() => void fetchStandings(), pollMs);
+    const interval = setInterval(() => void fetchStandings(), POLL_IDLE_MS);
     return () => clearInterval(interval);
-  }, [fetchStandings, pollMs]);
+  }, [fetchStandings]);
 
   useEffect(() => {
     return onDataRefresh(() => void fetchStandings());

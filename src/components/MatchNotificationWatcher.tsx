@@ -17,7 +17,7 @@ import { showMatchNotification } from "@/lib/notifications/show-notification";
 import type { ApiMatchEvent } from "@/lib/scores/providers/api-football-events";
 import { formatEventNotification } from "@/lib/scores/providers/api-football-events";
 
-const POLL_MS = 30_000;
+const POLL_MS = 300_000;
 
 function matchLabel(match: Match): string {
   return `${match.home.name} vs ${match.away.name}`;
@@ -143,7 +143,6 @@ export default function MatchNotificationWatcher() {
       if (getLiveCount(matches) === 0) return;
 
       await checkScoreGoals(matches, prefs);
-      await checkEvents(matches, prefs);
     } finally {
       runningRef.current = false;
     }

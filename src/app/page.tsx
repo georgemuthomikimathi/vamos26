@@ -13,7 +13,6 @@ import TeamNewsSection from "@/components/TeamNewsSection";
 import AppBottomNav from "@/components/AppBottomNav";
 import StadiumsSection from "@/components/StadiumsSection";
 import StatsLeaders from "@/components/StatsLeaders";
-import WatchlistSection from "@/components/WatchlistSection";
 import PastFixturesSection from "@/components/PastFixturesSection";
 import GroupsSection from "@/components/GroupsSection";
 import RoadToFinal from "@/components/RoadToFinal";
@@ -30,7 +29,6 @@ const SECTIONS = [
   "news",
   "stadiums",
   "stats",
-  "watchlist",
   "fixtures",
   "groups",
   "roadmap",
@@ -61,7 +59,6 @@ export default function Home() {
       <TeamNewsSection />
       <StadiumsSection />
       <StatsLeaders />
-      <WatchlistSection />
       <HowToWatch />
       <GroupsSection />
       <RoadToFinal />
