@@ -20,7 +20,8 @@ import {
   dispatchDataRefresh,
   dispatchMatchFinished,
 } from "@/lib/realtime/cascade";
-import { pickLivePollInterval } from "@/lib/realtime/polling";
+import { pickLivePollInterval, isSquadRevealWindow } from "@/lib/realtime/polling";
+import { nextScheduledMatch } from "@/lib/realtime/next-match";
 import MatchCard from "@/components/MatchCard";
 import PreviousFixtureCard from "@/components/PreviousFixtureCard";
 import MatchAlertSettings from "@/components/MatchAlertSettings";
@@ -56,7 +57,20 @@ export default function LiveMatchCenter() {
   }, [matches, provider, dataSource]);
   const tabCounts = useMemo(() => getMatchTabCounts(displayMatches), [displayMatches]);
   const buckets = useMemo(() => bucketMatches(displayMatches), [displayMatches]);
+  const nextUpcoming = useMemo(
+    () => nextScheduledMatch(displayMatches),
+    [displayMatches]
+  );
   const pollMs = useMemo(() => pickLivePollInterval(displayMatches), [displayMatches]);
+  const lineupReveal = useMemo(
+    () =>
+      Boolean(
+        nextUpcoming &&
+          nextUpcoming.status === "scheduled" &&
+          isSquadRevealWindow(nextUpcoming.kickoffAt)
+      ),
+    [nextUpcoming]
+  );
 
   const fetchLive = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
@@ -331,6 +345,13 @@ export default function LiveMatchCenter() {
 
         {featuredMatch && activeTab === "live" && (
           <LiveMatchHero match={featuredMatch} onKickoff={() => void fetchLive()} />
+        )}
+
+        {activeTab === "upcoming" && lineupReveal && nextUpcoming && (
+          <div className="mb-4 rounded-xl border border-pitch/30 bg-pitch/10 px-4 py-3 text-sm text-pitch">
+            Lineups live — {nextUpcoming.home.name} vs {nextUpcoming.away.name} kicks off{" "}
+            {nextUpcoming.time}. Tap a match for projected squads.
+          </div>
         )}
 
         {listMatches.length === 0 ? (

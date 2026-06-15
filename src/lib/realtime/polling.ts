@@ -33,5 +33,10 @@ export function pickLivePollInterval(matches: { status: string; kickoffAt?: stri
   );
   if (nearKickoff) return POLL_KICKOFF_MS;
 
+  const squadReveal = matches.some(
+    (m) => m.status === "scheduled" && isSquadRevealWindow(m.kickoffAt)
+  );
+  if (squadReveal) return POLL_KICKOFF_MS;
+
   return POLL_IDLE_MS;
 }

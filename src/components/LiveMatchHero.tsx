@@ -4,6 +4,7 @@ import type { Match } from "@/lib/scores/types";
 import { formatScore } from "@/lib/scores/types";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
 import { pickMatchMvp } from "@/lib/scores/match-mvp";
+import { hasGoalOrCardEvents } from "@/lib/scores/match-log";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchClock from "@/components/MatchClock";
 import MatchEventChips from "@/components/MatchEventChips";
@@ -17,9 +18,7 @@ export default function LiveMatchHero({ match, onKickoff }: LiveMatchHeroProps) 
   const enriched = useMatchDetails(match, true);
   const score = formatScore(enriched.score);
   const mvp = pickMatchMvp(enriched);
-  const goals = (enriched.events ?? []).filter(
-    (e) => e.type === "goal" || e.type === "penalty"
-  );
+  const showEvents = hasGoalOrCardEvents(enriched);
 
   return (
     <article className="mb-6 rounded-3xl border border-red-500/40 bg-gradient-to-br from-red-500/10 via-card to-navy p-5 md:p-8 shadow-lg shadow-red-500/10">
@@ -50,12 +49,12 @@ export default function LiveMatchHero({ match, onKickoff }: LiveMatchHeroProps) 
         </div>
       </div>
 
-      {goals.length > 0 && (
+      {showEvents && (
         <div className="pt-4 border-t border-white/10">
           <p className="text-[10px] uppercase tracking-[0.3em] text-pitch font-semibold mb-3 text-center">
-            Goal scorers
+            Goals & cards
           </p>
-          <MatchEventChips match={enriched} maxGoals={12} maxCards={6} maxSubs={0} />
+          <MatchEventChips match={enriched} maxGoals={12} maxCards={8} maxSubs={0} />
         </div>
       )}
 

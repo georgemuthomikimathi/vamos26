@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-
-const OPENING_KICKOFF = new Date("2026-06-11T19:00:00Z"); // 3:00 PM ET
+import { useTournamentContext } from "@/hooks/useTournamentContext";
+import { msUntilMatchKickoff } from "@/lib/realtime/next-match";
+import { formatMatchScheduleLine } from "@/lib/timezone";
 
 type TimeLeft = {
   days: number;
@@ -13,8 +14,8 @@ type TimeLeft = {
   expired: boolean;
 };
 
-function calcTimeLeft(): TimeLeft {
-  const diff = OPENING_KICKOFF.getTime() - Date.now();
+function calcTimeLeft(targetMs: number): TimeLeft {
+  const diff = targetMs - Date.now();
   if (diff <= 0) {
     return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
   }
@@ -29,7 +30,6 @@ function calcTimeLeft(): TimeLeft {
 
 const UNITS = ["days", "hours", "minutes", "seconds"] as const;
 
-/** Stable SSR + first client paint — real values set after mount */
 const PLACEHOLDER: TimeLeft = {
   days: 0,
   hours: 0,
@@ -39,41 +39,64 @@ const PLACEHOLDER: TimeLeft = {
 };
 
 export default function CountdownTimer() {
+  const ctx = useTournamentContext();
   const [time, setTime] = useState<TimeLeft>(PLACEHOLDER);
   const [ready, setReady] = useState(false);
 
+  const liveNow = ctx.liveToday[0];
+  const nextMatch = ctx.nextUpcoming;
+  const targetMs = nextMatch?.kickoffAt
+    ? new Date(nextMatch.kickoffAt).getTime()
+    : new Date("2026-06-11T19:00:00Z").getTime();
+
   useEffect(() => {
+    const tick = () => setTime(calcTimeLeft(targetMs));
     const boot = window.setTimeout(() => {
-      setTime(calcTimeLeft());
+      tick();
       setReady(true);
     }, 0);
-    const id = setInterval(() => setTime(calcTimeLeft()), 1000);
+    const id = setInterval(tick, 1000);
     return () => {
       window.clearTimeout(boot);
       clearInterval(id);
     };
-  }, []);
+  }, [targetMs]);
 
-  if (ready && time.expired) {
+  if (liveNow) {
+    return (
+      <div className="bg-red-500/10 border border-red-500/40 rounded-3xl p-6 text-center">
+        <p className="text-red-300 font-display text-3xl tracking-wider">LIVE NOW</p>
+        <p className="text-white font-semibold text-sm mt-2">
+          {liveNow.home.name} vs {liveNow.away.name}
+        </p>
+        <p className="text-muted text-xs mt-1">{liveNow.stage} · {liveNow.venue}</p>
+      </div>
+    );
+  }
+
+  if (ready && time.expired && ctx.tournamentDay > 0) {
     return (
       <div className="bg-pitch/10 border border-pitch/30 rounded-3xl p-6 text-center">
         <p className="text-pitch font-display text-3xl tracking-wider">
           ¡EL MUNDIAL ESTÁ EN MARCHA!
         </p>
-        <p className="text-muted text-sm mt-2">
-          Mexico vs South Africa — World Cup 2026 is LIVE
-        </p>
+        <p className="text-muted text-sm mt-2">{ctx.highlightBody}</p>
       </div>
     );
   }
 
+  const msLeft = msUntilMatchKickoff(nextMatch);
+  const lineupSoon = msLeft != null && msLeft > 0 && msLeft <= 30 * 60_000;
+
   return (
     <div className="bg-card/80 border border-pitch/20 rounded-3xl p-6 backdrop-blur-sm">
       <p className="text-center text-pitch uppercase tracking-[0.35em] text-[10px] font-semibold mb-1">
-        Countdown to Kickoff
+        {lineupSoon ? "Lineups drop · kickoff soon" : "Countdown to kickoff"}
       </p>
       <p className="text-center text-white font-semibold text-sm mb-5">
-        Opening Match — Mexico vs South Africa · June 11, 2026 · 3:00 PM ET
+        {nextMatch
+          ? `${nextMatch.home.name} vs ${nextMatch.away.name} · ${formatMatchScheduleLine(nextMatch)}`
+          : "World Cup 2026 · next match loading…"}
       </p>
       <div className="grid grid-cols-4 gap-3">
         {UNITS.map((unit) => (
@@ -94,6 +117,11 @@ export default function CountdownTimer() {
           </motion.div>
         ))}
       </div>
+      {lineupSoon && (
+        <p className="text-center text-[10px] text-pitch mt-4 font-semibold">
+          Squads publish 30 min before kickoff — check Upcoming tab
+        </p>
+      )}
     </div>
   );
 }

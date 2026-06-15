@@ -108,13 +108,15 @@ function apiLiveOnly(matches: Match[] | null | undefined): Match[] {
   return matches.filter((m) => m.status === "live" || m.status === "halftime");
 }
 
-function hybridApiError(hasLiveFromApi: boolean, apiError?: string): string | undefined {
+function hybridApiError(hasLiveFromApi: boolean, apiError?: string, irLiveCount = 0): string | undefined {
   if (hasLiveFromApi || !apiError) return undefined;
   if (isApiFootballRateLimitError(apiError)) {
-    return "Live clock unavailable (API quota) — recent scores from worldcup26.ir.";
+    return irLiveCount > 0
+      ? "API quota reached — live clock from worldcup26.ir backup."
+      : "Live clock unavailable (API quota) — scores & scorers from worldcup26.ir.";
   }
   if (isApiFootballAuthError(apiError)) {
-    return "Live clock unavailable — fix API_FOOTBALL_KEY. Recent scores from worldcup26.ir.";
+    return "Live clock unavailable — fix API_FOOTBALL_KEY. Scores from worldcup26.ir.";
   }
   return undefined;
 }
@@ -134,6 +136,9 @@ async function returnHybridWorldCup(
 }> {
   const liveOverlay = apiLiveOnly(apiMatches);
   const merged = mergeIrWithApiLive(irMatches, liveOverlay);
+  const irLiveCount = irMatches.filter(
+    (m) => m.status === "live" || m.status === "halftime"
+  ).length;
 
   if (apiMatches?.length) {
     setCachedApiFootballFixtures(apiMatches);
@@ -151,7 +156,7 @@ async function returnHybridWorldCup(
         : "hybrid_ir_api"
       : "worldcup26",
     apiFootballError,
-    apiError: hybridApiError(hasLiveFromApi, apiFootballError),
+    apiError: hybridApiError(hasLiveFromApi, apiFootballError, irLiveCount),
   };
 }
 

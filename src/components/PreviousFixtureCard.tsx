@@ -8,6 +8,7 @@ import { countCardsByTeam } from "@/lib/scores/card-events";
 import { getMatchMetaForMatch, getCoachInfo } from "@/lib/match-meta";
 import { formatMatchScheduleLine } from "@/lib/timezone";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
+import { hasGoalOrCardEvents, buildMatchLog } from "@/lib/scores/match-log";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import FixtureGoalCardSummary from "@/components/FixtureGoalCardSummary";
 import MatchLineupPanel from "@/components/MatchLineupPanel";
@@ -34,6 +35,8 @@ export default function PreviousFixtureCard({
   const homeCards = countCardsByTeam(enriched.events, "home");
   const awayCards = countCardsByTeam(enriched.events, "away");
   const scoreDisplay = formatScore(enriched.score);
+  const showEvents = hasGoalOrCardEvents(enriched);
+  const matchLog = buildMatchLog(enriched);
 
   const toggle = () => setExpanded((v) => !v);
 
@@ -111,11 +114,17 @@ export default function PreviousFixtureCard({
         </div>
 
         <div className="mt-3">
-          <FixtureGoalCardSummary
-            match={enriched}
-            homeCards={homeCards}
-            awayCards={awayCards}
-          />
+          {showEvents ? (
+            <FixtureGoalCardSummary
+              match={enriched}
+              homeCards={homeCards}
+              awayCards={awayCards}
+            />
+          ) : (
+            <p className="text-[10px] text-muted/60 text-center">
+              Final score · scorers & cards update when available
+            </p>
+          )}
         </div>
 
         {!expanded && (
@@ -161,6 +170,27 @@ export default function PreviousFixtureCard({
             <MatchOfficialsPanel match={enriched} meta={meta} coaches={coaches} />
 
             <MatchSubsPanel match={enriched} meta={meta} />
+
+            {matchLog.length > 0 && (
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-muted mb-2">
+                  Full match log
+                </p>
+                <ul className="space-y-1 text-xs text-muted">
+                  {matchLog.map((entry, i) => (
+                    <li key={`${entry.minute}-${entry.kind}-${i}`} className="flex gap-2">
+                      <span className="text-gold tabular-nums shrink-0 w-10">{entry.minute}</span>
+                      <span>
+                        {entry.kind === "goal" && "⚽ "}
+                        {entry.kind === "card" && "🟨 "}
+                        {entry.kind === "sub" && "↔ "}
+                        {entry.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {enriched.detailUrl && (
               <a

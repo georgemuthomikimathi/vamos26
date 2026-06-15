@@ -1,10 +1,12 @@
 import type { Match } from "@/lib/scores/types";
 import type { TeamNewsItem } from "@/lib/team-news";
+import { getDisplayEvents } from "@/lib/scores/card-events";
 import { enrichMatchesFromMeta } from "@/lib/scores/enrich-from-meta";
 import { getMatchMetaForMatch } from "@/lib/match-meta";
+import { cardSummaryForNews } from "@/lib/scores/match-log";
 
 function scorerSummary(match: Match): string {
-  const goals = (match.events ?? []).filter(
+  const goals = getDisplayEvents(match.events ?? []).filter(
     (e) => e.type === "goal" || e.type === "penalty"
   );
   if (goals.length === 0) {
@@ -15,7 +17,7 @@ function scorerSummary(match: Match): string {
     const assist = g.playerSecondary ? ` (assist ${g.playerSecondary})` : "";
     return `${g.player} ${g.minute}'${g.extraMinute ? `+${g.extraMinute}` : ""} for ${side}${assist}`;
   });
-  return `Goals: ${parts.join("; ")}.`;
+  return `Goals: ${parts.join("; ")}.${cardSummaryForNews(match.events ?? [])}`;
 }
 
 function headlineForMatch(match: Match): string {

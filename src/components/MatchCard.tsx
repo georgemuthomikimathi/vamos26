@@ -10,7 +10,7 @@ import {
   liveClockSyncKey,
   isPreMatch,
 } from "@/lib/scores/types";
-import { shouldRevealSquads } from "@/lib/scores/lineups";
+import { shouldRevealSquads, attachLineupsToMatch } from "@/lib/scores/lineups";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
 import { getMatchScheduleET } from "@/lib/timezone";
 import { getMatchMetaForMatch, getCoachInfo } from "@/lib/match-meta";
@@ -98,14 +98,23 @@ export default function MatchCard({
   const isLive = match.status === "live" || match.status === "halftime";
   const isFinished = match.status === "finished";
   const [expanded, setExpanded] = useState(isLive);
+  const [now, setNow] = useState(() => Date.now());
 
-  const enriched = useMatchDetails(match, expanded || isLive);
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const enrichedRaw = useMatchDetails(match, expanded || isLive || match.status === "finished");
+  const enriched = attachLineupsToMatch(enrichedRaw, now);
   const meta = getMatchMetaForMatch(enriched);
   const coaches = getCoachInfo(enriched);
-  const revealSquads = shouldRevealSquads(enriched);
+  const revealSquads = shouldRevealSquads(enriched, now);
   const showLineups =
     Boolean(enriched.homeLineup || enriched.awayLineup) ||
-    ((isLive || isFinished || revealSquads) && enriched.id.startsWith("af-"));
+    isLive ||
+    isFinished ||
+    revealSquads;
   const hasCoaches = Boolean(coaches.homeCoach || coaches.awayCoach);
   const displayHasEvents = Boolean(
     enriched.events?.length || meta?.events?.length || isLive || isFinished

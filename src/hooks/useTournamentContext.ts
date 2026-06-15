@@ -7,12 +7,17 @@ import {
   buildTournamentDayContext,
   type TournamentDayContext,
 } from "@/lib/tournament-day";
+import { nextScheduledMatch } from "@/lib/realtime/next-match";
 import { onDataRefresh } from "@/lib/realtime/cascade";
 import { POLL_IDLE_MS } from "@/lib/realtime/polling";
 
 const EMPTY_CONTEXT = buildTournamentDayContext([]);
 
-export function useTournamentContext(): TournamentDayContext {
+export type TournamentContextValue = TournamentDayContext & {
+  nextUpcoming: Match | null;
+};
+
+export function useTournamentContext(): TournamentContextValue {
   const [matches, setMatches] = useState<Match[]>([]);
 
   const load = useCallback(async () => {
@@ -39,7 +44,13 @@ export function useTournamentContext(): TournamentDayContext {
   }, [load]);
 
   return useMemo(
-    () => (matches.length > 0 ? buildTournamentDayContext(matches) : EMPTY_CONTEXT),
+    () =>
+      matches.length > 0
+        ? {
+            ...buildTournamentDayContext(matches),
+            nextUpcoming: nextScheduledMatch(matches),
+          }
+        : { ...EMPTY_CONTEXT, nextUpcoming: null },
     [matches]
   );
 }
