@@ -6,6 +6,7 @@ import type { Match } from "@/lib/scores/types";
 import { formatScore } from "@/lib/scores/types";
 import { countCardsByTeam } from "@/lib/scores/card-events";
 import { getMatchMetaForMatch, getCoachInfo } from "@/lib/match-meta";
+import { formatMatchScheduleLine } from "@/lib/timezone";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import FixtureGoalCardSummary from "@/components/FixtureGoalCardSummary";
@@ -63,7 +64,7 @@ export default function PreviousFixtureCard({
               FT
             </span>
             <span className="text-[10px] text-muted truncate">
-              {enriched.date} · {enriched.time}
+              {formatMatchScheduleLine(enriched)}
             </span>
           </div>
           <div className="flex items-center gap-1 min-w-0">
@@ -139,7 +140,7 @@ export default function PreviousFixtureCard({
           <div className="px-3 md:px-4 pb-4 pt-0 border-t border-white/10 mx-3 md:mx-4 space-y-4">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted pt-3">
               <span>
-                {enriched.date} · {enriched.time} ET
+                {formatMatchScheduleLine(enriched)}
               </span>
               <span className="flex items-center gap-1 min-w-0">
                 <MapPin size={12} className="text-pitch shrink-0" />

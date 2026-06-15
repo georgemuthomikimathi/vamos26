@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Calendar, MapPin } from "lucide-react";
 import { OPENING_MATCHES } from "@/lib/data";
+import { formatMatchScheduleLine } from "@/lib/timezone";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 
 export default function UpcomingMatches() {
@@ -53,7 +54,7 @@ export default function UpcomingMatches() {
                 </span>
                 <div className="flex items-center gap-1.5 text-xs text-muted">
                   <Calendar size={12} />
-                  {match.date} · {match.time}
+                  {formatMatchScheduleLine(match)}
                 </div>
               </div>
 

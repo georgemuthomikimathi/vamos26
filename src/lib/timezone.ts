@@ -2,19 +2,17 @@
 export const DISPLAY_TIMEZONE = "America/New_York";
 export const DISPLAY_TZ_LABEL = "ET";
 
-const kickoffFormatter = new Intl.DateTimeFormat("en-US", {
-  timeZone: DISPLAY_TIMEZONE,
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  hour12: true,
-});
-
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: DISPLAY_TIMEZONE,
   month: "short",
   day: "numeric",
+});
+
+const timeFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: DISPLAY_TIMEZONE,
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
 });
 
 const updatedFormatter = new Intl.DateTimeFormat("en-US", {
@@ -65,11 +63,38 @@ function partsToRecord(parts: Intl.DateTimeFormatPart[]): Record<string, string>
   return out;
 }
 
+export type MatchScheduleFields = {
+  kickoffAt?: string;
+  date: string;
+  time: string;
+};
+
 export function formatKickoffET(isoOrDate: string | Date): { date: string; time: string } {
   const d = typeof isoOrDate === "string" ? new Date(isoOrDate) : isoOrDate;
-  const date = dateFormatter.format(d);
-  const time = `${kickoffFormatter.format(d).split(", ").pop()} ${DISPLAY_TZ_LABEL}`;
-  return { date, time };
+  if (Number.isNaN(d.getTime())) {
+    return { date: "TBD", time: "TBD" };
+  }
+  return {
+    date: dateFormatter.format(d),
+    time: `${timeFormatter.format(d)} ${DISPLAY_TZ_LABEL}`,
+  };
+}
+
+/** Kickoff display in Eastern Time — always prefers kickoffAt when present. */
+export function getMatchScheduleET(match: MatchScheduleFields): { date: string; time: string } {
+  if (match.kickoffAt) {
+    return formatKickoffET(match.kickoffAt);
+  }
+  const trimmed = match.time.trim();
+  const time = trimmed.endsWith(DISPLAY_TZ_LABEL)
+    ? trimmed
+    : `${trimmed.replace(/\s*ET$/i, "").trim()} ${DISPLAY_TZ_LABEL}`;
+  return { date: match.date, time };
+}
+
+export function formatMatchScheduleLine(match: MatchScheduleFields): string {
+  const { date, time } = getMatchScheduleET(match);
+  return `${date} · ${time}`;
 }
 
 export function formatUpdatedET(isoOrDate: string | Date): string {

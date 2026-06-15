@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-const OPENING_KICKOFF = new Date("2026-06-11T19:00:00Z"); // 1pm ET / Mexico City noon
+const OPENING_KICKOFF = new Date("2026-06-11T19:00:00Z"); // 3:00 PM ET
 
 type TimeLeft = {
   days: number;
@@ -73,7 +73,7 @@ export default function CountdownTimer() {
         Countdown to Kickoff
       </p>
       <p className="text-center text-white font-semibold text-sm mb-5">
-        Opening Match — Mexico vs South Africa · June 11, 2026
+        Opening Match — Mexico vs South Africa · June 11, 2026 · 3:00 PM ET
       </p>
       <div className="grid grid-cols-4 gap-3">
         {UNITS.map((unit) => (

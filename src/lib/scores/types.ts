@@ -1,3 +1,5 @@
+import { getMatchScheduleET } from "@/lib/timezone";
+
 export type CompetitionId =
   | "world-cup"
   | "friendly"
@@ -98,7 +100,7 @@ export function getLiveCount(matches: Match[]): number {
 export function formatMatchMinute(match: Match): string {
   if (match.status === "halftime") return "HT";
   if (match.status === "finished") return "FT";
-  if (match.status === "scheduled") return match.time;
+  if (match.status === "scheduled") return getMatchScheduleET(match).time;
   if (match.minute == null) return "LIVE";
   if (match.extraMinute && match.extraMinute > 0) {
     return `${match.minute}+${match.extraMinute}'`;
@@ -117,7 +119,7 @@ export function formatLiveClock(
 ): string {
   if (match.status === "halftime") return "HT";
   if (match.status === "finished") return "FT";
-  if (match.status === "scheduled") return match.time;
+  if (match.status === "scheduled") return getMatchScheduleET(match).time;
   if (match.minute == null) return "LIVE";
 
   const elapsedSec = Math.max(0, Math.floor((nowMs - syncAtMs) / 1000));

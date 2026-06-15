@@ -5,6 +5,7 @@ import { Clock, MapPin, ChevronDown, Users } from "lucide-react";
 import type { Match } from "@/lib/scores/types";
 import { formatScore, isPreMatch } from "@/lib/scores/types";
 import { getSquad } from "@/lib/squads";
+import { formatMatchScheduleLine, getMatchScheduleET } from "@/lib/timezone";
 import { getMatchMeta } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import FriendlyLineup from "@/components/FriendlyLineup";
@@ -110,7 +111,7 @@ export default function FriendlyMatchCard({ match, defaultExpanded = false }: Fr
             </div>
             <div className="flex items-center justify-center gap-1 text-[10px] text-muted mt-0.5">
               <Clock size={10} />
-              {match.date}
+              {formatMatchScheduleLine(match)}
             </div>
           </button>
 
@@ -171,7 +172,7 @@ export default function FriendlyMatchCard({ match, defaultExpanded = false }: Fr
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
                   <span className="flex items-center gap-1">
                     <Clock size={12} className="text-gold" />
-                    {match.time}
+                    {getMatchScheduleET(match).time}
                   </span>
                   <span className="flex items-center gap-1 min-w-0">
                     <MapPin size={12} className="text-gold shrink-0" />

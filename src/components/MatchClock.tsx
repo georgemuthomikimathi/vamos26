@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Match } from "@/lib/scores/types";
 import { formatLiveClock } from "@/lib/scores/types";
-import { DISPLAY_TZ_LABEL } from "@/lib/timezone";
+import { getMatchScheduleET, DISPLAY_TZ_LABEL } from "@/lib/timezone";
 
 type MatchClockProps = {
   match: Match;
@@ -138,10 +138,12 @@ export default function MatchClock({ match, size = "sm", onKickoff }: MatchClock
     );
   }
 
+  const schedule = getMatchScheduleET(match);
+
   return (
     <div className="text-center">
-      <p className={`text-muted ${lg ? "text-sm" : "text-[10px]"}`}>{match.time}</p>
-      <p className={`text-muted/60 ${lg ? "text-xs" : "text-[10px]"}`}>{match.date}</p>
+      <p className={`text-muted ${lg ? "text-sm" : "text-[10px]"}`}>{schedule.time}</p>
+      <p className={`text-muted/60 ${lg ? "text-xs" : "text-[10px]"}`}>{schedule.date}</p>
     </div>
   );
 }

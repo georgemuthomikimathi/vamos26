@@ -12,6 +12,7 @@ import {
 } from "@/lib/scores/types";
 import { shouldRevealSquads } from "@/lib/scores/lineups";
 import { useMatchDetails } from "@/hooks/useMatchDetails";
+import { getMatchScheduleET } from "@/lib/timezone";
 import { getMatchMetaForMatch, getCoachInfo } from "@/lib/match-meta";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import MatchOfficialsPanel from "@/components/MatchOfficialsPanel";
@@ -297,7 +298,7 @@ export default function MatchCard({
 
             {detailTab === "info" && (
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
-                <span>{enriched.time}</span>
+                <span>{getMatchScheduleET(enriched).time}</span>
                 <span className="flex items-center gap-1 min-w-0">
                   <MapPin size={12} className="text-pitch shrink-0" />
                   <span className="truncate">
