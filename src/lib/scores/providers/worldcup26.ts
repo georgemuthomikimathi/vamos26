@@ -1,4 +1,5 @@
 import type { CompetitionId, Match, MatchEvent, MatchStatus, Score } from "@/lib/scores/types";
+import { FIFA_WC26_TOURNAMENT_URL } from "@/lib/fifa";
 import { teamNameToCode } from "@/lib/scores/providers/team-codes";
 import {
   formatKickoffET,
@@ -156,7 +157,7 @@ function normalizeGame(game: Wc26Game, competition: CompetitionId, stadiums: Map
 
   return {
     id: `wc26-${game.id}`,
-    detailUrl: `https://www.fifa.com/en/matches?search=${encodeURIComponent(homeName + " " + awayName)}`,
+    detailUrl: FIFA_WC26_TOURNAMENT_URL,
     competition,
     status,
     statusShort: game.time_elapsed === "live" ? "LIVE" : game.time_elapsed.toUpperCase(),

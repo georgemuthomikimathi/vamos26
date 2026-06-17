@@ -1,3 +1,5 @@
+import { FIFA_WC26_TOURNAMENT_URL } from "@/lib/fifa";
+
 export type NewsKind = "match-report" | "preview" | "guide" | "rss";
 
 export type TeamNewsItem = {
@@ -33,7 +35,7 @@ export const PREVIEW_NEWS: TeamNewsItem[] = [
       "El Tri deliver a statement win in front of 80,000 at Estadio Azteca — Lozano and Jiménez combine for the decisive goals on opening night.",
     date: "Jun 11",
     tag: "form",
-    url: "https://www.fifa.com/en/matches?search=Mexico%20South%20Africa",
+    url: FIFA_WC26_TOURNAMENT_URL,
     source: "FIFA.com",
     verified: true,
     kind: "match-report",
@@ -47,7 +49,7 @@ export const PREVIEW_NEWS: TeamNewsItem[] = [
       "Hwang In-beom and Oh Hyeon-gyu completed a comeback after Ladislav Krejčí's opener — Son Heung-min's side take three points in Group A.",
     date: "Jun 12",
     tag: "form",
-    url: "https://www.fifa.com/en/matches?search=Korea%20Czechia",
+    url: FIFA_WC26_TOURNAMENT_URL,
     source: "FIFA.com",
     verified: true,
     kind: "match-report",
@@ -61,7 +63,7 @@ export const PREVIEW_NEWS: TeamNewsItem[] = [
       "Jovo Lukić gave Bosnia an early lead in Toronto before super-sub Cyle Larin equalized for the co-hosts — Marsch's side share the points in Group B.",
     date: "Jun 12",
     tag: "form",
-    url: "https://www.fifa.com/en/matches?search=Canada%20Bosnia",
+    url: FIFA_WC26_TOURNAMENT_URL,
     source: "FIFA.com",
     verified: true,
     kind: "match-report",
@@ -90,7 +92,7 @@ export const PREVIEW_NEWS: TeamNewsItem[] = [
       "Seleção bring Vinícius Jr's pace against a compact Atlas Lions side. East Rutherford expects a sell-out for the first World Cup match in the NY/NJ corridor.",
     date: "Jun 13",
     tag: "tactics",
-    url: "https://www.fifa.com/en/matches?search=Brazil%20Morocco",
+    url: FIFA_WC26_TOURNAMENT_URL,
     source: "FIFA.com",
     verified: true,
     kind: "preview",
@@ -119,7 +121,7 @@ export const PREVIEW_NEWS: TeamNewsItem[] = [
       "Three Lions experiment with Bellingham behind Kane as Tuchel chases a first tournament win. Saka and Foden flanking the captain in a fluid front four.",
     date: "Jun 13",
     tag: "tactics",
-    url: "https://www.fifa.com/en/matches?search=England%20Croatia",
+    url: FIFA_WC26_TOURNAMENT_URL,
     source: "FIFA.com",
     verified: true,
     kind: "preview",

@@ -1,3 +1,4 @@
+import { FIFA_WC26_TOURNAMENT_URL } from "@/lib/fifa";
 import type { Match } from "@/lib/scores/types";
 import type { TeamNewsItem } from "@/lib/team-news";
 import { getDisplayEvents } from "@/lib/scores/card-events";
@@ -78,7 +79,7 @@ export function generateVerifiedMatchReports(matches: Match[]): TeamNewsItem[] {
         summary: extra ? `${extra} ${scorerSummary(match)}` : scorerSummary(match),
         date: match.date,
         tag: "form" as const,
-        url: match.detailUrl ?? `https://www.fifa.com/en/matches?search=${encodeURIComponent(`${match.home.name} ${match.away.name}`)}`,
+        url: match.detailUrl ?? FIFA_WC26_TOURNAMENT_URL,
         source: "VAMOS26 Verified",
         external: true,
         verified: true,
