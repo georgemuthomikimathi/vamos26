@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition, useDeferredValue, memo } from "react";
 import { motion } from "framer-motion";
 import {
   Target,
@@ -60,7 +60,7 @@ const TABS: { id: StatsTab; label: string; icon: typeof Target; valueLabel: stri
   { id: "byMatch", label: "By match", icon: Calendar, valueLabel: "" },
 ];
 
-function LeaderRow({
+const LeaderRow = memo(function LeaderRow({
   player,
   valueLabel,
 }: {
@@ -97,7 +97,7 @@ function LeaderRow({
       </div>
     </div>
   );
-}
+});
 
 function SummaryChip({ label, value }: { label: string; value: number }) {
   return (
@@ -145,6 +145,8 @@ function MatchHighlightRow({ match }: { match: MatchStatHighlight }) {
 export default function StatsLeaders() {
   const [stats, setStats] = useState<StatsPayload | null>(null);
   const [tab, setTab] = useState<StatsTab>("scorers");
+  const deferredTab = useDeferredValue(tab);
+  const tabPending = deferredTab !== tab;
 
   const loadStats = async () => {
     try {
@@ -166,12 +168,12 @@ export default function StatsLeaders() {
     return onDataRefresh(() => void loadStats());
   }, []);
 
-  const activeTab = TABS.find((t) => t.id === tab)!;
+  const activeTab = TABS.find((t) => t.id === deferredTab)!;
   const summary = stats?.summary;
 
   const leadersForTab = (): StatLeader[] => {
     if (!stats) return [];
-    switch (tab) {
+    switch (deferredTab) {
       case "scorers":
         return stats.scorers ?? [];
       case "assists":
@@ -193,9 +195,13 @@ export default function StatsLeaders() {
 
   const leaders = leadersForTab().slice(0, STATS_LEADER_LIMIT);
   const motm = stats?.manOfTheMatch;
-  const hasLeaderData = tab === "byMatch"
+  const hasLeaderData = deferredTab === "byMatch"
     ? (stats?.matchHighlights?.length ?? 0) > 0
     : leaders.some((p) => p.value > 0);
+
+  const handleTabChange = (id: StatsTab) => {
+    startTransition(() => setTab(id));
+  };
 
   return (
     <section id="stats" className="section-anchor relative py-24 bg-navy-light">
@@ -236,7 +242,7 @@ export default function StatsLeaders() {
             <button
               key={id}
               type="button"
-              onClick={() => setTab(id)}
+              onClick={() => handleTabChange(id)}
               className={`shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium border transition-all tap-scale focus-ring min-h-[44px] ${
                 tab === id
                   ? "bg-pitch/15 border-pitch/40 text-pitch"
@@ -249,7 +255,7 @@ export default function StatsLeaders() {
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-4">
+        <div className={`grid lg:grid-cols-3 gap-4 transition-opacity duration-150 ${tabPending ? "opacity-60" : "opacity-100"}`}>
           <div className="lg:col-span-2 bg-card border border-white/10 rounded-3xl p-5 md:p-6">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gold to-orange-600 flex items-center justify-center">
@@ -258,7 +264,7 @@ export default function StatsLeaders() {
               <h3 className="font-display text-2xl text-white">{activeTab.label}</h3>
             </div>
 
-            {tab === "byMatch" ? (
+            {deferredTab === "byMatch" ? (
               stats?.matchHighlights?.length ? (
                 <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
                   {stats.matchHighlights.map((m) => (
@@ -274,7 +280,7 @@ export default function StatsLeaders() {
               <div className="space-y-2 max-h-[32rem] overflow-y-auto pr-1">
                 {leaders.map((p) => (
                   <LeaderRow
-                    key={`${tab}-${p.rank}-${p.name}`}
+                    key={`${deferredTab}-${p.rank}-${p.name}`}
                     player={p}
                     valueLabel={activeTab.valueLabel}
                   />

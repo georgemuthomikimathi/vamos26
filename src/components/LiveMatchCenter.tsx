@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState, startTransition, useDeferredValue } from "react";
+import { motion } from "framer-motion";
 import { History, Radio, RefreshCw, CalendarClock } from "lucide-react";
 import type { Match } from "@/lib/scores/types";
 import { getLiveCount } from "@/lib/scores/types";
@@ -45,7 +45,10 @@ export default function LiveMatchCenter() {
   const [provider, setProvider] = useState<"api-football" | "worldcup26" | "hybrid" | "static" | "">("");
   const [apiError, setApiError] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<MatchCenterTab>("previous");
+  const deferredTab = useDeferredValue(activeTab);
   const [stageFilter, setStageFilter] = useState<string | null>(null);
+  const deferredStageFilter = useDeferredValue(stageFilter);
+  const tabPending = deferredTab !== activeTab;
   const [justFinishedId, setJustFinishedId] = useState<string | null>(null);
   const prevLiveIdsRef = useRef<Set<string>>(new Set());
   const userPickedTabRef = useRef(false);
@@ -163,7 +166,7 @@ export default function LiveMatchCenter() {
   }, [displayMatches, activeTab]);
 
   const featuredMatch = useMemo(() => {
-    if (activeTab !== "live") return null;
+    if (deferredTab !== "live") return null;
     if (provider === "static" || dataSource === "static") return null;
 
     const live = displayMatches.find(
@@ -185,17 +188,17 @@ export default function LiveMatchCenter() {
         (m.homeLineup || m.awayLineup)
     );
     return withLineups ?? null;
-  }, [displayMatches, activeTab, provider, dataSource]);
+  }, [displayMatches, deferredTab, provider, dataSource]);
 
   const listMatches = useMemo(() => {
-    if (activeTab === "live") {
+    if (deferredTab === "live") {
       const liveMatches = buckets.live;
       if (!featuredMatch) return liveMatches;
       return liveMatches.filter((m) => m.id !== featuredMatch.id);
     }
-    if (activeTab === "upcoming") return buckets.upcoming;
-    return filterByStage(buckets.previous, stageFilter);
-  }, [activeTab, buckets, featuredMatch, stageFilter]);
+    if (deferredTab === "upcoming") return buckets.upcoming;
+    return filterByStage(buckets.previous, deferredStageFilter);
+  }, [deferredTab, buckets, featuredMatch, deferredStageFilter]);
 
   const stageFilters = useMemo(
     () => extractStageFilters(buckets.previous),
@@ -204,8 +207,14 @@ export default function LiveMatchCenter() {
 
   const handleTabChange = (tab: MatchCenterTab) => {
     userPickedTabRef.current = true;
-    setActiveTab(tab);
-    if (tab !== "previous") setStageFilter(null);
+    startTransition(() => {
+      setActiveTab(tab);
+      if (tab !== "previous") setStageFilter(null);
+    });
+  };
+
+  const handleStageFilter = (stage: string | null) => {
+    startTransition(() => setStageFilter(stage));
   };
 
   const pollLabel = pollMs <= 70_000 ? "60" : pollMs <= 150_000 ? "120" : "300";
@@ -317,7 +326,7 @@ export default function LiveMatchCenter() {
           <div className="flex flex-wrap gap-2 mb-4">
             <button
               type="button"
-              onClick={() => setStageFilter(null)}
+              onClick={() => handleStageFilter(null)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                 stageFilter === null
                   ? "bg-white/10 border-white/20 text-white"
@@ -330,7 +339,7 @@ export default function LiveMatchCenter() {
               <button
                 key={stage}
                 type="button"
-                onClick={() => setStageFilter(stage)}
+                onClick={() => handleStageFilter(stage)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                   stageFilter === stage
                     ? "bg-white/10 border-white/20 text-white"
@@ -343,11 +352,11 @@ export default function LiveMatchCenter() {
           </div>
         )}
 
-        {featuredMatch && activeTab === "live" && (
+        {featuredMatch && deferredTab === "live" && (
           <LiveMatchHero match={featuredMatch} onKickoff={() => void fetchLive()} />
         )}
 
-        {activeTab === "upcoming" && lineupReveal && nextUpcoming && (
+        {deferredTab === "upcoming" && lineupReveal && nextUpcoming && (
           <div className="mb-4 rounded-xl border border-pitch/30 bg-pitch/10 px-4 py-3 text-sm text-pitch">
             Lineups live — {nextUpcoming.home.name} vs {nextUpcoming.away.name} kicks off{" "}
             {nextUpcoming.time}. Tap a match for projected squads.
@@ -357,38 +366,34 @@ export default function LiveMatchCenter() {
         {listMatches.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-card/50 px-6 py-12 text-center">
             <p className="text-muted text-sm">
-              {activeTab === "live" && "No matches live right now. Check Upcoming or Previous Fixtures."}
-              {activeTab === "upcoming" && "No upcoming fixtures in the current window."}
-              {activeTab === "previous" && "No finished matches yet — results appear here after full time."}
+              {deferredTab === "live" && "No matches live right now. Check Upcoming or Previous Fixtures."}
+              {deferredTab === "upcoming" && "No upcoming fixtures in the current window."}
+              {deferredTab === "previous" && "No finished matches yet — results appear here after full time."}
             </p>
           </div>
         ) : (
-          <div className="grid gap-2">
-            <AnimatePresence mode="popLayout">
-              {listMatches.map((match, i) => (
-                <motion.div
-                  key={match.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ delay: i * 0.04 }}
-                  className={justFinishedId === match.id ? "ring-2 ring-gold/50 rounded-xl" : ""}
-                >
-                  {activeTab === "previous" ? (
-                    <PreviousFixtureCard
-                      match={match}
-                      defaultExpanded={justFinishedId === match.id}
-                    />
-                  ) : (
-                    <MatchCard
-                      match={match}
-                      animateScore={activeTab === "live"}
-                      onKickoff={() => void fetchLive()}
-                    />
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
+          <div
+            className={`grid gap-2 transition-opacity duration-150 ${tabPending ? "opacity-60" : "opacity-100"}`}
+          >
+            {listMatches.map((match) => (
+              <div
+                key={match.id}
+                className={justFinishedId === match.id ? "ring-2 ring-gold/50 rounded-xl" : ""}
+              >
+                {deferredTab === "previous" ? (
+                  <PreviousFixtureCard
+                    match={match}
+                    defaultExpanded={justFinishedId === match.id}
+                  />
+                ) : (
+                  <MatchCard
+                    match={match}
+                    animateScore={deferredTab === "live"}
+                    onKickoff={() => void fetchLive()}
+                  />
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
