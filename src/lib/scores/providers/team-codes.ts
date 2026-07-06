@@ -63,6 +63,7 @@ const TEAM_CODES: Record<string, string> = {
   Iraq: "iq",
   "DR Congo": "cd",
   "Congo DR": "cd",
+  "Democratic Republic of the Congo": "cd",
   "Cabo Verde": "cv",
   "Cape Verde": "cv",
   Curaçao: "cw",

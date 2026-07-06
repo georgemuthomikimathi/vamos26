@@ -849,10 +849,9 @@ export const OPENING_MATCHES: Match[] = [
 ];
 
 export const KEY_DATES = [
-  { date: "Jun 11", event: "Tournament Underway", detail: "Mexico beat South Africa in the Azteca opener" },
-  { date: "Jun 12", event: "USA vs Paraguay", detail: "Group D kicks off at SoFi Stadium — 9PM ET" },
-  { date: "Jun 15", event: "MetLife Matches Begin", detail: "Brazil vs Morocco & France vs Senegal in NJ" },
-  { date: "Jul 6", event: "Rockefeller Fan Village", detail: "Knockout round HQ opens in Manhattan" },
+  { date: "Jul 6", event: "Round of 16", detail: "England 3–2 Mexico — Three Lions into the quarters" },
+  { date: "Jul 5", event: "Brazil eliminated", detail: "Norway 2–1 Brazil — Seleção out in the Round of 16" },
+  { date: "Jul 4", event: "Knockout begins", detail: "Morocco, France & hosts advance past the Round of 32" },
   { date: "Jul 19", event: "THE FINAL", detail: "MetLife Stadium — East Rutherford, NJ" },
 ];
 

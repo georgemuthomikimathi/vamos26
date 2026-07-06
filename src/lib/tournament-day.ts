@@ -116,13 +116,28 @@ function extractGroupLetter(stage: string): string | null {
   return m ? m[1].toUpperCase() : null;
 }
 
+function extractKnockoutRound(stage: string): string | null {
+  if (/round of 32|r32/i.test(stage)) return "R32";
+  if (/round of 16|r16/i.test(stage)) return "R16";
+  if (/quarter|qf/i.test(stage)) return "QF";
+  if (/semi|sf/i.test(stage)) return "SF";
+  if (/final/i.test(stage) && !/quarter|semi/i.test(stage)) return "Final";
+  return null;
+}
+
+function isKnockoutStage(stage: string): boolean {
+  return extractKnockoutRound(stage) != null;
+}
+
 function totalGoals(match: Match): number {
   return (match.score.home ?? 0) + (match.score.away ?? 0);
 }
 
 function pickFeaturedMatch(matches: Match[]): Match | null {
   if (matches.length === 0) return null;
-  return [...matches].sort((a, b) => totalGoals(b) - totalGoals(a))[0];
+  const knockout = matches.filter((m) => isKnockoutStage(m.stage));
+  const pool = knockout.length > 0 ? knockout : matches;
+  return [...pool].sort((a, b) => totalGoals(b) - totalGoals(a))[0];
 }
 
 function joinNatural(items: string[], max = 3): string {
@@ -277,9 +292,14 @@ function buildRecentKeyDates(matches: Match[]): TournamentKeyDate[] {
   if (dynamic.length === 0) {
     return [
       {
-        date: "Jun 11",
-        event: "Tournament Underway",
-        detail: "Opening match at Estadio Azteca",
+        date: "Jul 6",
+        event: "Round of 16",
+        detail: "England 3–2 Mexico · Norway 2–1 Brazil (Brazil eliminated)",
+      },
+      {
+        date: "Jul 5",
+        event: "Round of 16",
+        detail: "France, Morocco & more advance — knockout bracket filling in",
       },
       FINAL_KEY_DATE,
     ];
@@ -298,7 +318,24 @@ function buildGroupStorylines(
   liveToday: Match[],
   upcomingToday: Match[]
 ): GroupStoryline[] {
-  const priority = [...liveToday, ...upcomingToday, ...finishedToday];
+  const knockoutFinished = matches
+    .filter((m) => m.status === "finished" && isKnockoutStage(m.stage))
+    .sort(
+      (a, b) =>
+        (matchEtDateKey(b) ?? "").localeCompare(matchEtDateKey(a) ?? "") ||
+        totalGoals(b) - totalGoals(a)
+    );
+
+  const priority = [
+    ...liveToday.filter((m) => isKnockoutStage(m.stage)),
+    ...upcomingToday.filter((m) => isKnockoutStage(m.stage)),
+    ...finishedToday.filter((m) => isKnockoutStage(m.stage)),
+    ...knockoutFinished,
+    ...liveToday,
+    ...upcomingToday,
+    ...finishedToday,
+  ];
+
   const fallbackFinished = matches
     .filter((m) => m.status === "finished")
     .sort(
@@ -308,50 +345,46 @@ function buildGroupStorylines(
     );
 
   const pool = priority.length > 0 ? priority : fallbackFinished;
-  const byGroup = new Map<string, Match>();
+  const seen = new Set<string>();
+  const storylines: GroupStoryline[] = [];
 
   for (const match of pool) {
-    const letter = extractGroupLetter(match.stage);
-    if (!letter || byGroup.has(letter)) continue;
-    byGroup.set(letter, match);
-  }
-
-  const storylines: GroupStoryline[] = [...byGroup.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .slice(0, 4)
-    .map(([letter, match]) => {
-      if (match.status === "finished") {
-        return {
-          letter,
-          title: `${match.home.name} ${formatScore(match.score)} ${match.away.name}`,
-          body: `Full time in ${match.city || match.venue} — ${match.stage}. Group ${letter} picture updates on the standings board.`,
-        };
-      }
-      if (match.status === "live" || match.status === "halftime") {
-        return {
-          letter,
-          title: `${match.home.name} vs ${match.away.name} live`,
-          body: `${match.stage} at ${match.venue} — follow goals, cards, and subs in Live Scores.`,
-        };
-      }
-      return {
-        letter,
-        title: `${match.home.name} vs ${match.away.name} today`,
-        body: `${match.stage} kicks off ${match.time} at ${match.venue}.`,
-      };
-    });
-
-  if (storylines.length >= 4) return storylines;
-
-  for (const match of fallbackFinished) {
     if (storylines.length >= 4) break;
-    const letter = extractGroupLetter(match.stage);
-    if (!letter || byGroup.has(letter)) continue;
-    byGroup.set(letter, match);
+    const group = extractGroupLetter(match.stage);
+    const knockout = extractKnockoutRound(match.stage);
+    const label = knockout ?? group;
+    if (!label || seen.has(label)) continue;
+    seen.add(label);
+
+    if (match.status === "finished") {
+      const upset =
+        knockout === "R16" &&
+        ((match.home.name === "Brazil" && (match.score.away ?? 0) > (match.score.home ?? 0)) ||
+          (match.away.name === "England" && (match.score.away ?? 0) > (match.score.home ?? 0)));
+
+      storylines.push({
+        letter: label,
+        title: `${match.home.name} ${formatScore(match.score)} ${match.away.name}`,
+        body: upset
+          ? `${match.stage} — ${match.home.name === "Brazil" ? "Brazil are out" : "England advance"} to the ${knockout === "R16" ? "quarter-finals" : "next round"}.`
+          : `${match.stage} at ${match.venue} — full-time result locked in.`,
+      });
+      continue;
+    }
+
+    if (match.status === "live" || match.status === "halftime") {
+      storylines.push({
+        letter: label,
+        title: `${match.home.name} vs ${match.away.name} live`,
+        body: `${match.stage} at ${match.venue} — follow goals, cards, and subs in Live Scores.`,
+      });
+      continue;
+    }
+
     storylines.push({
-      letter,
-      title: `${match.home.name} ${formatScore(match.score)} ${match.away.name}`,
-      body: `${match.stage} — result locked in from ${match.city || match.venue}.`,
+      letter: label,
+      title: `${match.home.name} vs ${match.away.name} today`,
+      body: `${match.stage} kicks off ${match.time} at ${match.venue}.`,
     });
   }
 

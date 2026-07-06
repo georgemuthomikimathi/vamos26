@@ -7,6 +7,7 @@ import { GROUPS } from "@/lib/data";
 import { KNOCKOUT_ROUNDS, getBracketMatchesForRound } from "@/lib/bracket";
 import type { BracketMatch } from "@/lib/bracket";
 import type { Match } from "@/lib/scores/types";
+import { formatScore } from "@/lib/scores/types";
 import type { GroupStandings } from "@/lib/standings/compile-group-standings";
 import { onDataRefresh } from "@/lib/realtime/cascade";
 import { POLL_IDLE_MS } from "@/lib/realtime/polling";
@@ -143,10 +144,12 @@ function GroupStandingsTable({
 function BracketTeamRow({
   team,
   winner,
+  loser,
   small,
 }: {
   team: { name: string; code: string } | null;
   winner: boolean;
+  loser?: boolean;
   small?: boolean;
 }) {
   if (!team) {
@@ -161,10 +164,15 @@ function BracketTeamRow({
   return (
     <div
       className={`flex items-center gap-1.5 ${small ? "py-0.5" : "py-1"} ${
-        winner ? "text-white font-semibold" : "text-muted"
+        winner ? "text-white font-semibold" : loser ? "text-muted/50 line-through" : "text-muted"
       }`}
     >
-      <TeamFlagWithFallback code={team.code} name={team.name} size={16} />
+      <TeamFlagWithFallback
+        code={team.code}
+        name={team.name}
+        size={16}
+        className={loser ? "opacity-40" : ""}
+      />
       <span className={`truncate ${small ? "text-[9px]" : "text-[10px]"}`}>{team.name}</span>
     </div>
   );
@@ -180,6 +188,8 @@ function BracketMatchSlot({
   small?: boolean;
 }) {
   const decided = Boolean(match.winnerCode);
+  const homeLoser = decided && match.winnerCode !== match.home?.code;
+  const awayLoser = decided && match.winnerCode !== match.away?.code;
 
   return (
     <div
@@ -194,12 +204,22 @@ function BracketMatchSlot({
       <BracketTeamRow
         team={match.home}
         winner={decided && match.winnerCode === match.home?.code}
+        loser={homeLoser}
         small={small}
       />
-      <div className={`border-t border-white/5 my-0.5 ${small ? "mx-1" : "mx-2"}`} />
+      <div className="flex items-center justify-center gap-1 my-0.5">
+        <div className={`flex-1 border-t border-white/5 ${small ? "mx-1" : "mx-2"}`} />
+        {match.score && match.score.home !== null && match.score.away !== null ? (
+          <span className={`font-display text-pitch shrink-0 ${small ? "text-[9px]" : "text-[10px]"}`}>
+            {formatScore(match.score)}
+          </span>
+        ) : null}
+        <div className={`flex-1 border-t border-white/5 ${small ? "mx-1" : "mx-2"}`} />
+      </div>
       <BracketTeamRow
         team={match.away}
         winner={decided && match.winnerCode === match.away?.code}
+        loser={awayLoser}
         small={small}
       />
     </div>

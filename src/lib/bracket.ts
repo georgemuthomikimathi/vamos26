@@ -1,5 +1,5 @@
 import type { Group } from "./data";
-import type { Match } from "@/lib/scores/types";
+import type { Match, Score } from "@/lib/scores/types";
 
 export type KnockoutRound = {
   id: string;
@@ -64,6 +64,7 @@ export type BracketMatch = {
   home: BracketTeam | null;
   away: BracketTeam | null;
   winnerCode: string | null;
+  score?: Score;
 };
 
 type TeamRef = BracketTeam | { winnerOf: string };
@@ -208,6 +209,7 @@ function pairKey(a: string, b: string): string {
 }
 
 function knockoutWinner(match: Match): string | null {
+  if (match.winnerCode) return match.winnerCode;
   if (match.status !== "finished") return null;
   const { home, away } = match.score;
   if (home === null || away === null) return null;
@@ -243,6 +245,23 @@ function resolveWinnerAsTeam(
   return null;
 }
 
+function findMatchResult(
+  home: BracketTeam,
+  away: BracketTeam,
+  resultIndex: Map<string, string>,
+  matches: Match[]
+): { winnerCode: string | null; score?: Score } {
+  const winnerCode = resultIndex.get(pairKey(home.code, away.code)) ?? null;
+  const live = matches.find(
+    (m) =>
+      m.status === "finished" &&
+      ((m.home.code === home.code && m.away.code === away.code) ||
+        (m.home.code === away.code && m.away.code === home.code))
+  );
+  if (!live) return { winnerCode };
+  return { winnerCode, score: live.score };
+}
+
 /** Build the full knockout tree, overlaying winners from finished matches when available. */
 export function buildKnockoutBracket(matches: Match[] = []): BracketMatch[] {
   const resultIndex = buildResultIndex(matches);
@@ -258,12 +277,15 @@ export function buildKnockoutBracket(matches: Match[] = []): BracketMatch[] {
       : resolveWinnerAsTeam(def.away.winnerOf, matchWinners, resolved);
 
     let winnerCode: string | null = null;
+    let score: Score | undefined;
     if (home && away) {
-      winnerCode = resultIndex.get(pairKey(home.code, away.code)) ?? null;
+      const result = findMatchResult(home, away, resultIndex, matches);
+      winnerCode = result.winnerCode;
+      score = result.score;
       if (winnerCode) matchWinners.set(def.id, winnerCode);
     }
 
-    resolved.push({ id: def.id, roundId: def.roundId, home, away, winnerCode });
+    resolved.push({ id: def.id, roundId: def.roundId, home, away, winnerCode, score });
   }
 
   return resolved;

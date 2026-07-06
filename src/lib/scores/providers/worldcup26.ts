@@ -33,6 +33,8 @@ type Wc26Game = {
   stadium_id: string;
   finished: string;
   time_elapsed: string;
+  home_penalty_score?: string;
+  away_penalty_score?: string;
   type: string;
 };
 
@@ -145,12 +147,42 @@ function parseScorers(raw: string | undefined, team: "home" | "away"): MatchEven
   return events;
 }
 
+function resolveWinnerCode(
+  game: Wc26Game,
+  status: MatchStatus,
+  homeCode: string,
+  awayCode: string
+): string | undefined {
+  if (status !== "finished") return undefined;
+
+  const home = Number.parseInt(game.home_score, 10);
+  const away = Number.parseInt(game.away_score, 10);
+  if (Number.isNaN(home) || Number.isNaN(away)) return undefined;
+
+  if (home > away) return homeCode;
+  if (away > home) return awayCode;
+
+  const homePen = game.home_penalty_score
+    ? Number.parseInt(game.home_penalty_score, 10)
+    : NaN;
+  const awayPen = game.away_penalty_score
+    ? Number.parseInt(game.away_penalty_score, 10)
+    : NaN;
+  if (!Number.isNaN(homePen) && !Number.isNaN(awayPen) && homePen !== awayPen) {
+    return homePen > awayPen ? homeCode : awayCode;
+  }
+
+  return undefined;
+}
+
 function normalizeGame(game: Wc26Game, competition: CompetitionId, stadiums: Map<string, Wc26Stadium>): Match {
   const status = mapStatus(game);
   const stadium = stadiums.get(game.stadium_id);
   const { kickoffAt, date, time } = parseKickoff(game.local_date, stadium);
   const homeName = teamName(game, "home");
   const awayName = teamName(game, "away");
+  const homeCode = teamNameToCode(homeName);
+  const awayCode = teamNameToCode(awayName);
   const homeEvents = parseScorers(game.home_scorers, "home");
   const awayEvents = parseScorers(game.away_scorers, "away");
   const events = [...homeEvents, ...awayEvents].sort((a, b) => a.minute - b.minute);
@@ -165,12 +197,13 @@ function normalizeGame(game: Wc26Game, competition: CompetitionId, stadiums: Map
     kickoffAt,
     date,
     time,
-    home: { name: homeName, code: teamNameToCode(homeName) },
-    away: { name: awayName, code: teamNameToCode(awayName) },
+    home: { name: homeName, code: homeCode },
+    away: { name: awayName, code: awayCode },
     venue: stadium?.name_en ?? "TBD",
     city: stadium?.city_en ?? "",
     stage: formatStage(game),
     score: mapScore(game, status),
+    winnerCode: resolveWinnerCode(game, status, homeCode, awayCode),
     events: events.length > 0 ? events : undefined,
   };
 }

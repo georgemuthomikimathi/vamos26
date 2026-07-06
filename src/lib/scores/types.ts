@@ -73,6 +73,8 @@ export type Match = {
   awayLineup?: MatchLineup;
   /** External match report / FIFA detail page when available */
   detailUrl?: string;
+  /** Set when full-time winner is known (including penalty shootouts) */
+  winnerCode?: string;
 };
 
 export type Competition = {
