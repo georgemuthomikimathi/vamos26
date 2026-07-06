@@ -15,7 +15,8 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "public" / "images" / "players"
-SIZE = 512
+SIZE = 1024
+JPEG_QUALITY = 92
 UA = "VAMOS26/1.0 (fan site; portrait fetch)"
 
 # slug -> Wikipedia page title
@@ -36,14 +37,13 @@ PLAYERS: dict[str, str] = {
     "alisson-becker": "Alisson_Becker",
     "mike-maignan": "Mike_Maignan",
     "matt-turner": "Matt_Turner_(soccer)",
-    # Pin to Commons file — unmistakable African-Canadian portrait
-    "alphonso-davies": "commons:File:Alphonso Davies in 2022.jpg",
+    "alphonso-davies": "commons:File:Alphonso Davies Canada v Qatar 18 June 2026-007 (cropped).jpg",
     "antonio-rudiger": "Antonio_Rüdiger",
     "cristian-romero": "Cristian_Romero",
     "marquinhos": "Marquinhos",
     "mohamed-salah": "Mohamed_Salah",
     "virgil-van-dijk": "Virgil_van_Dijk",
-    "william-saliba": "William_Saliba",
+    "william-saliba": "commons:File:William Saliba France v Senegal 16 June 2026-336 (cropped).jpg",
 }
 
 
@@ -73,7 +73,7 @@ def wiki_thumb(title: str) -> str | None:
                 "titles": file_title,
                 "prop": "imageinfo",
                 "iiprop": "url",
-                "iiurlwidth": 900,
+                "iiurlwidth": 1400,
                 "format": "json",
             }
         )
@@ -89,7 +89,7 @@ def wiki_thumb(title: str) -> str | None:
             "titles": title,
             "prop": "pageimages",
             "piprop": "thumbnail",
-            "pithumbsize": 800,
+            "pithumbsize": 1200,
             "format": "json",
         }
     )
@@ -126,7 +126,7 @@ def main() -> int:
                 continue
             raw = curl_get(thumb_url)
             img = Image.open(BytesIO(raw)).convert("RGB")
-            to_portrait(img).save(dest, "JPEG", quality=88, optimize=True)
+            to_portrait(img).save(dest, "JPEG", quality=JPEG_QUALITY, optimize=True)
             print(f"OK   {slug} <- {title} ({dest.stat().st_size // 1024} KB)")
             ok += 1
             time.sleep(1.5)

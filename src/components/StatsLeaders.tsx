@@ -19,6 +19,8 @@ import { STATS_LEADER_LIMIT } from "@/lib/stats/compile-tournament-stats";
 import { onDataRefresh } from "@/lib/realtime/cascade";
 import { POLL_STATS_MS } from "@/lib/realtime/polling";
 import TeamFlagWithFallback from "@/components/TeamFlag";
+import PlayerPortrait from "@/components/PlayerPortrait";
+import { playerSlugFromName } from "@/lib/playerImages";
 import DataProviderBadge from "@/components/DataProviderBadge";
 
 type StatsTab =
@@ -50,7 +52,7 @@ type StatsPayload = {
 const TABS: { id: StatsTab; label: string; icon: typeof Target; valueLabel: string }[] = [
   { id: "scorers", label: "Scorers", icon: Target, valueLabel: "goals" },
   { id: "assists", label: "Assists", icon: HandHelping, valueLabel: "assists" },
-  { id: "cleanSheets", label: "Clean sheets", icon: Shield, valueLabel: "CS" },
+  { id: "cleanSheets", label: "Clean sheets", icon: Shield, valueLabel: "sheets" },
   { id: "yellowCards", label: "Yellows", icon: Square, valueLabel: "🟨" },
   { id: "redCards", label: "Reds", icon: Square, valueLabel: "🟥" },
   { id: "penalties", label: "Penalties", icon: Target, valueLabel: "pens" },
@@ -65,8 +67,10 @@ function LeaderRow({
   player: StatLeader;
   valueLabel: string;
 }) {
+  const imageSlug = player.imageSlug ?? playerSlugFromName(player.name);
+
   return (
-    <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 active:scale-[0.99] transition-all cursor-default min-h-[44px]">
+    <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 active:scale-[0.99] transition-all cursor-default min-h-[52px]">
       <span
         className={`font-display text-xl w-7 text-center shrink-0 ${
           player.rank === 1 ? "text-gold" : "text-muted"
@@ -74,11 +78,14 @@ function LeaderRow({
       >
         {player.rank}
       </span>
-      <TeamFlagWithFallback code={player.code} name={player.country} size={32} />
+      <PlayerPortrait imageSlug={imageSlug} name={player.name} size={52} />
       <div className="flex-1 min-w-0">
-        <div className="font-semibold text-sm truncate">{player.name}</div>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="font-semibold text-sm truncate">{player.name}</span>
+          <TeamFlagWithFallback code={player.code} name={player.country} size={16} />
+        </div>
         <div className="text-[10px] text-muted truncate">
-          {player.club}
+          {player.country} · {player.club}
           {player.detail ? ` · ${player.detail}` : ""}
         </div>
       </div>
@@ -207,8 +214,8 @@ export default function StatsLeaders() {
             LEADER<span className="text-gradient-pitch">BOARDS</span>
           </h2>
           <p className="text-muted text-sm max-w-2xl">
-            Tallied after each full-time result from worldcup26.ir — top {STATS_LEADER_LIMIT}{" "}
-            in every category.
+            Tallied after each full-time result — top {STATS_LEADER_LIMIT} in every category.
+            Player photos shown where available.
           </p>
         </motion.div>
 
@@ -289,7 +296,12 @@ export default function StatsLeaders() {
             </div>
             {motm ? (
               <div className="flex flex-col items-center text-center py-6 gap-4">
-                <TeamFlagWithFallback code={motm.teamCode} name={motm.teamName} size={80} />
+                <PlayerPortrait
+                  imageSlug={playerSlugFromName(motm.name)}
+                  name={motm.name}
+                  size={96}
+                />
+                <TeamFlagWithFallback code={motm.teamCode} name={motm.teamName} size={32} />
                 <div>
                   <p className="font-display text-3xl text-white">{motm.name}</p>
                   <p className="text-sm text-muted mt-1">{motm.teamName}</p>

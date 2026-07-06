@@ -6,6 +6,7 @@ export type StatLeader = {
   club: string;
   value: number;
   detail?: string;
+  imageSlug?: string;
 };
 
 export const TOP_SCORERS: StatLeader[] = [

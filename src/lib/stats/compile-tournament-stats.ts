@@ -3,6 +3,7 @@ import { getDisplayEvents } from "@/lib/scores/card-events";
 import { enrichMatchFromMeta } from "@/lib/scores/enrich-from-meta";
 import { NATIONAL_SQUADS } from "@/lib/squads";
 import type { StatLeader } from "@/lib/stats";
+import { playerSlugFromName } from "@/lib/playerImages";
 
 export const STATS_LEADER_LIMIT = 20;
 
@@ -111,6 +112,7 @@ function toLeaders(
       club: p.club,
       value: p.value,
       detail: p.detail,
+      imageSlug: playerSlugFromName(p.name),
     }));
 }
 

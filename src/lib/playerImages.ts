@@ -1,4 +1,4 @@
-/** Portrait paths for stats leaders — keyed by slug */
+/** Portrait paths for stats leaders and watchlist — keyed by slug */
 export const PLAYER_IMAGE_SLUGS: Record<string, string> = {
   "kylian-mbappe": "/images/players/kylian-mbappe.jpg",
   "erling-haaland": "/images/players/erling-haaland.jpg",
@@ -16,8 +16,65 @@ export const PLAYER_IMAGE_SLUGS: Record<string, string> = {
   "alisson-becker": "/images/players/alisson-becker.jpg",
   "mike-maignan": "/images/players/mike-maignan.jpg",
   "matt-turner": "/images/players/matt-turner.jpg",
+  "alphonso-davies": "/images/players/alphonso-davies.jpg",
+  "antonio-rudiger": "/images/players/antonio-rudiger.jpg",
+  "cristian-romero": "/images/players/cristian-romero.jpg",
+  marquinhos: "/images/players/marquinhos.jpg",
+  "mohamed-salah": "/images/players/mohamed-salah.jpg",
+  "virgil-van-dijk": "/images/players/virgil-van-dijk.jpg",
+  "william-saliba": "/images/players/william-saliba.jpg",
 };
+
+/** Alternate spellings / display names → slug */
+const NAME_ALIASES: Record<string, string> = {
+  "kylian mbappe": "kylian-mbappe",
+  "kylian mbappé": "kylian-mbappe",
+  "vinicius junior": "vinicius-junior",
+  "vinícius júnior": "vinicius-junior",
+  "kevin de bruyne": "kevin-de-bruyne",
+  "alexis mac allister": "alexis-mac-allister",
+  "emiliano martinez": "emiliano-martinez",
+  "emiliano martínez": "emiliano-martinez",
+  "gianluigi donnarumma": "gianluigi-donnarumma",
+  "alisson becker": "alisson-becker",
+  "mike maignan": "mike-maignan",
+  "matt turner": "matt-turner",
+  "alphonso davies": "alphonso-davies",
+  "antonio rudiger": "antonio-rudiger",
+  "antónio rüdiger": "antonio-rudiger",
+  "cristian romero": "cristian-romero",
+  "mohamed salah": "mohamed-salah",
+  "virgil van dijk": "virgil-van-dijk",
+  "william saliba": "william-saliba",
+};
+
+function normalizeName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim();
+}
 
 export function playerImagePath(slug: string): string | undefined {
   return PLAYER_IMAGE_SLUGS[slug];
+}
+
+/** Resolve a portrait slug from a player display name (stats board, MOTM, etc.). */
+export function playerSlugFromName(name: string): string | undefined {
+  if (!name || name === "—" || name === "Unknown") return undefined;
+
+  const norm = normalizeName(name);
+  if (NAME_ALIASES[norm]) return NAME_ALIASES[norm];
+  if (norm in PLAYER_IMAGE_SLUGS) return norm;
+
+  const slug = norm.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  if (slug in PLAYER_IMAGE_SLUGS) return slug;
+
+  const last = norm.split(/\s+/).pop() ?? "";
+  for (const key of Object.keys(PLAYER_IMAGE_SLUGS)) {
+    if (key.endsWith(`-${last}`) || key === last) return key;
+  }
+
+  return undefined;
 }

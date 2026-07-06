@@ -97,6 +97,23 @@ function LineupColumn({
   );
 }
 
+function PendingLineupColumn({ teamName, code }: { teamName: string; code: string }) {
+  return (
+    <div className="rounded-xl border border-dashed border-white/10 bg-navy/20 p-3 min-h-[180px] flex flex-col">
+      <div className="flex items-center gap-2 mb-3">
+        <TeamFlagWithFallback code={code} name={teamName} size={28} />
+        <div className="min-w-0">
+          <p className="font-semibold text-white text-sm truncate">{teamName}</p>
+          <p className="text-[10px] text-muted">Lineup pending</p>
+        </div>
+      </div>
+      <p className="text-xs text-muted text-center flex-1 flex items-center justify-center px-2">
+        Starting XI publishes ~30 min before kickoff
+      </p>
+    </div>
+  );
+}
+
 type MatchLineupPanelProps = {
   match: Match;
   focus?: "home" | "away";
@@ -112,23 +129,32 @@ export default function MatchLineupPanel({ match, focus }: MatchLineupPanelProps
   }
 
   return (
-    <div className="grid sm:grid-cols-2 gap-3">
-      {match.homeLineup && (
-        <LineupColumn
-          teamName={match.home.name}
-          code={match.home.code}
-          lineup={match.homeLineup}
-          highlight={focus === "home"}
-        />
-      )}
-      {match.awayLineup && (
-        <LineupColumn
-          teamName={match.away.name}
-          code={match.away.code}
-          lineup={match.awayLineup}
-          highlight={focus === "away"}
-        />
-      )}
+    <div className="space-y-2">
+      <p className="text-[10px] uppercase tracking-wider text-muted text-center">
+        Home & away starting XIs
+      </p>
+      <div className="grid sm:grid-cols-2 gap-3">
+        {match.homeLineup ? (
+          <LineupColumn
+            teamName={match.home.name}
+            code={match.home.code}
+            lineup={match.homeLineup}
+            highlight={focus === "home"}
+          />
+        ) : (
+          <PendingLineupColumn teamName={match.home.name} code={match.home.code} />
+        )}
+        {match.awayLineup ? (
+          <LineupColumn
+            teamName={match.away.name}
+            code={match.away.code}
+            lineup={match.awayLineup}
+            highlight={focus === "away"}
+          />
+        ) : (
+          <PendingLineupColumn teamName={match.away.name} code={match.away.code} />
+        )}
+      </div>
     </div>
   );
 }

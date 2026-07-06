@@ -267,7 +267,7 @@ export default function MatchCard({
                     label: "Events",
                     show: displayHasEvents || displayHasSubs || isLive || isFinished,
                   },
-                  { id: "lineups" as const, label: "Squads", show: showLineups },
+                  { id: "lineups" as const, label: "Lineups", show: showLineups },
                   { id: "subs" as const, label: "Subs", show: displayHasSubs || Boolean(meta) },
                   { id: "info" as const, label: "Info", show: true },
                   {
