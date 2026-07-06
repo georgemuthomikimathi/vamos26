@@ -3,7 +3,7 @@ import { getDisplayEvents } from "@/lib/scores/card-events";
 import { enrichMatchFromMeta } from "@/lib/scores/enrich-from-meta";
 import { NATIONAL_SQUADS } from "@/lib/squads";
 import type { StatLeader } from "@/lib/stats";
-import { playerSlugFromName } from "@/lib/playerImages";
+import { playerSlugFromName, canonicalPlayerName } from "@/lib/playerImages";
 
 export const STATS_LEADER_LIMIT = 20;
 
@@ -78,7 +78,8 @@ function bump(
   detail?: string
 ): void {
   if (!name || name === "—" || name === "Unknown") return;
-  const key = playerKey(name, teamCode);
+  const displayName = canonicalPlayerName(name);
+  const key = playerKey(displayName, teamCode);
   const existing = map.get(key);
   if (existing) {
     existing.value += delta;
@@ -86,10 +87,10 @@ function bump(
     return;
   }
   map.set(key, {
-    name: name.trim(),
+    name: displayName,
     country: teamName,
     code: teamCode,
-    club: findPlayerClub(name, teamCode),
+    club: findPlayerClub(displayName, teamCode),
     value: delta,
     detail,
   });
@@ -194,7 +195,7 @@ export function compileTournamentStats(matches: Match[]): CompiledTournamentStat
           existing.goals += 1;
         } else {
           matchScorerMap.set(sk, {
-            name: event.player,
+            name: canonicalPlayerName(event.player),
             goals: 1,
             teamCode: team.code,
             teamName: team.name,

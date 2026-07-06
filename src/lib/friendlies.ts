@@ -15,9 +15,9 @@ export const FRIENDLY_MATCHES: Match[] = [
     stage: "International Friendly",
     score: { home: 2, away: 1 },
     events: [
-      { minute: 34, type: "goal", player: "Pulisic", team: "home" },
-      { minute: 58, type: "goal", player: "Lozano", team: "away" },
-      { minute: 81, type: "goal", player: "Balogun", team: "home" },
+      { minute: 34, type: "goal", player: "Christian Pulisic", team: "home" },
+      { minute: 58, type: "goal", player: "Hirving Lozano", team: "away" },
+      { minute: 81, type: "goal", player: "Folarin Balogun", team: "home" },
     ],
   },
   {
@@ -34,7 +34,7 @@ export const FRIENDLY_MATCHES: Match[] = [
     score: { home: 3, away: 0 },
     events: [
       { minute: 12, type: "goal", player: "Rodrygo", team: "home" },
-      { minute: 44, type: "goal", player: "Vinícius", team: "home" },
+      { minute: 44, type: "goal", player: "Vinícius Júnior", team: "home" },
       { minute: 77, type: "goal", player: "Endrick", team: "home" },
     ],
   },
@@ -51,10 +51,10 @@ export const FRIENDLY_MATCHES: Match[] = [
     stage: "International Friendly",
     score: { home: 2, away: 2 },
     events: [
-      { minute: 19, type: "goal", player: "Kane", team: "home" },
-      { minute: 33, type: "goal", player: "Trossard", team: "away" },
-      { minute: 61, type: "goal", player: "Bellingham", team: "home" },
-      { minute: 88, type: "goal", player: "Doku", team: "away" },
+      { minute: 19, type: "goal", player: "Harry Kane", team: "home" },
+      { minute: 33, type: "goal", player: "Leandro Trossard", team: "away" },
+      { minute: 61, type: "goal", player: "Jude Bellingham", team: "home" },
+      { minute: 88, type: "goal", player: "Jérémy Doku", team: "away" },
     ],
   },
   {
@@ -69,7 +69,7 @@ export const FRIENDLY_MATCHES: Match[] = [
     city: "Paris",
     stage: "International Friendly",
     score: { home: 1, away: 0 },
-    events: [{ minute: 72, type: "goal", player: "Mbappé", team: "home" }],
+    events: [{ minute: 72, type: "goal", player: "Kylian Mbappé", team: "home" }],
   },
   {
     id: "f5",

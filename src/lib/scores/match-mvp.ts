@@ -1,4 +1,5 @@
 import type { Match, MatchEvent } from "@/lib/scores/types";
+import { canonicalPlayerName } from "@/lib/playerImages";
 
 export type MatchMvp = {
   name: string;
@@ -16,7 +17,7 @@ function tally(events: MatchEvent[], match: Match): Map<string, MatchMvp> {
     const team = event.team === "home" ? match.home : match.away;
     const key = `${team.code}:${event.player}`;
     const row = map.get(key) ?? {
-      name: event.player,
+      name: canonicalPlayerName(event.player),
       teamCode: team.code,
       teamName: team.name,
       goals: 0,
@@ -28,7 +29,7 @@ function tally(events: MatchEvent[], match: Match): Map<string, MatchMvp> {
     if (event.playerSecondary) {
       const aKey = `${team.code}:${event.playerSecondary}`;
       const assist = map.get(aKey) ?? {
-        name: event.playerSecondary,
+        name: canonicalPlayerName(event.playerSecondary),
         teamCode: team.code,
         teamName: team.name,
         goals: 0,

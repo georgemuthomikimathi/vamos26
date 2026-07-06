@@ -1,38 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { Shield, Sparkles, User, ShoppingBag, ExternalLink, type LucideIcon } from "lucide-react";
+import { Shield, Sparkles, ShoppingBag, ExternalLink, type LucideIcon } from "lucide-react";
 import { DEFENDERS_TO_WATCH, PLAYMAKERS_TO_WATCH } from "@/lib/watchlist";
 import type { WatchPlayer } from "@/lib/watchlist";
 import TeamFlagWithFallback from "@/components/TeamFlag";
+import PlayerPortrait from "@/components/PlayerPortrait";
+import { playerSlugFromName } from "@/lib/playerImages";
 import { AFFILIATE_REL, AFFILIATE_TARGET, GEAR_AFFILIATE } from "@/lib/affiliates";
 
 function PlayerAvatar({ player }: { player: WatchPlayer }) {
-  const [imgError, setImgError] = useState(false);
-
-  if (!player.image || imgError) {
-    return (
-      <div className="w-16 h-16 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-        <User size={28} className="text-muted" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-white/5">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={player.image}
-        alt={`${player.name} portrait`}
-        width={64}
-        height={64}
-        className="w-full h-full object-cover object-top"
-        loading="lazy"
-        onError={() => setImgError(true)}
-      />
-    </div>
-  );
+  const imageSlug = playerSlugFromName(player.name);
+  return <PlayerPortrait imageSlug={imageSlug} name={player.name} size={64} />;
 }
 
 function PlayerGrid({

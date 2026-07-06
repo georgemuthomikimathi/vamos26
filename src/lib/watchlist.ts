@@ -88,7 +88,7 @@ export const DEFENDERS_TO_WATCH: WatchPlayer[] = [
       "African-Canadian pace merchant — flies down the left. Davies stretches defenses and gives Canada a genuine outlet on the counter.",
     gradient: "from-red-600 to-white",
     stat: "36.5 km/h top speed",
-    image: "/images/players/alphonso-davies.jpg?v=3",
+    image: "/images/players/alphonso-davies.jpg",
   },
 ];
 
