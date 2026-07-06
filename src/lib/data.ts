@@ -111,9 +111,10 @@ export const GROUPS: Group[] = [
     teams: [
       { name: "Netherlands", code: "nl", seed: 1 },
       { name: "Japan", code: "jp" },
-      { name: "Tunisia", code: "tn" },
       { name: "Sweden", code: "se" },
+      { name: "Tunisia", code: "tn" },
     ],
+    highlight: "Sweden qualified via UEFA playoff",
   },
   {
     letter: "G",

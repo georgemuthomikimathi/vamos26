@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight, MapPin, RefreshCw, Trophy } from "lucide-react";
 import { GROUPS } from "@/lib/data";
-import { KNOCKOUT_ROUNDS, buildBracketMatches } from "@/lib/bracket";
+import { KNOCKOUT_ROUNDS, getBracketMatchesForRound } from "@/lib/bracket";
+import type { BracketMatch } from "@/lib/bracket";
+import type { Match } from "@/lib/scores/types";
 import type { GroupStandings } from "@/lib/standings/compile-group-standings";
 import { onDataRefresh } from "@/lib/realtime/cascade";
 import { POLL_IDLE_MS } from "@/lib/realtime/polling";
@@ -138,36 +140,68 @@ function GroupStandingsTable({
   );
 }
 
-function MatchSlot({
-  label,
+function BracketTeamRow({
+  team,
+  winner,
+  small,
+}: {
+  team: { name: string; code: string } | null;
+  winner: boolean;
+  small?: boolean;
+}) {
+  if (!team) {
+    return (
+      <div className={`flex items-center gap-1.5 ${small ? "py-0.5" : "py-1"}`}>
+        <span className="w-4 h-3 rounded bg-white/5 border border-white/10" />
+        <span className={`text-muted italic ${small ? "text-[9px]" : "text-[10px]"}`}>TBD</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`flex items-center gap-1.5 ${small ? "py-0.5" : "py-1"} ${
+        winner ? "text-white font-semibold" : "text-muted"
+      }`}
+    >
+      <TeamFlagWithFallback code={team.code} name={team.name} size={16} />
+      <span className={`truncate ${small ? "text-[9px]" : "text-[10px]"}`}>{team.name}</span>
+    </div>
+  );
+}
+
+function BracketMatchSlot({
+  match,
   highlight,
   small,
 }: {
-  label: string;
+  match: BracketMatch;
   highlight?: boolean;
   small?: boolean;
 }) {
+  const decided = Boolean(match.winnerCode);
+
   return (
     <div
-      className={`rounded-xl border flex items-center justify-center text-center px-2 ${
+      className={`rounded-xl border flex flex-col justify-center px-2 ${
         highlight
-          ? "border-gold/50 bg-gold/10 py-4 min-h-[72px]"
+          ? "border-gold/50 bg-gold/10 py-3 min-h-[80px]"
           : small
-            ? "border-white/10 bg-navy/60 py-2 min-h-[40px]"
-            : "border-white/10 bg-card/80 py-3 min-h-[52px]"
+            ? "border-white/10 bg-navy/60 py-1.5 min-h-[52px]"
+            : "border-white/10 bg-card/80 py-2 min-h-[64px]"
       }`}
     >
-      <span
-        className={`font-medium leading-tight ${
-          highlight
-            ? "font-display text-lg text-gold"
-            : small
-              ? "text-[10px] text-muted"
-              : "text-[11px] text-muted"
-        }`}
-      >
-        {label}
-      </span>
+      <BracketTeamRow
+        team={match.home}
+        winner={decided && match.winnerCode === match.home?.code}
+        small={small}
+      />
+      <div className={`border-t border-white/5 my-0.5 ${small ? "mx-1" : "mx-2"}`} />
+      <BracketTeamRow
+        team={match.away}
+        winner={decided && match.winnerCode === match.away?.code}
+        small={small}
+      />
     </div>
   );
 }
@@ -175,11 +209,13 @@ function MatchSlot({
 function KnockoutColumn({
   round,
   roundIndex,
+  knockoutMatches,
 }: {
   round: (typeof KNOCKOUT_ROUNDS)[0];
   roundIndex: number;
+  knockoutMatches: Match[];
 }) {
-  const matches = buildBracketMatches(round.id);
+  const matches = getBracketMatchesForRound(round.id, knockoutMatches);
   const isFinal = round.id === "final";
 
   return (
@@ -188,7 +224,7 @@ function KnockoutColumn({
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
       transition={{ delay: roundIndex * 0.1 }}
-      className="flex flex-col min-w-[130px] shrink-0"
+      className="flex flex-col min-w-[148px] shrink-0"
     >
       <div
         className={`text-center mb-3 pb-2 border-b ${
@@ -211,9 +247,9 @@ function KnockoutColumn({
         style={{ minHeight: isFinal ? 120 : 280 + roundIndex * 40 }}
       >
         {matches.map((m) => (
-          <MatchSlot
+          <BracketMatchSlot
             key={m.id}
-            label={m.label}
+            match={m}
             highlight={isFinal}
             small={round.matches > 8}
           />
@@ -233,6 +269,7 @@ function ConnectorArrow() {
 
 export default function RoadToFinal() {
   const [standings, setStandings] = useState<GroupStandings[]>(buildEmptyStandings);
+  const [knockoutMatches, setKnockoutMatches] = useState<Match[]>([]);
   const [matchesPlayed, setMatchesPlayed] = useState(0);
   const [dataSource, setDataSource] = useState<"api-football" | "fallback">("fallback");
   const [lastUpdate, setLastUpdate] = useState("");
@@ -241,14 +278,19 @@ export default function RoadToFinal() {
   const fetchStandings = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
     try {
-      const res = await fetch("/api/standings?competition=world-cup", { cache: "no-store" });
-      const data = await res.json();
+      const [standingsRes, scoresRes] = await Promise.all([
+        fetch("/api/standings?competition=world-cup", { cache: "no-store" }),
+        fetch("/api/scores/world-cup", { cache: "no-store" }),
+      ]);
+      const data = await standingsRes.json();
       if (data.groups?.length) {
         setStandings(data.groups);
         setMatchesPlayed(data.matchesPlayed ?? 0);
         setLastUpdate(formatUpdatedET(data.updatedAt));
         if (data.source) setDataSource(data.source);
       }
+      const scores = await scoresRes.json();
+      if (scores.matches?.length) setKnockoutMatches(scores.matches);
     } catch {
       /* silent */
     } finally {
@@ -288,9 +330,9 @@ export default function RoadToFinal() {
             ROAD TO THE <span className="text-gradient-gold">FINAL</span>
           </h2>
           <p className="text-muted max-w-2xl mx-auto">
-            48 teams enter 12 groups. Live standings update as matches finish — top
-            two from each group plus eight best third-place teams advance to the
-            Round of 32.
+            48 teams, 12 groups — group stage complete. The knockout bracket
+            fills in as Round of 32 and Round of 16 results come in, all the way
+            to MetLife on July 19.
           </p>
         </motion.div>
 
@@ -301,7 +343,7 @@ export default function RoadToFinal() {
             <span className="font-display text-xl text-pitch tracking-wider">
               GROUP STANDINGS
             </span>
-            <span className="text-xs text-muted">Jun 11 – 27</span>
+            <span className="text-xs text-muted">Jun 11 – 27 · Complete</span>
             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-pitch/40 to-transparent" />
           </div>
 
@@ -377,7 +419,11 @@ export default function RoadToFinal() {
             <div className="flex items-stretch min-w-[900px] lg:min-w-0 lg:justify-center">
               {KNOCKOUT_ROUNDS.map((round, i) => (
                 <div key={round.id} className="flex items-stretch">
-                  <KnockoutColumn round={round} roundIndex={i} />
+                  <KnockoutColumn
+                    round={round}
+                    roundIndex={i}
+                    knockoutMatches={knockoutMatches}
+                  />
                   {i < KNOCKOUT_ROUNDS.length - 1 && <ConnectorArrow />}
                 </div>
               ))}
