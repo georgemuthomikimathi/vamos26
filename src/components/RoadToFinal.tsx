@@ -14,6 +14,7 @@ import { POLL_IDLE_MS } from "@/lib/realtime/polling";
 import TeamFlagWithFallback from "@/components/TeamFlag";
 import DataProviderBadge from "@/components/DataProviderBadge";
 import { formatUpdatedET } from "@/lib/timezone";
+import { CHAMPIONS, SITE_UPDATE_NOTICE } from "@/lib/champions";
 
 const POLL_IDLE = POLL_IDLE_MS;
 
@@ -350,9 +351,8 @@ export default function RoadToFinal() {
             ROAD TO THE <span className="text-gradient-gold">FINAL</span>
           </h2>
           <p className="text-muted max-w-2xl mx-auto">
-            48 teams, 12 groups — group stage complete. The knockout bracket
-            fills in as Round of 32 and Round of 16 results come in, all the way
-            to MetLife on July 19.
+            The road is complete. From 48 teams and 12 groups to MetLife on July
+            19 — Spain are World Champions after beating Argentina 1–0 AET.
           </p>
         </motion.div>
 
@@ -459,16 +459,37 @@ export default function RoadToFinal() {
           className="mt-8 bg-gradient-to-r from-gold/10 via-pitch/10 to-usa-blue/10 border border-gold/30 rounded-3xl p-8 text-center"
         >
           <Trophy className="mx-auto text-gold mb-4" size={40} />
-          <h3 className="font-display text-4xl md:text-5xl text-gradient-gold mb-2">
-            WORLD CUP FINAL
+          <h3 className="font-display text-4xl md:text-5xl text-gradient-gold mb-3">
+            ¡ESPAÑA CAMPEONA!
           </h3>
-          <p className="text-white font-semibold text-lg">July 19, 2026</p>
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <TeamFlagWithFallback
+              code={CHAMPIONS.code}
+              name={CHAMPIONS.name}
+              size={40}
+            />
+            <p className="text-white font-display text-3xl md:text-4xl">
+              {CHAMPIONS.score}
+            </p>
+            <TeamFlagWithFallback
+              code={CHAMPIONS.opponentCode}
+              name={CHAMPIONS.opponent}
+              size={40}
+            />
+          </div>
+          <p className="text-white font-semibold text-lg">
+            {CHAMPIONS.name} vs {CHAMPIONS.opponent} · {CHAMPIONS.detail}
+          </p>
+          <p className="text-gold text-sm font-semibold mt-1">{CHAMPIONS.date}</p>
           <div className="flex items-center justify-center gap-2 text-muted text-sm mt-2">
             <MapPin size={14} className="text-pitch" />
-            MetLife Stadium — East Rutherford, New Jersey
+            {CHAMPIONS.venue}
           </div>
-          <p className="text-xs text-muted mt-4 max-w-md mx-auto">
-            Two teams. One champion. The road ends here — just miles from NYC.
+          <p className="text-sm text-white/90 mt-4 max-w-lg mx-auto">
+            Congratulations to La Roja — World Champions 2026.
+          </p>
+          <p className="text-xs text-muted mt-3 max-w-lg mx-auto leading-relaxed">
+            {SITE_UPDATE_NOTICE}
           </p>
         </motion.div>
 

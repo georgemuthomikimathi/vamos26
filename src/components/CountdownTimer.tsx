@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { Trophy } from "lucide-react";
 import { useTournamentContext } from "@/hooks/useTournamentContext";
 import { msUntilMatchKickoff } from "@/lib/realtime/next-match";
 import { formatMatchScheduleLine } from "@/lib/timezone";
+import { CHAMPIONS, SITE_UPDATE_NOTICE } from "@/lib/champions";
+import TeamFlagWithFallback from "@/components/TeamFlag";
 
 type TimeLeft = {
   days: number;
@@ -38,6 +41,31 @@ const PLACEHOLDER: TimeLeft = {
   expired: false,
 };
 
+function ChampionsCard() {
+  return (
+    <div className="bg-gold/10 border border-gold/40 rounded-3xl p-6 text-center">
+      <Trophy className="mx-auto text-gold mb-3" size={32} aria-hidden />
+      <div className="flex items-center justify-center gap-3 mb-2">
+        <TeamFlagWithFallback code={CHAMPIONS.code} name={CHAMPIONS.name} size={40} />
+        <p className="text-gold font-display text-3xl tracking-wider">
+          ¡ESPAÑA CAMPEONA!
+        </p>
+        <TeamFlagWithFallback
+          code={CHAMPIONS.opponentCode}
+          name={CHAMPIONS.opponent}
+          size={40}
+        />
+      </div>
+      <p className="text-white font-semibold text-sm mt-2">
+        {CHAMPIONS.name} {CHAMPIONS.score} {CHAMPIONS.opponent} · {CHAMPIONS.detail}
+      </p>
+      <p className="text-muted text-xs mt-3 max-w-md mx-auto leading-relaxed">
+        {SITE_UPDATE_NOTICE}
+      </p>
+    </div>
+  );
+}
+
 export default function CountdownTimer() {
   const ctx = useTournamentContext();
   const [time, setTime] = useState<TimeLeft>(PLACEHOLDER);
@@ -61,6 +89,10 @@ export default function CountdownTimer() {
       clearInterval(id);
     };
   }, [targetMs]);
+
+  if (ctx.tournamentComplete || (ready && time.expired && !nextMatch)) {
+    return <ChampionsCard />;
+  }
 
   if (liveNow) {
     return (

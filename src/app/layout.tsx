@@ -35,13 +35,14 @@ const SITE_URL = "https://vamos26.com";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "VAMOS26 — Live Scores, Stats & World Cup 2026",
+    default: "VAMOS26 — Spain World Champions 2026 · Site Refresh Coming",
     template: "%s | VAMOS26",
   },
   description:
-    "VAMOS26: live World Cup 2026 scores, lineups, subs, officials, stadium guide, stats leaders, and team news.",
+    "¡España campeona! Spain beat Argentina 1–0 AET at MetLife to win World Cup 2026. VAMOS26 is preparing a full post-tournament update — thanks for your patience.",
   keywords: [
     "FIFA World Cup 2026",
+    "Spain World Champions",
     "VAMOS26",
     "live scores",
     "World Cup stadiums",
@@ -70,16 +71,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: SITE_URL,
-    title: "VAMOS26 — FIFA World Cup 2026",
+    title: "VAMOS26 — Spain World Champions 2026",
     description:
-      "Live scores, lineups, team news, and stats for World Cup 2026.",
+      "Spain beat Argentina 1–0 AET at MetLife. Celebrate La Roja while VAMOS26 prepares a post-tournament refresh.",
     siteName: "VAMOS26",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "VAMOS26 — FIFA World Cup 2026",
-    description: "Live scores, stats & team news for World Cup 2026",
+    title: "VAMOS26 — Spain World Champions 2026",
+    description:
+      "¡España campeona! Spain 1–0 Argentina AET · site refresh coming soon",
   },
   other: {
     "mobile-web-app-capable": "yes",

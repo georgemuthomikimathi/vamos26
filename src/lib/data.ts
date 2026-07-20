@@ -849,10 +849,10 @@ export const OPENING_MATCHES: Match[] = [
 ];
 
 export const KEY_DATES = [
-  { date: "Jul 6", event: "Round of 16", detail: "England 3–2 Mexico — Three Lions into the quarters" },
-  { date: "Jul 5", event: "Brazil eliminated", detail: "Norway 2–1 Brazil — Seleção out in the Round of 16" },
-  { date: "Jul 4", event: "Knockout begins", detail: "Morocco, France & hosts advance past the Round of 32" },
-  { date: "Jul 19", event: "THE FINAL", detail: "MetLife Stadium — East Rutherford, NJ" },
+  { date: "Jul 19", event: "SPAIN CHAMPIONS", detail: "Spain 1–0 Argentina AET · Ferran Torres 106' · MetLife" },
+  { date: "Jul 18", event: "Third place", detail: "England 6–4 France" },
+  { date: "Jul 15", event: "Semi-finals", detail: "Spain 2–0 France · Argentina 2–1 England" },
+  { date: "Soon", event: "Site refresh", detail: "Archives, highlights & a refreshed home experience are on the way" },
 ];
 
 export function flagUrl(code: string, size: 40 | 80 | 160 = 80) {

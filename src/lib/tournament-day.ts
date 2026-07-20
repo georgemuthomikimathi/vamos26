@@ -1,6 +1,11 @@
 import type { Match } from "@/lib/scores/types";
 import { formatScore } from "@/lib/scores/types";
 import { DISPLAY_TIMEZONE } from "@/lib/timezone";
+import {
+  CHAMPIONS,
+  SITE_UPDATE_NOTICE,
+  TOURNAMENT_END_ET,
+} from "@/lib/champions";
 
 /** First World Cup 2026 match day (Mexico opener) in Eastern Time. */
 export const TOURNAMENT_START_ET = "2026-06-11";
@@ -19,6 +24,7 @@ export type GroupStoryline = {
 
 export type TournamentDayContext = {
   tournamentDay: number;
+  tournamentComplete: boolean;
   badge: string;
   lead: string;
   highlightTitle: string;
@@ -32,9 +38,55 @@ export type TournamentDayContext = {
 
 const FINAL_KEY_DATE: TournamentKeyDate = {
   date: "Jul 19",
-  event: "THE FINAL",
-  detail: "MetLife Stadium — East Rutherford, NJ",
+  event: "SPAIN CHAMPIONS",
+  detail: `${CHAMPIONS.name} ${CHAMPIONS.score} ${CHAMPIONS.opponent} ${CHAMPIONS.detail} · MetLife`,
 };
+
+const CHAMPIONS_KEY_DATES: TournamentKeyDate[] = [
+  {
+    date: "Jul 19",
+    event: "THE FINAL",
+    detail: `${CHAMPIONS.name} ${CHAMPIONS.score} ${CHAMPIONS.opponent} · ${CHAMPIONS.detail}`,
+  },
+  {
+    date: "Jul 18",
+    event: "Third place",
+    detail: "England 6–4 France",
+  },
+  {
+    date: "Jul 15",
+    event: "Semi-finals",
+    detail: "Spain 2–0 France · Argentina 2–1 England",
+  },
+  {
+    date: "Soon",
+    event: "Site refresh",
+    detail: "Archives, highlights & a refreshed home experience are on the way",
+  },
+];
+
+const CHAMPIONS_STORYLINES: GroupStoryline[] = [
+  {
+    letter: "F",
+    title: `${CHAMPIONS.name} ${CHAMPIONS.score} ${CHAMPIONS.opponent}`,
+    body: `The Final at MetLife — ${CHAMPIONS.detail}. La Roja lift the trophy after extra time.`,
+  },
+  {
+    letter: "ES",
+    title: "Spain · World Champions",
+    body: "La Roja are FIFA World Cup 2026 champions — back on top of the world in East Rutherford.",
+  },
+  {
+    letter: "AR",
+    title: "Argentina · Runners-up",
+    body: "The defending champions fall 1–0 AET. A historic final ends with Spain crowned at MetLife.",
+  },
+  {
+    letter: "★",
+    title: "Site update coming",
+    body: SITE_UPDATE_NOTICE,
+  },
+];
 
 const etDateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: DISPLAY_TIMEZONE,
@@ -65,6 +117,11 @@ export function getTournamentDay(now = new Date()): number {
   const diff =
     (dateKeyToUtcMs(today) - dateKeyToUtcMs(TOURNAMENT_START_ET)) / 86_400_000;
   return Math.floor(diff) + 1;
+}
+
+/** True once the Eastern Time calendar day is after the Final (Jul 19). */
+export function isTournamentComplete(now = new Date()): boolean {
+  return getEtDateKey(now) > TOURNAMENT_END_ET;
 }
 
 function tournamentDayFromDateKey(dateKey: string): number {
@@ -151,8 +208,12 @@ function joinNatural(items: string[], max = 3): string {
 function buildBadge(
   day: number,
   liveToday: Match[],
-  upcomingToday: Match[]
+  upcomingToday: Match[],
+  tournamentComplete: boolean
 ): string {
+  if (tournamentComplete) {
+    return `${CHAMPIONS.name} · ${CHAMPIONS.title}`;
+  }
   if (liveToday.length > 0) {
     const m = liveToday[0];
     return `Live · ${m.home.name} vs ${m.away.name}`;
@@ -170,8 +231,13 @@ function buildLead(
   finishedToday: Match[],
   liveToday: Match[],
   upcomingToday: Match[],
-  finishedBeforeToday: Match[]
+  finishedBeforeToday: Match[],
+  tournamentComplete: boolean
 ): string {
+  if (tournamentComplete) {
+    return `${CHAMPIONS.name} are World Champions 2026 — ${CHAMPIONS.score} over ${CHAMPIONS.opponent} (${CHAMPIONS.detail}) at ${CHAMPIONS.venue}. ${SITE_UPDATE_NOTICE}`;
+  }
+
   if (day <= 0) {
     return "The road to North America 2026 starts June 11 at Estadio Azteca. Every goal, lineup, and knockout moment from Mexico City to MetLife.";
   }
@@ -224,8 +290,15 @@ function buildHighlight(
   liveToday: Match[],
   finishedToday: Match[],
   upcomingToday: Match[],
-  day: number
+  day: number,
+  tournamentComplete: boolean
 ): { title: string; body: string } {
+  if (tournamentComplete) {
+    return {
+      title: "¡España campeona!",
+      body: `${CHAMPIONS.name} ${CHAMPIONS.score} ${CHAMPIONS.opponent} · see the completed road to MetLife`,
+    };
+  }
   if (liveToday.length > 0) {
     const m = liveToday[0];
     return {
@@ -397,6 +470,7 @@ export function buildTournamentDayContext(
 ): TournamentDayContext {
   const todayKey = getEtDateKey(now);
   const tournamentDay = getTournamentDay(now);
+  const tournamentComplete = isTournamentComplete(now);
 
   const todayMatches = matches.filter((m) => matchEtDateKey(m) === todayKey);
   const finishedToday = todayMatches.filter((m) => m.status === "finished");
@@ -423,28 +497,35 @@ export function buildTournamentDayContext(
     liveToday,
     finishedToday,
     upcomingToday,
-    tournamentDay
+    tournamentDay,
+    tournamentComplete
   );
 
   return {
     tournamentDay,
-    badge: buildBadge(tournamentDay, liveToday, upcomingToday),
+    tournamentComplete,
+    badge: buildBadge(tournamentDay, liveToday, upcomingToday, tournamentComplete),
     lead: buildLead(
       tournamentDay,
       finishedToday,
       liveToday,
       upcomingToday,
-      finishedBeforeToday
+      finishedBeforeToday,
+      tournamentComplete
     ),
     highlightTitle: highlight.title,
     highlightBody: highlight.body,
-    keyDates: buildRecentKeyDates(matches),
-    groupStorylines: buildGroupStorylines(
-      matches,
-      finishedToday,
-      liveToday,
-      upcomingToday
-    ),
+    keyDates: tournamentComplete
+      ? CHAMPIONS_KEY_DATES
+      : buildRecentKeyDates(matches),
+    groupStorylines: tournamentComplete
+      ? CHAMPIONS_STORYLINES
+      : buildGroupStorylines(
+          matches,
+          finishedToday,
+          liveToday,
+          upcomingToday
+        ),
     finishedToday,
     liveToday,
     upcomingToday,

@@ -71,7 +71,7 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
                 VAMOS<span className="text-pitch">26</span>
               </span>
               <span className="text-[10px] uppercase tracking-[0.3em] text-muted">
-                FIFA World Cup
+                Spain · Champions 2026
               </span>
             </div>
           </button>

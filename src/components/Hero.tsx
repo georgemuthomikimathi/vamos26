@@ -29,11 +29,12 @@ export default function Hero({ onNavigate }: HeroProps) {
   };
 
   const badgeLive = ctx.liveToday.length > 0;
+  const champions = ctx.tournamentComplete;
 
   return (
     <section
       id="home"
-      className="section-anchor relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden pitch-lines"
+      className="section-anchor relative min-h-screen flex items-center pt-10 pb-16 overflow-hidden pitch-lines"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-navy via-navy/95 to-navy-light" />
       <div className="absolute top-20 right-0 w-[600px] h-[600px] bg-pitch/10 rounded-full blur-[120px]" />
@@ -49,26 +50,32 @@ export default function Hero({ onNavigate }: HeroProps) {
             <div className="host-stripe h-1.5 w-32 rounded-full mb-6" />
             <div
               className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-4 border ${
-                badgeLive
-                  ? "bg-red-500/15 border-red-500/40"
-                  : "bg-pitch/20 border-pitch/40"
+                champions
+                  ? "bg-gold/15 border-gold/40"
+                  : badgeLive
+                    ? "bg-red-500/15 border-red-500/40"
+                    : "bg-pitch/20 border-pitch/40"
               }`}
             >
               <span className="relative flex h-2 w-2">
                 <span
                   className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                    badgeLive ? "animate-ping bg-red-500" : "animate-ping bg-pitch"
+                    champions
+                      ? "animate-ping bg-gold"
+                      : badgeLive
+                        ? "animate-ping bg-red-500"
+                        : "animate-ping bg-pitch"
                   }`}
                 />
                 <span
                   className={`relative inline-flex rounded-full h-2 w-2 ${
-                    badgeLive ? "bg-red-500" : "bg-pitch"
+                    champions ? "bg-gold" : badgeLive ? "bg-red-500" : "bg-pitch"
                   }`}
                 />
               </span>
               <span
                 className={`uppercase tracking-[0.25em] text-[10px] font-bold ${
-                  badgeLive ? "text-red-300" : "text-pitch"
+                  champions ? "text-gold" : badgeLive ? "text-red-300" : "text-pitch"
                 }`}
               >
                 {ctx.badge}
@@ -120,7 +127,15 @@ export default function Hero({ onNavigate }: HeroProps) {
             <div className="mb-8 max-w-md">
               <button
                 type="button"
-                onClick={() => go(ctx.liveToday.length > 0 ? "live" : "fixtures")}
+                onClick={() =>
+                  go(
+                    ctx.tournamentComplete
+                      ? "roadmap"
+                      : ctx.liveToday.length > 0
+                        ? "live"
+                        : "fixtures"
+                  )
+                }
                 className="w-full bg-gold/10 border border-gold/30 rounded-3xl p-5 text-left hover:bg-gold/15 transition-colors tap-scale focus-ring"
               >
                 <p className="text-gold uppercase tracking-[0.35em] text-[10px] font-semibold mb-1">

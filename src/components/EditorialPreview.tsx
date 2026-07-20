@@ -7,8 +7,9 @@ import { useTournamentContext } from "@/hooks/useTournamentContext";
 
 export default function EditorialPreview() {
   const ctx = useTournamentContext();
-  const dayLabel =
-    ctx.tournamentDay > 0
+  const dayLabel = ctx.tournamentComplete
+    ? "Champions · Spain 2026"
+    : ctx.tournamentDay > 0
       ? ctx.groupStorylines.some((s) => s.letter === "R16" || s.letter === "R32")
         ? `Knockout Stage · Day ${ctx.tournamentDay}`
         : `Match Day ${ctx.tournamentDay}`
