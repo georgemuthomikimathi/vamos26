@@ -5,17 +5,8 @@ import { Menu, X } from "lucide-react";
 import { scrollToSection } from "@/lib/scroll";
 
 const NAV_ITEMS = [
-  { id: "home", label: "Home" },
-  { id: "newsletter", label: "Alerts" },
-  { id: "donate", label: "Donate" },
-  { id: "live", label: "Live" },
-  { id: "news", label: "News" },
-  { id: "stats", label: "Stats" },
-  { id: "fixtures", label: "Results" },
-  { id: "groups", label: "Groups" },
+  { id: "champions", label: "Champions" },
   { id: "roadmap", label: "Road to Final" },
-  { id: "trophy", label: "Trophy & Ball" },
-  { id: "discover", label: "Discover NYC" },
 ];
 
 type NavbarProps = {
@@ -59,7 +50,7 @@ export default function Navbar({ activeTab, onTabChange }: NavbarProps) {
         <div className="flex items-center justify-between h-16 md:h-20">
           <button
             type="button"
-            onClick={() => handleNav("home")}
+            onClick={() => handleNav("champions")}
             className="flex items-center gap-2 group shrink-0 tap-scale focus-ring rounded-xl"
             aria-label="VAMOS26 home"
           >

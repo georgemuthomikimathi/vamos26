@@ -351,8 +351,8 @@ export default function RoadToFinal() {
             ROAD TO THE <span className="text-gradient-gold">FINAL</span>
           </h2>
           <p className="text-muted max-w-2xl mx-auto">
-            The road is complete. From 48 teams and 12 groups to MetLife on July
-            19 — Spain are World Champions after beating Argentina 1–0 AET.
+            Relive the full tournament — 48 teams, 12 groups, and every knockout
+            round through to Spain&apos;s triumph at MetLife on July 19.
           </p>
         </motion.div>
 
