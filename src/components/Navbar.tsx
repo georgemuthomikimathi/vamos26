@@ -6,6 +6,7 @@ import { scrollToSection } from "@/lib/scroll";
 
 const NAV_ITEMS = [
   { id: "champions", label: "Champions" },
+  { id: "news", label: "News" },
   { id: "roadmap", label: "Road to Final" },
 ];
 
